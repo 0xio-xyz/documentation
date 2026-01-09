@@ -1,0 +1,96 @@
+---
+title: "The Octra Network"
+description: "Understanding the privacy-preserving Layer-1 blockchain"
+icon: "network-wired"
+---
+
+Octra is a **privacy-preserving Layer-1 blockchain** built from the ground up to execute **encrypted computation on-chain**.
+
+Unlike traditional blockchains, where data is either fully public or hidden using external techniques (ZK proofs, MPC, or trusted hardware), Octra allows:
+
+- Transactions
+- Smart contract logic
+- Onchain state
+
+to remain **encrypted at all times**, while still being executed and verified by the network.
+
+<Info>
+**In short:** Octra computes on data it cannot see.
+</Info>
+
+0xio is designed specifically to expose this capability safely to end users.
+
+## Fully Homomorphic Encryption (FHE)
+
+Fully Homomorphic Encryption (FHE) is a cryptographic primitive that allows arbitrary computation to be performed directly on encrypted data, without decryption.
+
+On Octra, this enables:
+
+- Validators to process transactions without seeing balances or inputs
+- Smart contracts to execute logic over private state
+- Verifiable outputs with no data leakage
+- User data privacy enforced by cryptography, not trust
+
+This is not privacy through obfuscation or offchain assumptions — It is **privacy enforced at the execution layer**.
+
+## Hypergraph FHE (HFHE)
+
+Traditional FHE is prohibitively slow. Octra addresses this with **HFHE (Hypergraph Fully Homomorphic Encryption)**.
+
+HFHE differs fundamentally from lattice-based FHE approaches by:
+
+- Mapping encrypted data onto **hypergraph incidence structures**
+- Keeping encryption noise **localized**, not global
+- Enabling massive parallel execution and bootstrapping
+- Remaining CPU-friendly without specialized hardware
+
+### What This Unlocks
+
+- Parallel encrypted logic gate evaluation (AND / OR / XOR)
+- Sub-10ms encrypted bootstrapping
+- Practical encrypted throughput at Layer-1 scale
+
+0xio abstracts these mechanics so users and developers benefit from encrypted execution **without interacting with cryptography directly**.
+
+## Validator Work: Real Computation, Not Waste
+
+Octra does not rely on hash-based mining.
+
+Validators are rewarded for performing the **actual encrypted computation** required by the network:
+
+- Executing encrypted transactions
+- Running encrypted application logic
+- Maintaining encrypted state
+- Participating in validation and key management tasks
+
+There is no expendable work.
+
+<Note>
+**Execution itself is the work being secured.**
+</Note>
+
+## Circles: Encrypted Execution Environments
+
+Octra introduces **Circles**, isolated, on-chain execution environments that function like encrypted backend services.
+
+Within a Circle, developers can:
+
+- Deploy complex application logic
+- Run code written in **Rust, C++, or WASM**
+- Store and compute over encrypted state
+- Control access without exposing raw data
+
+Circles are best understood as:
+
+**Private, verifiable, on-chain compute containers**
+
+They scale independently, remain isolated, and inherit encrypted execution by default.
+
+## How 0xio Fits In
+
+0xio sits **above** Octra's execution layer.
+
+- Octra provides encrypted computation
+- 0xio provides usable interfaces, wallets, SDKs, and applications
+
+Users interact with 0xio. 0xio securely interfaces with Octra.

@@ -1,0 +1,275 @@
+---
+title: "Privacy Operations"
+description: "Encrypt and decrypt balances with FHE"
+icon: "shield"
+---
+
+The Privacy tab is your control center for Octra's Fully Homomorphic Encryption (FHE) capabilities, allowing you to move funds between public and private states.
+
+## Understanding Privacy Operations
+
+0xio gives you complete control over your financial visibility through three main operations:
+
+<CardGroup cols="3">
+  <Card title="Encrypt" icon="lock">
+    Move funds from Public → Private
+  </Card>
+  <Card title="Decrypt" icon="unlock">
+    Move funds from Private → Public
+  </Card>
+  <Card title="Claim" icon="hand-holding-heart">
+    Accept incoming private transfers
+  </Card>
+</CardGroup>
+
+## Encrypting Funds (Public → Private)
+
+"Shielding" makes your funds invisible to blockchain observers.
+
+### When to Encrypt
+
+- Before making confidential purchases
+- Protecting salary or business payments
+- Hiding holdings from public view
+- Preparing for private swaps on DEX
+- Enhancing overall financial privacy
+
+### How to Encrypt
+
+<Steps>
+  <Step title="Navigate to Privacy Tab">
+    Click "Encrypt/Decrypt" in main navigation
+  </Step>
+  <Step title="Select Encrypt">
+    Choose the "Encrypt" option
+  </Step>
+  <Step title="Enter Amount">
+    Input the amount to shield from your Public Balance
+  </Step>
+  <Step title="Review Fee">
+    Check the gas fee estimate (10,000 OU standard)
+  </Step>
+  <Step title="Confirm">
+    Click "Encrypt" and sign with your password
+  </Step>
+  <Step title="Wait for Confirmation">
+    Typically 5-8 seconds for blockchain confirmation
+  </Step>
+</Steps>
+
+### Technical Process
+
+When you encrypt funds:
+
+1. **Local Encryption:** Your device performs FHE encryption on the amount
+2. **Transaction Creation:** Encrypted payload is prepared
+3. **Signing:** You sign the transaction with your private key
+4. **Broadcast:** Encrypted transaction sent to network
+5. **Validation:** Validators process without seeing the amount
+6. **Confirmation:** Funds move to your Private Balance
+
+<Info>
+**Privacy Guarantee:** The encryption happens entirely on your device before any data touches the internet. Validators never see your plaintext amount.
+</Info>
+
+### Costs
+
+| Amount | Gas Fee | Processing Time |
+|--------|---------|----------------|
+| < 1,000 OCT | 10,000 OU | 5-8 seconds |
+| ≥ 1,000 OCT | 30,000 OU | 5-8 seconds |
+
+## Decrypting Funds (Private → Public)
+
+"Unshielding" makes your funds publicly visible again.
+
+### When to Decrypt
+
+- Sending to exchanges that don't support FHE
+- Interacting with public DeFi protocols
+- When faster transaction speed is needed
+- Reducing gas costs for routine operations
+
+### How to Decrypt
+
+<Steps>
+  <Step title="Navigate to Privacy Tab">
+    Go to Encrypt/Decrypt section
+  </Step>
+  <Step title="Select Decrypt">
+    Choose the "Decrypt" option
+  </Step>
+  <Step title="Enter Amount">
+    Specify amount to unshield from Private Balance
+  </Step>
+  <Step title="Review Fee">
+    Check gas fee estimate
+  </Step>
+  <Step title="Confirm">
+    Sign and broadcast the transaction
+  </Step>
+  <Step title="Confirmation">
+    Funds appear in Public Balance after confirmation
+  </Step>
+</Steps>
+
+<Warning>
+Once funds are decrypted to your public balance, their movement becomes visible on the blockchain. Consider your privacy needs carefully.
+</Warning>
+
+## Claiming Private Transfers
+
+When someone sends you a private (FHE-encrypted) transfer, you may need to claim it.
+
+### Finding Pending Transfers
+
+1. Navigate to **Privacy Tab**
+2. Look for "Pending Transfers" section
+3. Click **"Scan for Pending"** to query blockchain
+4. Pending transfers appear in a list
+
+### Claim Process
+
+<Steps>
+  <Step title="View Pending Transfer">
+    See details of incoming private transfer:
+    - Sender address
+    - Estimated amount (if disclosed)
+    - Timestamp
+  </Step>
+  <Step title="Click Claim">
+    Press "Claim" button next to the transfer
+  </Step>
+  <Step title="Review Gas Fee">
+    Small fee required for decryption and state update
+  </Step>
+  <Step title="Confirm Transaction">
+    Sign the claim transaction
+  </Step>
+  <Step title="Funds Added">
+    After confirmation, funds appear in your Private Balance
+  </Step>
+</Steps>
+
+### Claim Fees
+
+- **Typical:** 5,000-10,000 OU
+- **Paid By:** Recipient (you)
+- **Reason:** Computational cost of FHE decryption
+
+### Bulk Claiming
+
+If you have multiple pending transfers:
+
+1. Select all transfers to claim
+2. Click "Claim All"
+3. Single transaction processes all claims
+4. Save on gas fees
+
+## Privacy Best Practices
+
+### Maximize Privacy
+
+<AccordionGroup>
+  <Accordion title="Keep Most Funds in Private Balance">
+    Maintain majority of holdings in encrypted state. Only decrypt what you need for immediate use.
+  </Accordion>
+
+  <Accordion title="Use Separate Addresses">
+    Consider using different addresses for public and private activities to reduce correlation.
+  </Accordion>
+
+  <Accordion title="Encrypt Immediately After Receiving">
+    When receiving public transfers, encrypt them quickly to minimize exposure.
+  </Accordion>
+
+  <Accordion title="Batch Privacy Operations">
+    If making multiple encrypt/decrypt operations, batch them to save on fees.
+  </Accordion>
+</AccordionGroup>
+
+### Balance Management Strategy
+
+**Conservative Privacy Model:**
+```text
+Public Balance: 5-10% (for gas and immediate needs)
+Private Balance: 90-95% (long-term holdings)
+```
+
+**Balanced Model:**
+```text
+Public Balance: 30% (active trading, DeFi)
+Private Balance: 70% (savings, private transactions)
+```
+
+**Public-First Model:**
+```text
+Public Balance: 70% (frequent trading, lower fees)
+Private Balance: 30% (selective privacy)
+```
+
+## Advanced Features
+
+### Scheduled Privacy Operations
+
+Set up automatic encryption of incoming funds:
+
+1. Go to **Settings > Automation**
+2. Enable "Auto-Encrypt Incoming"
+3. Set threshold amount
+4. All incoming public transfers above threshold automatically encrypt
+
+### Privacy Presets (Upcoming Feature)
+
+Save common privacy operations:
+
+1. **Settings > Privacy Presets**
+2. Create preset (e.g., "Monthly Shield: 1000 OCT")
+3. One-click execution from dashboard
+
+## Monitoring Privacy Operations
+
+### Transaction History
+
+View all privacy operations:
+
+1. See all encrypt/decrypt operations
+2. Track gas costs over time
+3. Verify operation success
+
+### Privacy Dashboard (Upcoming Feature)
+
+Access detailed privacy metrics:
+
+- Total funds encrypted/decrypted
+- Privacy ratio over time
+- Average gas costs
+- Operation frequency
+
+<Note>
+**Coming Soon:** Privacy analytics dashboard to help you optimize your privacy strategy and gas costs.
+</Note>
+
+## Troubleshooting
+
+### "Insufficient Balance for Encryption"
+
+- Check you have enough **Public Balance** to cover both amount + gas
+- Minimum: Amount + 30,000 OU worth of OCT
+
+### "Claim Transaction Failed"
+
+- Ensure sufficient OCT for gas fees
+- Try refreshing pending transfers list
+- Transfer may have been auto-claimed
+
+### "Decrypt Taking Too Long"
+
+- Network congestion can delay operations
+- Check transaction status in History
+- Wait up to 30 seconds during peak times
+- Consider increasing gas fee (OU)
+
+<Tip>
+For urgent privacy operations during network congestion, use the custom gas fee option to set a higher OU amount for priority processing.
+</Tip>

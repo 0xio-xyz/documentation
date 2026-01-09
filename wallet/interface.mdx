@@ -1,0 +1,200 @@
+---
+title: "Wallet Interface"
+description: "Navigate the 0xio Wallet Extension dashboard and features"
+icon: "dashboard"
+---
+
+<Note>
+This guide covers the **0xio Wallet Browser Extension** interface for Chrome, Brave, Edge, and Opera. For mobile wallet documentation, see [Mobile Wallet](/products/mobile).
+</Note>
+
+The 0xio Wallet Extension provides an intuitive interface for managing your Octra assets and privacy features.
+
+## Main Dashboard
+
+When you open the wallet extension, you'll see your financial overview at a glance.
+
+### Balance Card
+
+The main balance card displays:
+
+- **Total Balance** - Your combined OCT holdings displayed prominently
+- **24-Hour Chart** - Interactive balance history graph showing changes over the past day
+- **Percentage Change** - Today's balance change indicator (positive/negative)
+- **Eye Toggle** - Click to show/hide your balance for privacy
+
+<Tip>
+Hover over the balance chart to see your balance at any point in the last 24 hours.
+</Tip>
+
+### Action Grid
+
+Four main action buttons provide quick access to core functions:
+
+<CardGroup cols="4">
+  <Card title="Send" icon="arrow-up-right">
+    Transfer OCT to other addresses
+  </Card>
+  <Card title="Receive" icon="arrow-down-left">
+    Display your wallet address and QR code
+  </Card>
+  <Card title="History" icon="clock">
+    View complete transaction log
+  </Card>
+  <Card title="Swap" icon="repeat">
+    Exchange tokens (Coming Soon)
+  </Card>
+</CardGroup>
+
+### Widget Row
+
+Below the action grid, you'll find quick-access widgets for additional features.
+
+### Token List
+
+Displays your token holdings with:
+- Token symbol and name
+- Current balance
+- Token value (when available)
+
+## Navigation
+
+### Header
+
+The header contains:
+
+- **Wallet Selector** - Switch between multiple wallets (on main screen)
+- **Settings** - Access wallet configuration
+- **Lock** - Quickly lock your wallet
+
+### Screen Navigation
+
+The extension uses a clean single-screen navigation pattern:
+
+| Screen | Path | Description |
+|--------|------|-------------|
+| Main Dashboard | `/` | Balance, actions, and tokens overview |
+| Send | `/send` | Transfer OCT to other addresses |
+| Receive | `/receive` | Your address and QR code |
+| History | `/history` | Transaction history and details |
+| Privacy | `/privacy` | Encrypt, Decrypt, and Claim operations |
+| Settings | `/settings` | Wallet configuration |
+| Wallet List | `/walletlist` | Manage multiple wallets |
+
+## Privacy Screen
+
+The Privacy screen is your control center for FHE operations with three modes:
+
+### Encrypt Mode
+Move funds from **Public → Private** balance:
+- Enter amount to encrypt
+- View current public and private balances
+- Execute encryption with one click
+
+### Decrypt Mode
+Move funds from **Private → Public** balance:
+- Enter amount to decrypt
+- Balance validation prevents over-decryption
+- Instant balance refresh after operation
+
+### Claim Mode
+Receive incoming private transfers:
+- Automatic scanning for pending transfers
+- Shows claimable amount
+- One-click claim to your private balance
+
+<Info>
+The Privacy screen shows real-time balance information for both Public (OCT) and Private (FHE) balances with a refresh button to update.
+</Info>
+
+## Settings
+
+Access settings from the gear icon to configure:
+
+### Security & Backup
+- View recovery phrase
+- Export private key
+- Change password
+
+### Preferences
+- Theme settings (Light/Dark)
+- Currency display
+- Language options
+
+### Address Book
+- Save frequently used addresses
+- Add labels for easy identification
+- Quick access when sending
+
+### Connected dApps
+- View authorized connections
+- Revoke dApp permissions
+- Manage site access
+
+## Transaction History
+
+The History screen displays all wallet activity:
+
+### Transaction Types
+- **Sent** - Outgoing transfers (arrow up icon)
+- **Received** - Incoming transfers (arrow down icon)
+- **Encrypt** - Public to Private operations
+- **Decrypt** - Private to Public operations
+
+### Transaction Details
+
+Each transaction shows:
+- Transaction type and icon
+- Amount transferred
+- Counterparty address (truncated)
+- Timestamp
+- Status (confirmed/pending)
+
+Click any transaction to view:
+- Full transaction hash
+- Block number
+- Complete addresses
+- Network fee paid
+- Link to block explorer
+
+## Lock Screen
+
+When your wallet is locked:
+
+1. Enter your password
+2. Click "Unlock" or press Enter
+3. Access your wallet
+
+The wallet auto-locks after a period of inactivity (configurable in settings).
+
+## Watch-Only Mode
+
+For watch-only wallets (imported via address only):
+
+- View balances and transaction history
+- Receive funds normally
+- **Cannot** send transactions
+- **Cannot** perform privacy operations (Encrypt/Decrypt/Claim)
+
+A visual indicator shows when viewing a watch-only wallet.
+
+<Warning>
+Watch-only wallets require the full wallet (with private key) to sign transactions. They are useful for monitoring addresses you don't control directly.
+</Warning>
+
+## Quick Actions
+
+### Copy Address
+- Click your address in the header or Receive screen
+- Visual confirmation appears
+- Address copied to clipboard
+
+### Refresh Balance
+- Click the refresh icon on the Balance Card
+- Or pull down on the main screen
+- Updates both public and private balances
+
+### Quick Lock
+- Click the lock icon in the header
+- Or close the extension popup
+- Wallet locks based on your timeout settings

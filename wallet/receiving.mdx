@@ -1,0 +1,229 @@
+---
+title: "Receiving Funds"
+description: "How to receive OCT and tokens in your 0xio wallet"
+icon: "qrcode"
+---
+
+Receiving funds in 0xio is simple. Your wallet address can receive both public and private transfers.
+
+## Your Wallet Address
+
+### Address Format
+
+- **Format:** `oct...` (47 characters)
+- **Example:** `octabc123def456ghi789jkl012mno345pqr678satu901`
+- **Universal:** This single address receives both public and private transfers
+- **Deterministic:** Generated from your public key using Ed25519 + SHA-256 + Base58
+
+### Finding Your Address
+
+<Steps>
+  <Step title="Open Receive Tab">
+    Click "Receive" in the main navigation
+  </Step>
+  <Step title="View Address">
+    Your wallet address is displayed prominently
+  </Step>
+  <Step title="Copy or Share">
+    - Click address to copy to clipboard
+    - Show QR code for in-person transfers
+    - Share via messaging apps
+  </Step>
+</Steps>
+
+## Sharing Your Address
+
+### Copy to Clipboard
+
+1. Click on your address
+2. Visual confirmation appears
+3. Paste anywhere to share
+
+### QR Code
+
+Perfect for in-person payments:
+
+1. Tap the QR code icon
+2. Other person scans with their wallet
+3. Amount and address auto-fill
+4. **Optional:** Save QR code image
+
+<Tip>
+You can generate a QR code with a pre-filled amount by specifying it in the Receive tab. This is perfect for invoicing!
+</Tip>
+
+### Generate Payment Request
+
+Create a payment link with amount:
+
+1. Enter requested amount
+2. Click "Generate Payment Link"
+3. Share the link via:
+   - Email
+   - Messaging apps
+   - Social media
+   - SMS
+
+## Receiving Public Transfers
+
+When someone sends you a public transfer:
+
+<Steps>
+  <Step title="Transaction Broadcast">
+    Sender broadcasts transaction to network
+  </Step>
+  <Step title="Validation">
+    Validators confirm the transaction (3-5 seconds)
+  </Step>
+  <Step title="Automatic Credit">
+    Funds appear in your **Public Balance** immediately
+  </Step>
+  <Step title="Notification">
+    You receive an in-wallet notification
+  </Step>
+</Steps>
+
+### No Action Required
+
+Public transfers are automatic. Just share your address and wait for confirmation!
+
+## Receiving Private Transfers
+
+Private (FHE-encrypted) transfers may require an additional claim step.
+
+### Why Claiming Exists
+
+This design:
+- Gives recipients control over when gas fees are paid
+- Prevents spam to inactive wallets
+- Allows recipients to validate transfers before claiming
+
+### Claiming Process
+
+<Steps>
+  <Step title="Notification">
+    You see a "Pending Transfer" notification in your wallet
+  </Step>
+  <Step title="Navigate to Privacy Tab">
+    Go to Encrypt/Decrypt section
+  </Step>
+  <Step title="View Pending Transfers">
+    See list of unclaimed private transfers
+  </Step>
+  <Step title="Click Claim">
+    Click "Claim" next to the pending transfer
+  </Step>
+  <Step title="Confirm">
+    Confirm the transaction (small gas fee applies)
+  </Step>
+  <Step title="Credited">
+    Funds move to your **Private Balance** after confirmation
+  </Step>
+</Steps>
+
+### Claim Gas Fees
+
+- **Typical Cost:** 5,000-10,000 OU
+- **Paid By:** Recipient (you)
+- **Why:** Decryption and state update require computation
+
+<Info>
+Some private transfers are automatically claimed if the sender pays for the full gas cost. Check your notification details.
+</Info>
+
+## Monitoring Incoming Funds
+
+### Transaction History
+
+View all received funds in the **History** tab:
+
+1. Filter by "Received"
+2. See sender addresses
+3. View amounts and timestamps
+4. Check confirmation status
+
+### External Monitoring
+
+Use the **0xio Telegram Bot** for real-time alerts:
+
+- Instant notifications to Telegram
+- Monitor multiple wallets
+- Privacy mode available
+- [Learn more about the bot](/products/telegram-bot)
+
+## Address Book
+
+Save addresses that frequently send you funds:
+
+1. Go to **Settings > Address Book**
+2. Click "Add Contact"
+3. Enter name and address
+4. Add notes (optional)
+
+**Benefits:**
+- Quickly identify senders
+- Verify legitimate addresses
+- Avoid phishing attempts
+
+## Best Practices
+
+### Security
+
+<Warning>
+**Never share your private key or recovery phrase!**
+
+Only share your public wallet address (`oct...`). Anyone asking for your private key or recovery phrase is trying to steal your funds.
+</Warning>
+
+### Address Verification
+
+When receiving large amounts:
+
+1. **Verify address through multiple channels**
+2. **Send a small test amount first**
+3. **Confirm receipt before large transfer**
+4. **Double-check address character-by-character**
+
+### Privacy Considerations
+
+**For Public Transfers:**
+- Sender can see your current balance
+- Transaction amount is visible to everyone
+- Consider using a dedicated public address
+
+**For Private Transfers:**
+- Sender only knows your address
+- Amount is encrypted
+- Your balance remains confidential
+
+<Tip>
+**Pro Tip:** For recurring private payments (like salary), create a dedicated address to organize your finances while maintaining privacy.
+</Tip>
+
+## Troubleshooting
+
+### "I sent funds but don't see them"
+
+1. **Check transaction status** on block explorer
+2. **Wait for confirmations** (up to 30 seconds during congestion)
+3. **Verify correct address** was used
+4. **Check if it's a private transfer** requiring claim
+5. **Refresh your balance** manually
+
+### "Private transfer isn't showing"
+
+1. Go to **Privacy Tab**
+2. Click **"Scan for Pending"**
+3. Wait for wallet to query blockchain
+4. Claim any found transfers
+
+### "Address rejected as invalid"
+
+- Ensure address starts with `oct`
+- Verify exactly 47 characters
+- Check for typos or extra spaces
+- Try copying directly from sender
+
+<Note>
+If issues persist, check the [Troubleshooting Guide](/support/troubleshooting) or visit our community support channels.
+</Note>

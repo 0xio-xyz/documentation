@@ -1,0 +1,112 @@
+---
+title: 'Browser Extension'
+description: 'Complete guide to the 0xio Wallet Extension'
+icon: 'chrome'
+---
+
+The **0xio Browser Extension** is your primary gateway to the Octra Network. It allows you to manage assets, interact with dApps, and perform private FHE operations directly from your browser.
+
+## Getting Started
+
+### Installation & Setup
+Once installed, you have three ways to set up your vault:
+
+<CardGroup cols="3">
+  <Card title="Create New" icon="plus">
+    Generates a fresh 12-word seed phrase and a new Octra address (`oct...`).
+  </Card>
+  <Card title="Import Wallet" icon="file-import">
+    Restore an existing wallet using a **Private Key** or **Seed Phrase**.
+  </Card>
+  <Card title="Watch Mode" icon="eye">
+    Track any public address without needing a private key (View Only).
+  </Card>
+</CardGroup>
+
+<Note>
+  **Security Tip:** During setup, you can set a **Master Password**. This encrypts your keys on your device. If you skip this, your wallet relies solely on device-level security.
+</Note>
+
+---
+
+## Dashboard Overview
+
+The main screen gives you a snapshot of your financial privacy.
+
+* **Public Balance:** Your visible `OCT` balance, usable for standard transactions and gas fees.
+* **Private Balance:** Your FHE-encrypted balance. These funds are visible only to you and are used for shielded transfers.
+* **Widgets:** Quick access to price feeds and network status.
+
+---
+
+## Sending Assets
+
+Navigate to the **Send** tab to transfer funds. 0xio supports two distinct transfer modes:
+
+### 1. Standard vs. Private (FHE)
+You can toggle between modes using the slider at the top of the Send screen.
+
+| Mode | Icon | Description |
+| :--- | :--- | :--- |
+| **Standard** | <Icon icon="unlock" /> | A transparent blockchain transaction. Sender, receiver, and amount are public. |
+| **Private (FHE)** | <Icon icon="shield" /> | Uses Fully Homomorphic Encryption. The amount is encrypted locally before sending. |
+
+### 2. Bulk Sending
+Need to pay multiple people? Switch to **Bulk Mode**.
+* **Capacity:** Add up to **5 recipients** in a single transaction batch.
+* **Efficiency:** Signs all transactions in one go to save time.
+
+### 3. Network Fees (OU)
+For advanced users, you can customize the **Operational Unit (OU)** fee to prioritize transactions during network congestion.
+* **Default:** 10,000 OU (Standard) / 30,000 OU (High Value).
+* **Custom:** Click "Est. Network Fee" at the bottom to set a custom value.
+
+---
+
+## Privacy Operations
+
+The **Privacy** tab is the control center for Octra's FHE capabilities. It handles moving funds between your public and private states.
+
+<Steps>
+  <Step title="Encrypt (Public → Private)">
+    Moves `OCT` from your Public Balance to your Private Balance.
+    * *Use case:* Prepare funds for a private transfer.
+  </Step>
+  <Step title="Decrypt (Private → Public)">
+    Moves funds back to your Public Balance.
+    * *Use case:* Cashing out or sending to an exchange that doesn't support FHE.
+  </Step>
+  <Step title="Claim Transfers">
+    If someone sends you a **Private Transfer**, it doesn't appear in your balance immediately. You must **Scan & Claim** it here to decrypt the incoming funds and add them to your wallet.
+  </Step>
+</Steps>
+
+---
+
+## Swapping Assets
+
+The built-in **Swap** interface allows you to trade tokens (e.g., OCT to USDT) without leaving the wallet.
+
+* **Slippage Control:** Adjustable tolerance (0.1%, 0.5%, 1.0%) to protect against price changes.
+* **Auto-Routing:** Automatically finds the best pool for your trade.
+
+---
+
+## Utilities: Secure Messaging
+
+0xio includes a unique utility for encrypted communication, found in the **Settings** or Tools menu.
+
+* **Encrypt Message:** secure a text message using a recipient's **Public Key**. Only they can read it.
+* **Decrypt Message:** Paste an encrypted JSON payload to reveal the hidden text using your private key.
+
+<Note>
+This uses **Curve25519** encryption (Nacl Box), separate from the blockchain state. It is perfect for sharing secrets or sensitive data off-chain.
+</Note>
+
+---
+
+## Settings & Management
+
+* **Address Book:** Save frequently used addresses. You can verify them locally to avoid phishing.
+* **Connected DApps:** View and revoke permissions for websites you have connected to.
+* **Lock Wallet:** Immediately locks the extension, requiring your password to re-enter.

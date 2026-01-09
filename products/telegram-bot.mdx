@@ -1,0 +1,122 @@
+---
+title: '0xio Watcher'
+description: 'Telegram bot user guide for monitoring Octra addresses'
+icon: 'bell'
+---
+
+# 0xio Watcher User Guide
+
+Welcome to the official documentation for **0xio Watcher**, a Telegram bot designed to monitor your **Octra Network** addresses in real-time. Receive instant notifications for incoming and outgoing transactions, track your balances, and manage multiple wallets directly from Telegram.
+
+## Getting Started
+
+To start using the bot, open [@NullXio_bot](https://t.me/NullXio_bot) in Telegram and tap the **Start** button or send the command:
+
+```bash
+/start
+```
+
+You will be greeted by the main menu, which gives you quick access to your wallets, settings, and tools to add new addresses.
+
+---
+
+## Key Features
+
+* **Real-Time Monitoring**: Get notified instantly when you send or receive OCT coins.
+* **Multiple Wallets**: Track up to **5 different Octra addresses** simultaneously.
+* **Privacy Control**: Toggle balance visibility in notifications to keep your holdings private.
+* **Detailed Insights**: View transaction hashes, counterparty addresses, and direct links to the Octra Explorer.
+* **Address Validation**: Built-in checks ensure you only track valid Octra addresses.
+
+---
+
+## Command Reference
+
+Manage the bot efficiently using these commands:
+
+| Command     | Description                                              |
+| ----------- | -------------------------------------------------------- |
+| `/start`    | Open the main menu and initialize the bot.               |
+| `/wallets`  | View your tracked wallets, balances, and manage them.    |
+| `/add`      | Quickly add a new Octra address to your watchlist.       |
+| `/settings` | Configure notification preferences (e.g., Hide Balance). |
+| `/help`     | Display the help message and available commands.         |
+
+---
+
+## Managing Wallets
+
+### Adding a Wallet
+
+1. Click **Add Wallet** in the main menu or send `/add`.
+2. Paste your **Octra Network address**.
+
+> **Note:** Addresses must start with `oct` and be 47 characters long.
+
+3. Enter a **custom name** for the wallet (e.g., "Main", "Savings").
+4. The bot will sync your balance and begin watching for new transactions immediately.
+
+### Viewing & Editing
+
+Access your wallet list by sending `/wallets`. Click on any wallet to:
+
+* **Rename**: Change the display label.
+* **Delete**: Stop tracking the address.
+* **Explorer**: View the address on the official Octrascan explorer.
+
+### Wallet Limits
+
+Each user can watch a maximum of **5 wallets**. If you reach this limit, you must delete an existing wallet before adding a new one.
+
+---
+
+## Settings & Privacy
+
+You can customize how notifications appear in your chat.
+
+### Notification Balance
+
+By default, the bot displays your updated wallet balance in every transaction notification.
+
+* **Visible**: Shows `Balance: 150.0 OCT` in the alert.
+* **Hidden**: Removes the balance line for privacy (useful if you share screenshots or use the bot in public).
+
+**To toggle this setting:**
+
+1. Send `/settings`.
+2. Click the **Hide Balance** or **Show Balance** button.
+
+---
+
+## Notification Types
+
+When a transaction occurs on the Octra Network, you will receive a notification similar to this:
+
+**Received Transaction**
+
+> **RECEIVED** 100.0 OCT
+> From: [oct...abcd](https://octrascan.io/addresses/oct...abcd)
+> Wallet: [Main](https://octrascan.io/addresses/your-wallet-address)
+> Balance: 1250.0 OCT
+
+**Sent Transaction**
+
+> **SENT** 50.0 OCT
+> To: [oct...xyz1](https://octrascan.io/addresses/oct...xyz1)
+> Wallet: [Main](https://octrascan.io/addresses/your-wallet-address)
+> Balance: 1200.0 OCT
+
+*Clicking the links in the notification will take you directly to the transaction details on the blockchain explorer.*
+
+---
+
+## FAQ
+
+**Q: Why does the bot say "Invalid Address"?**
+A: Ensure your address starts with `oct` and contains exactly 47 alphanumeric characters.
+
+**Q: Can I track the same address on multiple accounts?**
+A: Yes, the bot tracks public blockchain data, so an address can be monitored by multiple users.
+
+**Q: How fast are notifications?**
+A: The bot polls the Octra Network approximately every 30 seconds to check for new activity.

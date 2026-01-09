@@ -1,0 +1,226 @@
+---
+title: "Sending Transactions"
+description: "Learn how to send public and private transfers"
+icon: "paper-plane"
+---
+
+0xio supports multiple ways to send OCT and tokens, with options for both public and private transactions.
+
+## Standard Public Send
+
+Send a transparent transaction visible on the blockchain.
+
+<Steps>
+  <Step title="Open Send Tab">
+    Click "Send" in the main navigation
+  </Step>
+  <Step title="Enter Recipient">
+    Enter the recipient's Octra address (starts with `oct1...`)
+
+    - Must be 47 characters
+    - Validates automatically
+    - Can paste or scan QR code
+  </Step>
+  <Step title="Enter Amount">
+    Specify the amount to send
+
+    - Enter in OCT units
+    - Shows USD equivalent (if available)
+    - Displays available balance
+  </Step>
+  <Step title="Select Source">
+    Choose **"Public Balance"** as the source
+  </Step>
+  <Step title="Review Transaction">
+    Review the transaction details:
+
+    - Recipient address
+    - Amount to send
+    - Network fee (10,000 OU or 30,000 OU if ≥1,000 OCT)
+    - Total including fees
+  </Step>
+  <Step title="Confirm and Sign">
+    Click "Send" and enter your password to sign
+  </Step>
+</Steps>
+
+### Transaction Details
+
+- **Speed:** 3-5 seconds
+- **Privacy:** Transaction is visible on blockchain
+- **Gas Cost:** 10,000 OU (standard)
+- **Gas Cost (High Value):** 30,000 OU (amounts ≥1,000 OCT)
+
+<Info>
+High value transactions (≥1,000 OCT) automatically use 30,000 OU for enhanced security and priority processing.
+</Info>
+
+## Private Send
+
+Send an FHE-encrypted transaction where the amount remains confidential.
+
+<Steps>
+  <Step title="Open Send Tab">
+    Navigate to Send in the main menu
+  </Step>
+  <Step title="Enter Recipient">
+    Input the recipient's Octra address
+  </Step>
+  <Step title="Enter Amount">
+    Specify the amount to send
+  </Step>
+  <Step title="Select Private Balance">
+    Choose **"Private Balance"** as the source
+  </Step>
+  <Step title="Review Encrypted Details">
+    Review transaction information:
+
+    - Recipient (visible)
+    - Amount (will be encrypted)
+    - Network fee (higher for FHE operations)
+  </Step>
+  <Step title="Confirm">
+    Confirm and sign the transaction
+  </Step>
+</Steps>
+
+### How Private Transfers Work
+
+1. **Local Encryption:** Your device encrypts the transaction amount using FHE
+2. **Broadcast:** Encrypted payload is sent to the blockchain
+3. **Validation:** Smart contracts perform validation on encrypted data
+4. **Execution:** Transaction executes without revealing amount to validators
+5. **Notification:** Recipient receives notification to claim funds
+
+### Transaction Details
+
+- **Speed:** 5-8 seconds
+- **Privacy:** Amount encrypted, only addresses visible
+- **Gas Cost:** Higher (varies, up to 30,000 OU for large amounts)
+
+<Warning>
+Private transfers may require the recipient to "claim" the transfer. They'll see a pending transfer notification in their wallet.
+</Warning>
+
+## Bulk Send
+
+Send to multiple recipients in a single transaction batch.
+
+<Steps>
+  <Step title="Select Bulk Mode">
+    Click "Bulk Send" tab
+  </Step>
+  <Step title="Add Recipients">
+    Add up to 50 addresses with individual amounts
+
+    - Click "+ Add Recipient"
+    - Enter address and amount for each
+    - Remove entries with the trash icon
+  </Step>
+  <Step title="Choose Balance Type">
+    Select Public or Private balance source
+  </Step>
+  <Step title="Review Total">
+    Review:
+
+    - Total amount across all recipients
+    - Per-recipient breakdown
+    - Network fees (batch processing discount)
+  </Step>
+  <Step title="Confirm Batch">
+    Sign the batch transaction
+  </Step>
+</Steps>
+
+### Benefits of Bulk Send
+
+- **Cost Efficient:** Significantly reduced gas fees per transfer
+- **Time Saving:** One signature for multiple transfers
+- **Ideal For:**
+  - Payroll and salary payments
+  - Airdrops and token distributions
+  - Multi-party settlements
+  - Team payments
+
+<Tip>
+Bulk transfers can save up to 70% on gas fees compared to sending individual transactions.
+</Tip>
+
+## Transaction Priority
+
+### Custom Network Fees
+
+For advanced users, customize the **Operational Unit (OU)** fee to control transaction priority:
+
+1. Click "Est. Network Fee" at the bottom of Send screen
+2. Choose priority level:
+   - **Standard:** 10,000 OU (default)
+   - **High:** 30,000 OU (faster during congestion)
+   - **Custom:** Set your own OU amount
+3. Higher OU = faster inclusion in blocks
+
+<Info>
+During network congestion, higher OU values ensure your transaction is processed quickly.
+</Info>
+
+## Transaction States
+
+### Pending
+
+- Transaction submitted to network
+- Awaiting validator confirmation
+- Typically 3-10 seconds
+
+### Confirmed
+
+- Transaction included in block
+- Funds transferred successfully
+- Transaction hash available for explorer
+
+### Failed
+
+- Transaction rejected or reverted
+- Funds safely returned to your wallet
+- **Common causes:**
+  - Insufficient balance for gas
+  - Network connectivity issue
+  - Invalid recipient address
+
+## Adding a Memo
+
+Include a message with your transaction:
+
+1. Expand "Advanced Options"
+2. Enter memo text (up to 256 characters)
+3. **Note:** Memo is visible on blockchain for public sends
+4. For private sends, memo is also encrypted
+
+**Use Cases:**
+- Payment references
+- Invoice numbers
+- Personal notes
+
+<Warning>
+Memos are permanent and cannot be edited after the transaction is confirmed.
+</Warning>
+
+## Best Practices
+
+### Security
+
+- Always double-check recipient addresses
+- Send a small test transaction first for large amounts
+- Verify addresses through multiple channels
+- Be cautious of phishing attempts
+
+### Privacy
+
+- Use **Private Balance** for sensitive transactions
+- Encrypt funds before private transfers
+- Monitor pending claims for incoming private transfers
+
+### Efficiency
+
+- Use **Bulk Send** for multiple recipients
+- Consider standard priority unless urgent
+- Group similar transactions to save on fees

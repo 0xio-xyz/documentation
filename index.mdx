@@ -1,97 +1,180 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Welcome to 0xio"
+description: "Privacy-first wallet ecosystem for the Octra Network"
 ---
 
-## Setting up
+## What is 0xio?
 
-Get your documentation site up and running in minutes.
+**0xio** is the premier non-custodial wallet ecosystem for the **Octra Network**, designed to make encrypted blockchain computation usable, safe, and intuitive.
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
+While Octra provides the underlying Layer-1 blockchain and cryptographic infrastructure, 0xio delivers the wallets, SDKs, and applications that allow users and developers to interact with Octra's fully encrypted execution model.
 
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
+<CardGroup cols="2">
   <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
+    title="Install Wallet"
+    icon="download"
+    href="/wallet/installation"
   >
-    Edit your docs locally and preview them in real time.
+    Get started with the 0xio Browser Extension
   </Card>
   <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
+    title="Learn About Privacy"
+    icon="shield"
+    href="/concepts/balances"
   >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+    Understand public vs private balances and FHE
   </Card>
   <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
-  </Card>
-</Columns>
-
-## Create beautiful pages
-
-Everything you need to create world-class documentation.
-
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
+    title="For Developers"
     icon="code"
-    href="/essentials/code"
+    href="/developers/sdk-guide"
   >
-    Add sample code to demonstrate how to use your product.
+    Integrate 0xio into your dApp with our SDK
   </Card>
   <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
+    title="Explore Products"
+    icon="grid"
+    href="/products/extensions"
   >
-    Display images and other media.
+    Discover the full 0xio ecosystem
   </Card>
+</CardGroup>
+
+## Core Features
+
+<AccordionGroup>
+  <Accordion title="Privacy by Default" icon="lock">
+    0xio integrates Octra's **Hypergraph Fully Homomorphic Encryption (HFHE)** so balances, transfers, and application logic can remain encrypted throughout their lifecycle. Validators process encrypted payloads without learning their contents.
+  </Accordion>
+
+  <Accordion title="Non-Custodial Security" icon="key">
+    All keys are generated and stored locally. 0xio cannot freeze, access, or recover user funds. You maintain complete sovereignty over your assets with industry-standard cryptography (Ed25519, AES-256-GCM, BIP39).
+  </Accordion>
+
+  <Accordion title="Client-Side Encryption" icon="microchip">
+    Sensitive data is encrypted **before** it is broadcast to the network. All FHE operations happen on your device, ensuring zero trust in intermediaries.
+  </Accordion>
+
+  <Accordion title="Dual Balance System" icon="scale-balanced">
+    Maintain both Public and Private balances. Choose transparency for lower costs or privacy for confidential transactions. Move between them seamlessly with simple encrypt/decrypt operations.
+  </Accordion>
+</AccordionGroup>
+
+## The 0xio Ecosystem
+
+<CardGroup cols="2">
   <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
+    title="Browser Extension"
+    icon="chrome"
+    href="/products/extensions"
   >
-    Write once and reuse across your docs.
+    **Production Ready**
+
+    Non-custodial wallet for Chrome, Brave, Edge, and Opera. Version 2.1.9
   </Card>
-</Columns>
 
-## Need inspiration?
+  <Card
+    title="Mobile Wallet"
+    icon="mobile"
+    href="/products/mobile"
+  >
+    **Beta Available**
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+    Privacy on the go with biometric security and mobile-optimized features
+  </Card>
+
+  <Card
+    title="Developer SDK"
+    icon="code"
+    href="/developers/sdk-guide"
+  >
+    **Production Ready**
+
+    TypeScript SDK for integrating dApps with 0xio and Octra's FHE capabilities
+  </Card>
+
+  <Card
+    title="0xio DEX"
+    icon="arrow-right-arrow-left"
+    href="/products/dex"
+  >
+    **In Development**
+
+    Privacy-preserving decentralized exchange for trading encrypted assets
+  </Card>
+
+  <Card
+    title="Telegram Bot"
+    icon="paper-plane"
+    href="/products/telegram-bot"
+  >
+    **Production Ready**
+
+    Real-time wallet monitoring and notifications via Telegram
+  </Card>
+</CardGroup>
+
+## Why Privacy Matters
+
+On most blockchains:
+- Balances are public
+- Transactions are globally visible
+- Activity can be trivially tracked
+- Financial privacy doesn't exist
+
+With 0xio on Octra:
+- Private balances by default
+- Encrypted transactions without revealing amounts
+- Applications that operate on private state
+- Privacy enforced by cryptography, not trust
+
+## Quick Start Paths
+
+<CardGroup cols="3">
+  <Card title="New User" icon="user">
+    1. [Install Extension](/wallet/installation)
+    2. [Create Wallet](/wallet/installation)
+    3. [Fund Your Account](/wallet/receiving)
+    4. [Make First Transfer](/wallet/sending)
+  </Card>
+
+  <Card title="Privacy Explorer" icon="eye-slash">
+    1. [Understand Balances](/concepts/balances)
+    2. [Learn FHE](/introduction/octra-network)
+    3. [Encrypt Funds](/wallet/privacy-operations)
+    4. [Private Trading](/products/dex)
+  </Card>
+
+  <Card title="Developer" icon="terminal">
+    1. [Install SDK](/developers/sdk-guide)
+    2. [Connect Wallet](/developers/sdk-guide)
+    3. [Integrate Transactions](/developers/sdk-guide)
+    4. [Add FHE Features](/developers/sdk-guide)
+  </Card>
+</CardGroup>
+
+## Community & Support
+
+<CardGroup cols="2">
+  <Card
+    title="X (Twitter)"
+    icon="x-twitter"
+    href="https://x.com/0xio_xyz"
+  >
+    Follow for updates and announcements
+  </Card>
+
+  <Card
+    title="Octra Labs"
+    icon="globe"
+    href="https://octra.org/"
+  >
+    Learn about the underlying blockchain
+  </Card>
+</CardGroup>
+
+---
+
+<Note>
+**Independent Project:** 0xio is an independent, community-built project. It is not operated by, nor formally affiliated with, Octra Labs.
+</Note>

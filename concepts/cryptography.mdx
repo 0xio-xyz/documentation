@@ -1,0 +1,102 @@
+---
+title: "Cryptographic Specifications"
+description: "Technical details of 0xio's security implementation"
+icon: "key"
+---
+
+0xio implements industry-standard cryptographic algorithms to ensure the highest level of security for your assets.
+
+## Signing Algorithm
+
+**Ed25519** (Twisted Edwards Curve)
+
+- High-speed signature generation and verification
+- 256-bit security level
+- Implemented via TweetNaCl.js for browser compatibility
+- Resistant to side-channel attacks
+
+## Hashing
+
+- **SHA-256:** Primary hashing algorithm for address generation
+- **HMAC-SHA512:** Used in key derivation processes
+
+## Symmetric Encryption
+
+**AES-GCM (256-bit)** for local vault protection
+
+- Authenticated encryption mode
+- Protects your encrypted keys on device
+- Ensures data integrity and confidentiality
+
+## Key Derivation (HD Wallets)
+
+### Mnemonic Standard
+
+**BIP39** - 12 or 24-word recovery phrases
+
+- Standard: 12-word phrases (128-bit entropy)
+- Extended: 24-word phrases (256-bit entropy)
+- Dictionary: 2048 words from official BIP39 wordlist
+
+### Seed Generation
+
+**PBKDF2-HMAC-SHA512** with 2048 iterations
+
+- Password-based key derivation function
+- Converts mnemonic to cryptographic seed
+- Salt: Configurable passphrase (optional)
+
+### Derivation Path
+
+```
+m/345'/0'/0'/0'/0'/0'/0'/0'
+```
+
+- **Purpose (345'):** Octra Network specific hardened path
+- All levels use hardened derivation for maximum security
+- Prevents key leakage from public key exposure
+
+## Address Format
+
+0xio generates Octra addresses through a multi-step process:
+
+<Steps>
+  <Step title="Generate Ed25519 Public Key">
+    Derive public key from private key using Ed25519
+  </Step>
+  <Step title="Hash Public Key">
+    Compute SHA-256 hash of the public key
+  </Step>
+  <Step title="Base58 Encoding">
+    Encode the hash using Base58 (Bitcoin-style)
+  </Step>
+  <Step title="Add Prefix">
+    Prefix with `oct` for Octra Network identification
+  </Step>
+</Steps>
+
+**Result:** A 47-character string (e.g., `oct1abc123def456ghi789jkl012mno345pqr678stu901`)
+
+## Security Architecture
+
+| Component | Implementation |
+|-----------|----------------|
+| **Private Key Storage** | AES-256-GCM encrypted in browser local storage |
+| **Session Management** | Auto-lock with configurable timeout |
+| **Password Protection** | PBKDF2 with user-defined password |
+| **Telemetry** | **Zero** - No tracking or analytics |
+| **Network Communication** | HTTPS only, certificate pinning recommended |
+
+<Warning>
+**Privacy First:** 0xio implements zero telemetry. We never collect IP addresses, wallet addresses, or usage data.
+</Warning>
+
+## FHE Integration
+
+While Octra handles the heavy lifting of Fully Homomorphic Encryption, 0xio:
+
+1. **Encrypts locally:** Your device encrypts transaction data before broadcast
+2. **Signs encrypted payloads:** Maintains authenticity without revealing content
+3. **Decrypts locally:** Only your device can decrypt your private balance state
+
+This ensures end-to-end privacy without trusting intermediaries.

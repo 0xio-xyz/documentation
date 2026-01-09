@@ -1,0 +1,43 @@
+---
+title: "Under the Hood"
+description: "Understanding Octra, HFHE, and 0xio Security"
+icon: "microchip"
+---
+
+To fully utilize 0xio, it helps to understand the unique architecture of the network it powers: **Octra**.
+
+## What is Octra?
+
+**Octra** is a Layer-1 blockchain network distinguished by its use of **Hypergraph Fully Homomorphic Encryption (HFHE)**. Unlike traditional blockchains where transparency is mandatory, Octra enables privacy while maintaining decentralized verification.
+
+### Key Concepts
+
+* **Fully Homomorphic Encryption (FHE):** Traditional encryption requires you to decrypt data to process it (exposing it to potential leaks). FHE allows the network to perform calculations on *encrypted* data without ever decrypting it. The result remains encrypted, and only you—the key holder—can decrypt the final state.
+* **Compute-Coupled Validation:** Instead of solving arbitrary hash puzzles (like Bitcoin's Proof-of-Work), Octra validators utilize their computing power to process actual FHE tasks. They are rewarded for executing useful encrypted computations that advance the network state.
+* **Isolated Execution Environments (Circles):** Octra allows developers to run "Circles"—independent execution environments that function similarly to private servers on the blockchain, isolating state for performance and privacy.
+
+## How 0xio Fits In
+
+0xio acts as the **Client-Side Encryption & Signing Layer** for Octra.
+
+Because Octra relies on FHE, data must be encrypted *before* it leaves your device. If raw data were sent to the network, privacy would be compromised.
+
+1.  **Local Encryption & Signing:** When you initiate a transaction, 0xio encrypts the payload locally using your specific encryption keys and Octra's public parameters. It then **signs** the transaction with your private key to prove authority without revealing the data.
+2.  **Broadcasting:** The encrypted blob (ciphertext) is signed and sent to the Octra network.
+3.  **Encrypted Execution:** Octra validators process the state change (e.g., updating a balance) on the encrypted data. They verify the transaction's validity mathematically without ever seeing the plaintext amounts.
+4.  **Decryption:** You use your 0xio wallet to view your new balance. The wallet decrypts the on-chain state locally to reveal the numbers to you.
+
+## 0xio Security Specs
+
+0xio is designed with strict client-side security standards to ensure non-custodial safety.
+
+| Feature | Specification |
+| :--- | :--- |
+| **Signing Algorithm** | **Ed25519** (Twisted Edwards Curve) for high-speed, secure transaction signatures. |
+| **Vault Encryption** | **AES-GCM (256-bit)**. Your keys are encrypted at rest on your device. |
+| **Key Derivation** | **PBKDF2** with high iteration counts to prevent brute-force attacks on your password. |
+| **Telemetry** | **Zero**. No tracking scripts, analytics, or IP logging are integrated into the wallet. |
+
+<Note>
+  **Independent & Community Driven**: 0xio is an independent project built by community developers. It is not owned by the Octra Foundation, ensuring a decentralized separation of powers between the network and the toolset.
+</Note>

@@ -1,0 +1,270 @@
+---
+title: "Security Features"
+description: "Protect your wallet with advanced security settings"
+icon: "lock"
+---
+
+0xio provides multiple layers of security to protect your funds and privacy.
+
+## Auto-Lock
+
+Automatically lock your wallet after periods of inactivity.
+
+### Configuration
+
+1. Navigate to **Settings > Security > Auto-Lock**
+2. Select timeout period:
+   - 5 minutes
+   - 15 minutes (recommended)
+   - 30 minutes
+   - 1 hour
+   - Never (not recommended)
+
+### How It Works
+
+- Timer resets with any wallet interaction
+- Locked wallet requires password to reopen
+- Protects against unauthorized access if you step away
+- Active sessions close automatically
+
+<Warning>
+**Security Recommendation:** Use 15 minutes or less for shared or public computers.
+</Warning>
+
+## Password Management
+
+### Changing Your Password
+
+<Steps>
+  <Step title="Open Security Settings">
+    Go to Settings > Security > Change Password
+  </Step>
+  <Step title="Enter Current Password">
+    Verify your identity with existing password
+  </Step>
+  <Step title="Enter New Password">
+    Create a strong new password (12+ characters)
+  </Step>
+  <Step title="Confirm New Password">
+    Re-enter to confirm
+  </Step>
+  <Step title="Apply Changes">
+    Password updated immediately
+  </Step>
+</Steps>
+
+<Info>
+**Important:** Changing your password does NOT require your Recovery Phrase. The password only protects local access to your encrypted vault.
+</Info>
+
+### Password Requirements
+
+- **Minimum:** 8 characters (12+ recommended)
+- **Recommended:**
+  - Mix of uppercase and lowercase
+  - Include numbers
+  - Include special characters (!@#$%^&*)
+  - Avoid common words or patterns
+
+## Recovery Phrase Management
+
+### Viewing Your Recovery Phrase
+
+<Warning>
+**Extreme Caution:** Only view your recovery phrase in a secure, private location. Never screenshot or photograph it.
+</Warning>
+
+1. **Settings > Security > Show Recovery Phrase**
+2. Enter your password
+3. Write down all 12 words in order
+4. Hide/close the view immediately
+
+### Multiple Devices
+
+Use your Recovery Phrase to access the same wallet on multiple devices:
+
+- Each device can have its own password
+- Balance changes sync via blockchain automatically
+- Transactions from any device reflect on all devices
+- No cloud synchronization required
+
+### Device Security
+
+**Recommended:**
+- Different passwords per device
+- Enable auto-lock on all devices
+- Never store recovery phrase digitally
+- Regular security audits
+
+## Advanced Security Options
+
+### Export Private Key
+
+<Warning>
+**Advanced Users Only:** Exporting your private key is rarely necessary and increases security risk.
+</Warning>
+
+**Use Cases:**
+- Importing to other Octra-compatible wallets
+- Advanced development and testing
+- Cold storage solutions
+
+**How to Export:**
+1. **Settings > Advanced > Export Private Key**
+2. Enter password
+3. Copy private key (never screenshot)
+4. Store securely (treat like recovery phrase)
+
+### Transaction Signing
+
+All transactions require explicit approval:
+
+- **Review:** Every transaction shows full details
+- **Confirm:** Password or biometric required
+- **No Auto-Sign:** Even for connected dApps
+- **Cancel Anytime:** Before signing completes
+
+### Connection Management
+
+#### Connected dApps
+
+View and manage website connections:
+
+1. **Settings > Connected Sites**
+2. See all authorized dApps
+3. View permissions granted
+4. Revoke access anytime
+
+#### Permission Types
+
+| Permission | Description |
+|-----------|-------------|
+| `read_balance` | View your public balance |
+| `view_address` | Access your wallet address |
+| `send_transactions` | Request transaction signatures |
+| `view_private_balance` | Access encrypted balance (requires explicit consent) |
+
+<Tip>
+**Best Practice:** Regularly audit connected dApps and revoke unused connections.
+</Tip>
+
+## Session Security
+
+### Active Sessions
+
+Monitor active wallet sessions:
+
+- **Settings > Security > Active Sessions**
+- View device/browser information
+- Last activity timestamp
+- Terminate sessions remotely
+
+### Secure Logout
+
+Always log out on shared devices:
+
+1. Click lock icon in toolbar
+2. Or **Settings > Lock Wallet**
+3. Requires password to unlock
+
+## Network Security
+
+### RPC Endpoint Validation
+
+0xio validates RPC endpoints before connecting:
+
+- **Certificate Validation:** HTTPS only
+- **Known Networks:** Pre-configured safe RPCs
+- **Custom Networks:** Warning before connection
+
+### Phishing Protection
+
+Built-in protections against common attacks:
+
+- **Address Validation:** Checks address format
+- **Warning Banners:** Alerts for suspicious transactions
+- **Domain Verification:** Highlights mismatched domains
+- **Transaction Preview:** Always shows full details
+
+## Security Best Practices
+
+### DO:
+
+- Enable auto-lock (15 minutes or less)
+- Use a strong, unique password
+- Store recovery phrase offline securely
+- Regularly review connected dApps
+- Verify addresses before sending
+- Start with small test transactions
+- Keep browser and extension updated
+
+### DON'T:
+
+- Share password or recovery phrase with anyone
+- Store recovery phrase digitally
+- Screenshot or photograph sensitive information
+- Use the same password across services
+- Leave wallet unlocked on shared devices
+- Approve transactions without review
+- Connect to untrusted dApps
+
+## Emergency Procedures
+
+### Compromised Device
+
+If you suspect your device is compromised:
+
+<Steps>
+  <Step title="Secure Access on New Device">
+    Install 0xio on a secure device using your recovery phrase
+  </Step>
+  <Step title="Transfer Funds">
+    Immediately transfer all funds to a new wallet
+  </Step>
+  <Step title="Create New Wallet">
+    Generate a new wallet with a fresh recovery phrase
+  </Step>
+  <Step title="Abandon Old Wallet">
+    Never use the compromised wallet again
+  </Step>
+</Steps>
+
+### Lost Recovery Phrase
+
+<Warning>
+**Critical:** If you lose your recovery phrase and lose access to all devices with the wallet:
+
+**Your funds are PERMANENTLY INACCESSIBLE.**
+
+0xio cannot recover lost recovery phrases. They are generated locally and never transmitted.
+</Warning>
+
+**Prevention:**
+- Maintain multiple secure backups
+- Consider metal backup solutions
+- Store in separate physical locations
+- Test recovery on a second device
+
+## Security Audit
+
+### Regular Security Checks
+
+Perform monthly security audits:
+
+- [ ] Recovery phrase backed up securely
+- [ ] Password is strong and unique
+- [ ] Auto-lock enabled
+- [ ] Connected dApps reviewed
+- [ ] No suspicious transaction history
+- [ ] Extension is latest version
+- [ ] Device security software updated
+
+### Reporting Security Issues
+
+Found a vulnerability?
+
+**Report to:** security@0xio.xyz
+
+- Do not publicly disclose until patched
+- Include detailed reproduction steps
+- Responsible disclosure rewarded

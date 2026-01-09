@@ -1,0 +1,173 @@
+---
+title: "Installation & Setup"
+description: "Get started with the 0xio Wallet Extension"
+icon: "download"
+---
+
+The 0xio Browser Extension is your gateway to the Octra Network. Follow this guide to install and configure your wallet.
+
+## System Requirements
+
+### Supported Browsers
+
+<CardGroup cols="2">
+  <Card title="Chrome" icon="chrome">
+    Version 90 or higher
+  </Card>
+  <Card title="Brave" icon="brave">
+    Version 1.30 or higher
+  </Card>
+  <Card title="Edge" icon="edge">
+    Version 90 or higher
+  </Card>
+  <Card title="Opera" icon="opera">
+    Version 75 or higher
+  </Card>
+</CardGroup>
+
+### Current Version
+
+**Version 2.1.8** (January 2026)
+
+## Installation Steps
+
+<Steps>
+  <Step title="Visit the Chrome Web Store">
+    Navigate to the Chrome Web Store and search for "0xio Wallet"
+  </Step>
+  <Step title="Add Extension">
+    Click "Add to Chrome/Brave/Edge" button
+  </Step>
+  <Step title="Pin to Toolbar">
+    Pin the extension to your browser toolbar for easy access
+  </Step>
+  <Step title="Launch Setup">
+    Click the 0xio extension icon to begin setup
+  </Step>
+</Steps>
+
+## Creating Your First Wallet
+
+### Step 1: Initialize Vault
+
+When you first open 0xio, you'll see three options:
+
+<CardGroup cols="3">
+  <Card title="Create New Wallet" icon="plus">
+    Generate a fresh wallet with new recovery phrase
+  </Card>
+  <Card title="Import Wallet" icon="file-import">
+    Restore existing wallet using recovery phrase
+  </Card>
+  <Card title="Watch Mode" icon="eye">
+    Monitor an address without private key access
+  </Card>
+</CardGroup>
+
+Select **"Create New Wallet"** to generate a new wallet.
+
+### Step 2: Secure Your Recovery Phrase
+
+<Warning>
+**CRITICAL SECURITY INFORMATION**
+
+Your 12-word Recovery Phrase is the master key to your funds. 0xio generates this phrase **locally on your device** using BIP39 standard with cryptographic randomness.
+
+**If you lose this phrase, your funds are permanently inaccessible.**
+
+0xio cannot recover lost phrases as they never leave your device.
+</Warning>
+
+#### Best Practices - DO:
+
+- Write it down on paper immediately
+- Store in a fireproof safe
+- Consider metal backup plates (Cryptosteel, etc.) for long-term storage
+- Split across multiple secure locations for large holdings
+- Test your backup by importing on a second device
+
+#### Best Practices - DON'T:
+
+- Store in cloud services (Google Drive, Dropbox, iCloud, etc.)
+- Take photos of your phrase
+- Store in email or messaging apps
+- Store digitally on internet-connected devices
+- Share with anyone, including support staff
+
+### Step 3: Verify Your Phrase
+
+0xio will ask you to confirm several words in random order. This ensures you've recorded the phrase correctly.
+
+### Step 4: Set Password
+
+Create a strong password to protect your wallet on this device:
+
+- **Minimum:** 12 characters recommended
+- **Complexity:** Use uppercase, lowercase, numbers, and symbols
+- **Storage:** Use a password manager for best security
+- **Encryption:** Password protects your vault with AES-GCM 256-bit encryption
+
+<Info>
+**Note:** This password only locks the wallet on your current device. Your recovery phrase is what actually controls your funds across all devices.
+</Info>
+
+## Importing an Existing Wallet
+
+If you already have a 0xio wallet or Octra-compatible wallet:
+
+<Steps>
+  <Step title="Select Import">
+    Click "Import Wallet" on the welcome screen
+  </Step>
+  <Step title="Enter Recovery Phrase">
+    Enter your 12-word or 24-word Recovery Phrase
+
+    - Words must be in the correct order
+    - Use spaces between words
+    - All lowercase
+  </Step>
+  <Step title="Set Device Password">
+    Create a new password for this device
+  </Step>
+  <Step title="Complete">
+    Your wallet and balances will be restored automatically
+  </Step>
+</Steps>
+
+## Watch Mode
+
+Monitor any Octra address without controlling it:
+
+1. Select "Watch Mode"
+2. Enter the Octra address (`oct1...`)
+3. Give it a nickname for easy identification
+4. View balance and transaction history (read-only)
+
+**Use Cases:**
+- Monitoring cold wallet balances
+- Tracking multisig accounts
+- Observing project treasury addresses
+- Monitoring children's wallets
+
+<Note>
+Watch Mode provides view-only access. You cannot send transactions or sign messages in this mode.
+</Note>
+
+## Next Steps
+
+Once your wallet is set up:
+
+<CardGroup cols="2">
+  <Card title="Fund Your Wallet" icon="coins" href="/wallet/receiving">
+    Learn how to receive OCT and start transacting
+  </Card>
+  <Card title="Explore Privacy Features" icon="shield" href="/wallet/privacy-operations">
+    Discover how to encrypt and decrypt balances
+  </Card>
+  <Card title="Send Your First Transaction" icon="paper-plane" href="/wallet/sending">
+    Learn how to send public and private transfers
+  </Card>
+  <Card title="Security Settings" icon="lock" href="/wallet/security">
+    Configure auto-lock, backup, and advanced security
+  </Card>
+</CardGroup>

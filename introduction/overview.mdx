@@ -1,0 +1,77 @@
+---
+title: "Welcome to 0xio"
+description: "The user-facing application layer for the Octra Network"
+icon: "house"
+---
+
+**0xio** is the **user-facing application layer** built for the **Octra Network**, designed to make encrypted blockchain computation usable, safe, and intuitive.
+
+While Octra provides the underlying Layer-1 blockchain and cryptographic infrastructure, **0xio delivers the wallets, SDKs, and applications** that allow users and developers to interact with Octra's fully encrypted execution model without needing to understand or implement cryptography themselves.
+
+## What is 0xio?
+
+0xio is a **non-custodial Web3 ecosystem** built on top of the Octra Network.
+
+It provides:
+
+- Secure client-side applications (wallets, SDKs, interfaces)
+- Abstractions over encrypted execution and fees
+- Tooling for private transfers, private trading, and encrypted application logic
+
+All sensitive data is encrypted **locally on the user's device** before ever touching the network. 0xio never has access to user keys, balances, or private transaction data.
+
+<Warning>
+**Important:** 0xio is an independent, community-built project. It is not operated by, nor formally affiliated with, Octra Labs.
+</Warning>
+
+## Why 0xio?
+
+On most blockchains, privacy is optional and usually external:
+
+- Balances are public
+- Transactions are globally visible
+- Activity can be trivially tracked and correlated
+
+0xio takes a different approach.
+
+By building directly on Octra's encrypted execution layer, 0xio enables:
+
+- **Private balances by default**
+- **Encrypted transactions validated without revealing amounts**
+- **Applications that operate on private state, not public data**
+
+The result is a blockchain experience closer to traditional finance privacy, **but without custodians, intermediaries, or trusted servers.**
+
+## Core Value Proposition
+
+### 1. Privacy by Default
+
+0xio integrates Octra's **Hypergraph Fully Homomorphic Encryption (HFHE)** so balances, transfers, and application logic can remain encrypted throughout their lifecycle.
+
+### 2. Non-Custodial Sovereignty
+
+All keys are generated and stored locally. 0xio cannot freeze, access, or recover user funds.
+
+### 3. Client-Side Encryption
+
+Sensitive data is encrypted **before** it is broadcast to the network. Validators process encrypted payloads without learning their contents.
+
+## The 0xio Ecosystem
+
+<CardGroup cols="2">
+  <Card title="Browser Extension" icon="chrome" href="/products/extension">
+    Non-custodial wallet for Chrome, Brave, Edge, and Opera. Manage public and private balances seamlessly.
+  </Card>
+  <Card title="Mobile Wallet" icon="mobile" href="/products/mobile">
+    Privacy on the go with biometric security and mobile-optimized features.
+  </Card>
+  <Card title="Developer SDK" icon="code" href="/products/sdk">
+    TypeScript SDK for integrating dApps with 0xio and Octra's FHE capabilities.
+  </Card>
+  <Card title="0xio DEX" icon="arrow-right-arrow-left" href="/products/dex">
+    Privacy-preserving decentralized exchange for trading encrypted assets.
+  </Card>
+  <Card title="Telegram Bot" icon="paper-plane" href="/products/telegram-bot">
+    Real-time wallet monitoring and notifications via Telegram.
+  </Card>
+</CardGroup>

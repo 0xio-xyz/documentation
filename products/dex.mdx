@@ -1,0 +1,388 @@
+---
+title: "0xio DEX Guide"
+description: "Privacy-preserving decentralized exchange"
+icon: "arrow-right-arrow-left"
+---
+
+<Note>
+**Development Status:** The 0xio DEX is currently in active development. Features described represent the planned functionality and may change before production release.
+</Note>
+
+## Overview
+
+**0xio DEX** is the premier **Automated Market Maker (AMM)** built for the **Octra Network**, leveraging **Fully Homomorphic Encryption (FHE)** to enable truly private trading.
+
+### The Problem with Traditional DEXs
+
+On standard decentralized exchanges:
+
+- Your trade sizes are publicly visible
+- Front-running bots exploit your transactions
+- Trading strategies become transparent
+- Competitors can track your activity
+- MEV (Maximal Extractable Value) extraction
+
+### The 0xio DEX Solution
+
+Trade tokens with **amount privacy** using FHE:
+
+- **Input Privacy:** Swap amounts encrypted on-chain
+- **Hidden Balances:** Account balances remain confidential
+- **Front-Running Protection:** Bots can't see your trade size
+- **Strategy Privacy:** Your trading patterns stay private
+
+## Getting Started
+
+### Connecting Your Wallet
+
+<Steps>
+  <Step title="Access DEX">
+    Navigate to Swap tab in 0xio wallet or visit DEX interface
+  </Step>
+  <Step title="Wallet Auto-Connect">
+    Your 0xio wallet connects automatically if using extension
+  </Step>
+  <Step title="Verify Connection">
+    Check connected status in top-right corner
+  </Step>
+  <Step title="View Balances">
+    Your public and private balances display automatically
+  </Step>
+</Steps>
+
+## Understanding the Interface
+
+### Swap Card
+
+The main trading interface includes:
+
+- **From Token:** Token you're selling
+- **To Token:** Token you're buying
+- **Amount Input:** How much you want to swap
+- **FHE Toggle:** Switch between public and private mode
+- **Estimated Output:** Expected tokens received
+- **Price Impact:** How your trade affects the pool
+- **Swap Button:** Execute the transaction
+
+### Privacy Toggle (Shield Button)
+
+Control your trade privacy level:
+
+#### FHE Off (Public Mode)
+
+- Standard public swap
+- Trade amounts visible on blockchain
+- Faster execution (3-5 seconds)
+- Lower gas costs
+- Anyone can see your trade size
+- Subject to front-running
+
+#### FHE On (Shielded Mode) 🛡️
+
+- Private swap with encrypted amounts
+- Trade amount encrypted on your device
+- Network validates without seeing amounts
+- Higher gas costs
+- Protection from front-running
+- Complete trade privacy
+
+<Tip>
+**When to use FHE:** Large trades, sensitive strategies, or any time you want privacy.
+</Tip>
+
+## Making a Public Swap
+
+For transparent, faster, cheaper swaps:
+
+<Steps>
+  <Step title="Select Tokens">
+    Choose token to sell from dropdown and token to buy
+  </Step>
+  <Step title="Enter Amount">
+    Input amount to swap
+  </Step>
+  <Step title="Disable FHE">
+    Ensure FHE toggle is OFF
+  </Step>
+  <Step title="Review Details">
+    Check:
+    - Exchange rate
+    - Estimated output
+    - Price impact
+    - Network fee
+    - Slippage tolerance
+  </Step>
+  <Step title="Execute Swap">
+    Click "Swap" button
+  </Step>
+  <Step title="Confirm in Wallet">
+    Approve transaction in popup
+  </Step>
+  <Step title="Wait for Confirmation">
+    Typically 3-5 seconds
+  </Step>
+</Steps>
+
+### Public Swap Details
+
+- **Speed:** 3-5 seconds
+- **Privacy:** Amounts visible on-chain
+- **Gas Cost:** ~15,000-20,000 OU
+- **Best For:** Small trades, when privacy isn't critical
+
+## Making a Private Swap
+
+For confidential, front-running resistant trading:
+
+<Steps>
+  <Step title="Check Private Balance">
+    Ensure sufficient **Private Balance**
+  </Step>
+  <Step title="Enable FHE">
+    Toggle FHE shield to ON
+  </Step>
+  <Step title="Select Tokens">
+    Choose trading pair
+  </Step>
+  <Step title="Enter Amount">
+    Input swap amount
+  </Step>
+  <Step title="Review Encrypted Details">
+    Review (amount will be encrypted):
+    - Token pair
+    - Estimated output range
+    - Gas fee (higher for FHE)
+    - Slippage settings
+  </Step>
+  <Step title="Execute Swap">
+    Click "Swap"
+  </Step>
+  <Step title="Local Encryption">
+    Your device encrypts the swap amount
+  </Step>
+  <Step title="Confirm">
+    Approve encrypted transaction
+  </Step>
+  <Step title="Wait for Processing">
+    5-10 seconds for encrypted transaction
+  </Step>
+</Steps>
+
+### How Private Swaps Work
+
+1. **Device Encryption:** Your browser performs FHE encryption on swap amount
+2. **Encrypted Broadcast:** Encrypted payload sent to blockchain
+3. **Private Validation:** Smart contracts validate on encrypted data
+4. **Encrypted Execution:** AMM processes swap without seeing amounts
+5. **Private Receipt:** Tokens delivered to your Private Balance
+6. **Zero Leakage:** Nobody sees your trade size
+
+### Private Swap Details
+
+- **Speed:** 5-10 seconds
+- **Privacy:** Amounts fully encrypted
+- **Gas Cost:** ~40,000-50,000 OU
+- **Best For:** Large trades, strategic positions
+
+<Warning>
+Private swaps require sufficient **Private Balance**. If your funds are in Public Balance, encrypt them first using the Privacy tab.
+</Warning>
+
+## Slippage Protection
+
+Control how much price movement you'll tolerate:
+
+### Slippage Settings
+
+| Setting | Recommended For |
+|---------|----------------|
+| **0.1%** | Stablecoins, high-liquidity pairs |
+| **0.5%** | Standard tokens, moderate liquidity |
+| **1.0%** | Lower liquidity, volatile pairs |
+| **Custom** | Advanced users, specific strategies |
+
+### Setting Slippage
+
+1. Click settings icon
+2. Select or enter slippage percentage
+3. Higher slippage = more likely to execute, worse price
+4. Lower slippage = better price, might fail
+
+<Info>
+During high volatility, consider increasing slippage to ensure your swap executes. You'll never pay more than your slippage tolerance.
+</Info>
+
+## Transaction States
+
+### Pending 
+
+- Transaction submitted to DEX contract
+- Awaiting validator confirmation
+- Typically 3-10 seconds
+- Can't be cancelled once submitted
+
+### Confirmed 
+
+- Swap executed successfully
+- Tokens in your wallet
+- Transaction hash available
+- View in block explorer
+
+### Failed 
+
+- Transaction rejected or reverted
+- Funds safely returned
+- **Common causes:**
+  - Insufficient balance for gas
+  - Price moved beyond slippage tolerance
+  - Insufficient liquidity
+  - Network connectivity issue
+
+## Liquidity Pools (Coming Soon)
+
+### Providing Liquidity
+
+Earn fees by providing liquidity to trading pairs:
+
+1. Select token pair
+2. Deposit equal value of both tokens
+3. Receive LP (Liquidity Provider) tokens
+4. Earn portion of trading fees
+5. Withdraw anytime
+
+### Public Pools
+
+- Standard AMM liquidity pools
+- Transparent reserves and pricing
+- Maximum composability
+- Higher fee earnings potential
+
+### Shielded Pools (Experimental)
+
+- Privacy-enabled liquidity
+- Encrypted pool balances
+- Private LP positions
+- FHE-validated trades
+
+<Note>
+Shielded pools are experimental and may have limitations during early phases. Start with public pools to understand the mechanics.
+</Note>
+
+## Best Practices
+
+### Trading Strategy
+
+<AccordionGroup>
+  <Accordion title="Start with Small Test Swaps">
+    Before large trades, execute a small test swap to verify the flow and pricing.
+  </Accordion>
+
+  <Accordion title="Monitor Price Impact">
+    Large trades relative to pool size will have higher price impact. Consider breaking into smaller swaps.
+  </Accordion>
+
+  <Accordion title="Use FHE for Large Trades">
+    Protect yourself from front-running on significant positions by enabling FHE privacy.
+  </Accordion>
+
+  <Accordion title="Check Pool Liquidity">
+    Verify sufficient liquidity exists for your trade size to minimize slippage.
+  </Accordion>
+</AccordionGroup>
+
+### Gas Optimization
+
+- **Public swaps** during off-peak hours for lowest fees
+- **Batch multiple small swaps** into fewer larger ones
+- **Monitor network congestion** before trading
+- **Use custom gas settings** for time-sensitive trades
+
+### Privacy Considerations
+
+**Maximum Privacy:**
+- Enable FHE for all trades
+- Keep majority of funds in Private Balance
+- Use different addresses for public/private activity
+
+**Balanced Approach:**
+- FHE for large or strategic trades
+- Public for routine small swaps
+- Mix of public/private based on needs
+
+## Advanced Features (Roadmap)
+
+### Limit Orders
+
+Set specific prices for automatic execution:
+
+- **Private Limit Orders:** Orders with encrypted amounts
+- **Good-til-Cancelled:** Remains active until filled or cancelled
+- **Fill-or-Kill:** Execute immediately or cancel
+
+### Advanced Routing
+
+Optimize swap paths across multiple pools:
+
+- Multi-hop routing for best prices
+- Automatic pool selection
+- Split orders across pools
+- MEV protection
+
+### Price Charts
+
+Technical analysis tools:
+
+- Real-time price feeds
+- Historical charts
+- Volume indicators
+- Liquidity depth
+
+## Troubleshooting
+
+### "Insufficient Balance for Swap"
+
+- Check you have enough tokens to cover swap amount + gas
+- Verify correct balance type (Public vs Private)
+- Ensure gas fee reserve (minimum 50,000 OU worth)
+
+### "Slippage Tolerance Exceeded"
+
+- Price moved beyond your tolerance
+- Increase slippage tolerance
+- Try again when market is less volatile
+- Break large trades into smaller chunks
+
+### "Swap Taking Too Long"
+
+- Network congestion can delay processing
+- Check transaction status in History tab
+- Wait up to 60 seconds during peak times
+- Increase gas fee for future trades
+
+### "FHE Swap Failed"
+
+- Ensure sufficient Private Balance
+- Verify FHE operations are not rate-limited
+- Check network status
+- Try public swap as alternative
+
+<Tip>
+For urgent trades during congestion, use custom gas fees to set higher OU for priority processing.
+</Tip>
+
+## Roadmap
+
+### Coming Soon
+
+- Production smart contract deployment
+- Real liquidity pools with mainnet tokens
+- Advanced AMM routing algorithms
+- Limit order functionality
+- Liquidity provider interface
+- Fee earning mechanisms
+- Additional token pair support
+- Wallets integration
+
+<Info>
+All features are subject to security audits and network readiness. Follow our announcements for updates on DEX launch timeline.
+</Info>

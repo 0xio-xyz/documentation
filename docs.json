@@ -1,88 +1,13 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "0xio Documentation",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#fbbf24",
+    "light": "#fcd34d",
+    "dark": "#f59e0b"
   },
   "favicon": "/favicon.svg",
-  "navigation": {
-    "tabs": [
-      {
-        "tab": "Guides",
-        "groups": [
-          {
-            "group": "Getting started",
-            "pages": [
-              "index",
-              "quickstart",
-              "development"
-            ]
-          },
-          {
-            "group": "Customization",
-            "pages": [
-              "essentials/settings",
-              "essentials/navigation"
-            ]
-          },
-          {
-            "group": "Writing content",
-            "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
-            ]
-          },
-          {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "API reference",
-        "groups": [
-          {
-            "group": "API documentation",
-            "pages": [
-              "api-reference/introduction"
-            ]
-          },
-          {
-            "group": "Endpoint examples",
-            "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
-            ]
-          }
-        ]
-      }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
   "logo": {
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg"
@@ -90,33 +15,112 @@
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "label": "GitHub",
+        "href": "https://github.com/0xio-xyz"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "label": "Install Wallet",
+      "href": "https://chromewebstore.google.com/detail/0xio-wallet/anknhjilldkeelailocijnfibefmepcc"
+    }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "introduction/overview",
+              "introduction/octra-network",
+              "introduction/technology"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/balances",
+              "concepts/cryptography"
+            ]
+          },
+          {
+            "group": "Wallet Guide",
+            "pages": [
+              "wallet/installation",
+              "wallet/interface",
+              "wallet/sending",
+              "wallet/receiving",
+              "wallet/privacy-operations",
+              "wallet/security"
+            ]
+          },
+          {
+            "group": "Products",
+            "pages": [
+              "products/extensions",
+              "products/mobile",
+              "products/dex",
+              "products/telegram-bot"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Developers",
+        "groups": [
+          {
+            "group": "SDK Documentation",
+            "pages": [
+              "developers/sdk-guide"
+            ]
+          },
+          {
+            "group": "Smart Contracts",
+            "pages": []
+          }
+        ]
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "0xio Website",
+          "href": "https://0xio.xyz",
+          "icon": "globe"
+        },
+        {
+          "anchor": "Install Wallet",
+          "href": "https://chromewebstore.google.com/detail/0xio-wallet/anknhjilldkeelailocijnfibefmepcc",
+          "icon": "download"
+        },
+
+        {
+          "anchor": "Telegram Bot",
+          "href": "https://t.me/nullxio_bot",
+          "icon": "paper-plane"
+        }
+      ]
     }
   },
   "contextual": {
     "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity",
+      "mcp",
+      "cursor",
+      "vscode"
+    ]
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "x": "https://x.com/0xio_xyz",
+      "github": "https://github.com/0xio-xyz",
+      "website": "https://0xio.xyz"
     }
   }
 }

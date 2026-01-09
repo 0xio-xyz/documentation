@@ -1,0 +1,572 @@
+---
+title: "SDK Integration Guide"
+description: "Build dApps with the 0xio Wallet SDK"
+icon: "code"
+---
+
+The **0xio Wallet SDK** enables seamless integration between your decentralized application and the 0xio Wallet Extension, with full support for Octra's FHE privacy features.
+
+## Installation
+
+Install via npm or yarn:
+
+<CodeGroup>
+
+```bash npm
+npm install @0xgery/wallet-sdk
+```
+
+```bash yarn
+yarn add @0xgery/wallet-sdk
+```
+
+```bash pnpm
+pnpm add @0xgery/wallet-sdk
+```
+
+</CodeGroup>
+
+**Package Details:**
+- **Package:** `@0xgery/wallet-sdk`
+- **Version:** 2.1.0
+- **License:** Proprietary (Closed Source)
+
+## Quick Start
+
+The fastest way to get started:
+
+```typescript
+import { createZeroXIOWallet } from '@0xgery/wallet-sdk';
+
+async function initWallet() {
+  const wallet = await createZeroXIOWallet({
+    appName: 'My Privacy dApp',
+    appDescription: 'An encrypted DeFi protocol on Octra',
+    autoConnect: true,
+  });
+
+  if (wallet.isConnected()) {
+    const address = wallet.getAddress();
+    console.log('Connected to:', address);
+
+    const balances = await wallet.getBalance(true);
+    console.log('Public:', balances.public);
+    console.log('Private:', balances.private);
+  }
+}
+
+initWallet();
+```
+
+## Core API
+
+### Connection Methods
+
+#### `initialize()`
+
+Initializes the SDK and checks for extension presence.
+
+```typescript
+await wallet.initialize();
+```
+
+- **Returns:** `Promise<void>`
+- **Throws:** `ExtensionNotFoundError` if 0xio is not installed
+
+#### `connect(options)`
+
+Requests connection to the extension. User must approve in popup.
+
+```typescript
+const result = await wallet.connect({
+  requestPermissions: [
+    'read_balance',        // View public OCT balance
+    'send_transactions',   // Request signatures
+    'view_private_balance' // Access FHE balance (optional)
+  ]
+});
+
+console.log('Connected:', result.address);
+console.log('Public Balance:', result.publicBalance);
+```
+
+- **Returns:** Promise with address and publicBalance (strings)
+- **Throws:** `UserRejectedError` if user declines
+
+#### `disconnect()`
+
+Disconnects from the extension.
+
+```typescript
+await wallet.disconnect();
+```
+
+- **Returns:** `Promise<void>`
+
+#### `isConnected()`
+
+Checks current connection status.
+
+```typescript
+const connected = wallet.isConnected();
+```
+
+- **Returns:** `boolean`
+
+#### `getAddress()`
+
+Gets the currently connected address.
+
+```typescript
+const address = wallet.getAddress();
+// Returns: "oct1abc123..." or null if not connected
+```
+
+- **Returns:** `string | null`
+
+### Balance Methods
+
+#### `getBalance(forceRefresh?)`
+
+Fetches current balances from blockchain or cache.
+
+```typescript
+const balances = await wallet.getBalance(true); // Force refresh
+
+console.log(balances.public);  // "1250.500000"
+console.log(balances.private); // "3420.250000"
+console.log(balances.total);   // "4670.750000"
+```
+
+- **Parameters:**
+  - `forceRefresh`: If true, queries blockchain; if false, uses cached values
+- **Returns:** Promise with public, private, and total balances (strings)
+- **Format:** All amounts as strings in OCT units with 6 decimal precision
+
+#### `getPublicBalance()`
+
+Fetches only public balance.
+
+```typescript
+const publicBalance = await wallet.getPublicBalance();
+// Returns: "1250.500000"
+```
+
+- **Returns:** `Promise<string>`
+
+#### `getPrivateBalance()`
+
+Fetches only private balance (requires FHE decryption).
+
+```typescript
+const privateBalance = await wallet.getPrivateBalance();
+// Returns: "3420.250000"
+```
+
+- **Returns:** `Promise<string>`
+- **Requires:** `view_private_balance` permission
+
+### Transaction Methods
+
+#### `sendTransaction(txData)`
+
+Executes a standard public transfer.
+
+```typescript
+const result = await wallet.sendTransaction({
+  to: 'oct1qv...',
+  amount: '10.5',      // Amount in OCT
+  memo: 'Payment for services' // Optional
+});
+
+console.log('Transaction Hash:', result.txHash);
+```
+
+- **Parameters:**
+  ```typescript
+  {
+    to: string;        // Recipient address
+    amount: string;    // Amount in OCT
+    memo?: string;     // Optional transaction memo
+  }
+  ```
+- **Returns:** Promise with txHash (string)
+
+#### `sendPrivateTransfer(txData)`
+
+Executes an FHE-encrypted private transfer.
+
+```typescript
+const result = await wallet.sendPrivateTransfer({
+  to: 'oct1x...',
+  amount: '20',        // Will be encrypted
+  memo: 'Encrypted Payroll' // Also encrypted
+});
+
+console.log('Private TX Hash:', result.txHash);
+```
+
+- **Parameters:**
+  ```typescript
+  {
+    to: string;        // Recipient address
+    amount: string;    // Amount (encrypted client-side)
+    memo?: string;     // Optional memo (also encrypted)
+  }
+  ```
+- **Returns:** Promise with txHash (string)
+- **Note:** Amount encrypted on your device before transmission
+
+#### `sendBulkTransfer(recipients)`
+
+Sends to multiple recipients in one transaction.
+
+```typescript
+const result = await wallet.sendBulkTransfer([
+  { to: 'oct1...', amount: '10' },
+  { to: 'oct1...', amount: '15' },
+  { to: 'oct1...', amount: '5' }
+]);
+
+console.log('Bulk TX Hash:', result.txHash);
+console.log('Recipients:', result.count); // 3
+```
+
+- **Parameters:** Array of objects with to (string) and amount (string)
+- **Returns:** Promise with txHash (string) and count (number)
+- **Limit:** Up to 50 recipients per batch
+
+### Privacy Operations
+
+#### `encryptBalance(amount)`
+
+Moves funds from Public → Private balance (shielding).
+
+```typescript
+// Encrypt 5 OCT from public to private balance
+const result = await wallet.encryptBalance('5.0');
+
+console.log('Shield TX Hash:', result.txHash);
+```
+
+- **Parameters:** `amount: string` (OCT amount to shield)
+- **Returns:** Promise with txHash (string)
+
+#### `decryptBalance(amount)`
+
+Moves funds from Private → Public balance (unshielding).
+
+```typescript
+// Decrypt 10 OCT from private to public balance
+const result = await wallet.decryptBalance('10.0');
+
+console.log('Unshield TX Hash:', result.txHash);
+```
+
+- **Parameters:** `amount: string` (OCT amount to unshield)
+- **Returns:** Promise with txHash (string)
+
+## Event Listeners
+
+The SDK extends `EventEmitter` for real-time state updates.
+
+### Account Changed
+
+User switched wallets in the extension.
+
+```typescript
+wallet.on('accountChanged', (event) => {
+  console.log('New Address:', event.newAddress);
+  console.log('Previous Address:', event.previousAddress);
+
+  // Re-fetch user data, update UI
+  updateUserInterface(event.newAddress);
+});
+```
+
+### Network Changed
+
+User switched networks (mainnet/testnet).
+
+```typescript
+wallet.on('networkChanged', (event) => {
+  console.log('Network:', event.newNetwork.name);
+  console.log('RPC URL:', event.newNetwork.rpcUrl);
+
+  // Update RPC endpoint, refresh data
+  reconnectToNetwork(event.newNetwork);
+});
+```
+
+### Balance Changed
+
+Balance updated after transaction confirmation.
+
+```typescript
+wallet.on('balanceChanged', (balances) => {
+  console.log('New Balances:', balances);
+
+  // Update UI with new amounts
+  updateBalanceDisplay(balances);
+});
+```
+
+### Disconnected
+
+User disconnected from dApp or locked wallet.
+
+```typescript
+wallet.on('disconnected', (event) => {
+  console.log('Disconnect Reason:', event.reason);
+  // Possible reasons: 'user_action', 'extension_locked', 'network_error'
+
+  // Clear user session, show connect button
+  clearUserSession();
+  showConnectModal();
+});
+```
+
+### Removing Listeners
+
+```typescript
+// Remove specific listener
+wallet.off('accountChanged', handlerFunction);
+
+// Remove all listeners
+wallet.removeAllListeners();
+```
+
+## Error Handling
+
+The SDK provides typed error codes for graceful error handling.
+
+```typescript
+import {
+  ZeroXIOWalletError,
+  ErrorCode
+} from '@0xgery/wallet-sdk';
+
+try {
+  await wallet.sendTransaction({
+    to: 'oct1...',
+    amount: '100'
+  });
+} catch (error) {
+  if (error instanceof ZeroXIOWalletError) {
+    switch (error.code) {
+      case ErrorCode.USER_REJECTED:
+        console.log('User cancelled the transaction');
+        showNotification('Transaction cancelled');
+        break;
+
+      case ErrorCode.INSUFFICIENT_BALANCE:
+        console.log('Not enough balance');
+        showNotification('Insufficient funds');
+        break;
+
+      case ErrorCode.EXTENSION_NOT_FOUND:
+        console.log('0xio Extension not installed');
+        showInstallPrompt();
+        break;
+
+      case ErrorCode.NETWORK_ERROR:
+        console.log('Network connection issue');
+        showRetryOption();
+        break;
+
+      case ErrorCode.INVALID_ADDRESS:
+        console.log('Invalid recipient address');
+        showError('Please check the address');
+        break;
+
+      default:
+        console.error('Unexpected error:', error.message);
+    }
+  } else {
+    console.error('Unknown error:', error);
+  }
+}
+```
+
+### Error Codes
+
+| Error Code | Description |
+|-----------|-------------|
+| `USER_REJECTED` | User declined transaction or connection |
+| `INSUFFICIENT_BALANCE` | Not enough funds for transaction + gas |
+| `EXTENSION_NOT_FOUND` | 0xio Wallet Extension not installed |
+| `NETWORK_ERROR` | RPC connection or blockchain issue |
+| `INVALID_ADDRESS` | Malformed or invalid Octra address |
+| `INVALID_AMOUNT` | Negative or improperly formatted amount |
+| `PERMISSION_DENIED` | Requested permission not granted |
+| `TRANSACTION_FAILED` | Transaction reverted or rejected |
+
+## Framework Integration
+
+### React Hook
+
+```typescript
+import { useEffect, useState } from 'react';
+import { ZeroXIOWallet } from '@0xgery/wallet-sdk';
+
+export function useWallet() {
+  const [wallet] = useState(() => new ZeroXIOWallet({
+    appName: 'My DApp'
+  }));
+  const [address, setAddress] = useState<string | null>(null);
+  const [balances, setBalances] = useState(null);
+  const [isConnected, setIsConnected] = useState(false);
+
+  useEffect(() => {
+    wallet.initialize();
+
+    wallet.on('accountChanged', (event) => {
+      setAddress(event.newAddress);
+    });
+
+    wallet.on('balanceChanged', setBalances);
+
+    wallet.on('disconnected', () => {
+      setAddress(null);
+      setBalances(null);
+      setIsConnected(false);
+    });
+
+    return () => {
+      wallet.removeAllListeners();
+    };
+  }, [wallet]);
+
+  const connect = async () => {
+    try {
+      const result = await wallet.connect({
+        requestPermissions: ['read_balance', 'send_transactions']
+      });
+      setAddress(result.address);
+      setIsConnected(true);
+
+      const balances = await wallet.getBalance(true);
+      setBalances(balances);
+    } catch (error) {
+      console.error('Connection failed:', error);
+    }
+  };
+
+  return { wallet, address, balances, isConnected, connect };
+}
+```
+
+### Vue.js Composition API
+
+```typescript
+import { ref, onMounted, onUnmounted } from 'vue';
+import { ZeroXIOWallet } from '@0xgery/wallet-sdk';
+
+export function useWallet() {
+  const wallet = new ZeroXIOWallet({ appName: 'My DApp' });
+  const address = ref<string | null>(null);
+  const balances = ref(null);
+  const isConnected = ref(false);
+
+  onMounted(async () => {
+    await wallet.initialize();
+
+    wallet.on('accountChanged', (event) => {
+      address.value = event.newAddress;
+    });
+
+    wallet.on('balanceChanged', (bal) => {
+      balances.value = bal;
+    });
+
+    wallet.on('disconnected', () => {
+      address.value = null;
+      balances.value = null;
+      isConnected.value = false;
+    });
+  });
+
+  onUnmounted(() => {
+    wallet.removeAllListeners();
+  });
+
+  const connect = async () => {
+    try {
+      const result = await wallet.connect({
+        requestPermissions: ['read_balance', 'send_transactions']
+      });
+      address.value = result.address;
+      isConnected.value = true;
+    } catch (error) {
+      console.error('Connection failed:', error);
+    }
+  };
+
+  return { wallet, address, balances, isConnected, connect };
+}
+```
+
+## TypeScript Definitions
+
+The SDK exports comprehensive TypeScript types:
+
+```typescript
+// Import types from the SDK
+import type * as WalletTypes from '@0xgery/wallet-sdk';
+
+// Balance type
+interface Balance {
+  public: string;    // Public balance in OCT
+  private: string;   // Private (FHE) balance in OCT
+  total: string;     // Combined balance
+}
+
+// Transaction data
+interface TransactionData {
+  to: string;        // Recipient address
+  amount: string;    // Amount in OCT
+  memo?: string;     // Optional memo
+}
+
+// Network information
+interface NetworkInfo {
+  name: string;      // Network name
+  rpcUrl: string;    // RPC endpoint
+  currency: string;  // Native currency symbol
+}
+```
+
+## Best Practices
+
+### Connection
+
+- Always check `isConnected()` before operations
+- Handle `USER_REJECTED` errors gracefully
+- Provide clear install prompts if extension not found
+- Request minimum necessary permissions
+
+### Transactions
+
+- Validate addresses before sending
+- Display full transaction details to users
+- Handle all error cases explicitly
+- Show loading states during confirmation
+- Provide transaction hash for tracking
+
+### Privacy
+
+- Clearly indicate when using FHE features
+- Explain gas cost differences
+- Let users choose public vs private
+- Don't store sensitive data
+
+### Performance
+
+- Cache balance data appropriately
+- Use `forceRefresh` sparingly
+- Batch multiple operations when possible
+- Clean up event listeners on unmount
+
+<Tip>
+For production dApps, implement comprehensive error handling and user feedback for all wallet operations.
+</Tip>

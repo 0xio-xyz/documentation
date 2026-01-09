@@ -1,0 +1,86 @@
+---
+title: "Public vs Private Balances"
+description: "Understanding 0xio's dual balance system"
+icon: "scale-balanced"
+---
+
+0xio wallet maintains two separate balance types, giving you complete control over your financial privacy.
+
+## Public Balance
+
+Your **Public Balance** is visible to everyone on the blockchain.
+
+### Characteristics
+
+- **Transparency:** Visible to anyone viewing the blockchain
+- **Speed:** Faster transaction processing
+- **Cost:** Lower gas fees (10,000 OU standard)
+- **Compatibility:** Works with all protocols and services
+
+### When to Use
+
+- Standard interactions with public DeFi protocols
+- Sending to exchanges that don't support FHE
+- When transparency is beneficial or required
+- Situations where speed and lower costs are priorities
+
+## Private Balance
+
+Your **Private Balance** is encrypted using FHE and only visible to you.
+
+### Characteristics
+
+- **Privacy:** Encrypted using FHE, completely confidential
+- **Gas Costs:** Slightly higher (30,000 OU for amounts ≥ 1,000 OCT)
+- **Security:** Complete financial privacy
+- **Validation:** Transactions validated without revealing amounts
+
+### When to Use
+
+- Confidential transfers and payments
+- Private trading and swaps
+- Salary payments and business transactions
+- Protecting wealth information from public view
+
+<Info>
+Your 0xio wallet displays both balances simultaneously, and you can move funds between them at any time using the Encrypt/Decrypt features.
+</Info>
+
+## Moving Between Balances
+
+### Encrypting Funds (Public → Private)
+
+This process "shields" your funds, making them invisible to blockchain observers.
+
+**Process:**
+1. Navigate to the Encrypt tab
+2. Enter the amount to shield
+3. Review the gas fee estimate (10,000 OU standard)
+4. Confirm the transaction
+5. Wait for blockchain confirmation (typically 5-8 seconds)
+
+**Technical Note:** Your device performs FHE encryption locally before broadcasting to the network.
+
+### Decrypting Funds (Private → Public)
+
+This "unshields" funds, making them visible on the blockchain.
+
+**Process:**
+1. Navigate to the Decrypt tab
+2. Enter the amount to unshield
+3. Review the gas fee
+4. Confirm the transaction
+
+## Network Fees
+
+0xio abstracts raw gas costs into **Operational Units (OU)** to ensure predictable pricing:
+
+| Transaction Type | OU Cost | When Applied |
+|-----------------|---------|--------------|
+| **Standard Transaction** | 10,000 OU | Default for most operations |
+| **High Value Transaction** | 30,000 OU | Automatically applied when amount ≥ 1,000 OCT |
+| **Custom Fees** | Variable | Manually set via "Network Fee" modal for priority |
+
+<Tip>
+During network congestion, you can manually override OU via the "Network Fee" modal for priority inclusion in the next block.
+</Tip>
