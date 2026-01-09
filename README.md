@@ -1,43 +1,31 @@
-# Mintlify Starter Kit
+# 0xio Documentation Repository
 
-Use the starter kit to get your docs deployed and ready to customize.
+This repository contains the source content and structure for the official **0xio Documentation**, which is live at [docs.0xio.xyz](https://docs.0xio.xyz/).
 
-Click the green **Use this template** button at the top of this repo to copy the Mintlify starter kit. The starter kit contains examples with
+## Purpose
 
-- Guide pages
-- Navigation
-- Customizations
-- API reference pages
-- Use of popular components
+The goal of this repository is to maintain the central knowledge base for the **0xio Ecosystem**. It serves as the single source of truth for:
 
-**[Follow the full quickstart guide](https://starter.mintlify.com/quickstart)**
+- **End Users:** Guides on using the Non-Custodial Wallet, Privacy Features, and Mobile App.
+- **Developers:** Technical documentation for the 0xio SDK and Octra Network integration.
+- **Community:** Information about the 0xio DEX, Telegram Bot, and security architecture.
 
-## Development
+## Repository Contents
 
-Install the [Mintlify CLI](https://www.npmjs.com/package/mint) to preview your documentation changes locally. To install, use the following command:
+The documentation is written in MDX and organized into the following sections:
 
-```
-npm i -g mint
-```
+- **Introduction:** Overview of 0xio and the Octra Network's FHE technology.
+- **Core Concepts:** Explanations of Public vs. Private balances and Cryptography.
+- **Wallet Guide:** Instructions for Installation, Sending, Receiving, and Privacy Operations.
+- **Products:** Detailed specs for the Mobile Wallet, DEX, and Telegram Bot.
+- **Developers:** Integration guides for the `@0xgery/wallet-sdk`.
 
-Run the following command at the root of your documentation, where your `docs.json` is located:
+## Quick Links
 
-```
-mint dev
-```
+- **Live Documentation:** [docs.0xio.xyz](https://docs.0xio.xyz/)
+- **Official Website:** [0xio.xyz](https://0xio.xyz)
+- **GitHub Organization:** [github.com/0xio-xyz](https://github.com/0xio-xyz)
 
-View your local preview at `http://localhost:3000`.
+## License
 
-## Publishing changes
-
-Install our GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app) to propagate changes from your repo to your deployment. Changes are deployed to production automatically after pushing to the default branch.
-
-## Need help?
-
-### Troubleshooting
-
-- If your dev environment isn't running: Run `mint update` to ensure you have the most recent version of the CLI.
-- If a page loads as a 404: Make sure you are running in a folder with a valid `docs.json`.
-
-### Resources
-- [Mintlify documentation](https://mintlify.com/docs)
+The content in this repository is licensed under the [MIT License](LICENSE).
