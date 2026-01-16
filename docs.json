@@ -63,7 +63,8 @@
               "products/extensions",
               "products/mobile",
               "products/dex",
-              "products/telegram-bot"
+              "products/telegram-bot",
+              "products/atlas"
             ]
           }
         ]
@@ -96,7 +97,6 @@
           "href": "https://chromewebstore.google.com/detail/0xio-wallet/anknhjilldkeelailocijnfibefmepcc",
           "icon": "download"
         },
-
         {
           "anchor": "Telegram Bot",
           "href": "https://t.me/nullxio_bot",
