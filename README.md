@@ -18,7 +18,7 @@ The documentation is written in MDX and organized into the following sections:
 - **Core Concepts:** Explanations of Public vs. Private balances and Cryptography.
 - **Wallet Guide:** Instructions for Installation, Sending, Receiving, and Privacy Operations.
 - **Products:** Detailed specs for the Mobile Wallet, DEX, and Telegram Bot.
-- **Developers:** Integration guides for the `@0xgery/wallet-sdk`.
+- **Developers:** Integration guides for the `@0xio/sdk`.
 
 ## Quick Links
 
