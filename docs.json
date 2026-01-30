@@ -66,6 +66,14 @@
               "products/telegram-bot",
               "products/atlas"
             ]
+          },
+          {
+            "group": "Bridge Services",
+            "pages": [
+              "products/bridge-services/solver",
+              "products/bridge-services/oracle",
+              "products/bridge-services/indexer"
+            ]
           }
         ]
       },
@@ -81,8 +89,7 @@
           {
             "group": "API Reference",
             "pages": [
-              "developers/oracle-api",
-              "developers/indexer-api"
+              "developers/oracle-api"
             ]
           },
           {
