@@ -1,0 +1,48 @@
+---
+title: '0xio Bridge'
+description: 'Secure, private, and intent-based cross-chain interoperability.'
+---
+
+# Overview
+
+The **0xio Bridge** is a next-generation interoperability protocol designed to connect **Octra** with **EVM** (Ethereum, Arbitrum, Optimism) and **Solana** chains. unlike traditional lock-and-mint bridges, 0xio utilizes an **Intent-Based Architecture** powered by a decentralized network of Solvers.
+
+## Why 0xio Bridge?
+
+### 1. Privacy-First
+Leveraging Octra's **Fully Homomorphic Encryption (FHE)**, cross-chain intents are encrypted locally on the user's device. Solvers execute these intents without ever seeing the raw transaction details until necessary, ensuring protection against front-running (MEV) and preserving user financial privacy.
+
+### 2. Instant Finality
+Traditional bridges rely on slow consensus verification. 0xio Solvers take on the risk of finality in exchange for a fee, providing users with **near-instant** transfers. As soon as a Solver verifies your deposit, they release funds on the destination chain immediately.
+
+### 3. Unified Liquidity
+By using **0xio-oracle** and a constant-product AMM model for pricing, we ensure deep liquidity and fair rates. Users don't need to worry about fragmented liquidity pools; the protocol routes optimally.
+
+---
+
+## How It Works
+
+The bridge operates on a **Fetch-Verify-Execute** loop:
+
+1.  **Intent Creation**: User signs an intent (e.g., "Swap 100 USDC on Eth to OCT on Octra").
+2.  **Solver Pickup**: Solvers (taking the role of Market Makers) detect this intent via the **0xio-indexer**.
+3.  **Execution**: The winning Solver fulfills the request on the destination chain using their own liquidity.
+4.  **Settlement**: The **0xio-oracle** verifies the execution and releases the user's original deposit to the Solver.
+
+---
+
+## Architecture Components
+
+The 0xio Bridge is composed of three core microservices working in unison.
+
+<CardGroup cols={3}>
+  <Card title="Solver Engine" icon="microchip" href="/products/bridge-services/solver">
+    The execution engine that fulfills user intents across chains using MPC wallets.
+  </Card>
+  <Card title="Indexer" icon="database" href="/products/bridge-services/indexer">
+    Stateless tracking service that indexes intents and monitors transaction status.
+  </Card>
+  <Card title="Oracle" icon="scale-balanced" href="/products/bridge-services/oracle">
+    Decentralized pricing and security module that verifies cross-chain state.
+  </Card>
+</CardGroup>

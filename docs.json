@@ -64,15 +64,11 @@
               "products/mobile",
               "products/dex",
               "products/telegram-bot",
-              "products/atlas"
-            ]
-          },
-          {
-            "group": "0xio Bridge",
-            "pages": [
+              "products/atlas",
+              "products/bridge-services/overview",
               "products/bridge-services/solver",
-              "products/bridge-services/oracle",
-              "products/bridge-services/indexer"
+              "products/bridge-services/indexer",
+              "products/bridge-services/oracle"
             ]
           }
         ]
