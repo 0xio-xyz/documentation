@@ -60,6 +60,7 @@
           {
             "group": "Products",
             "pages": [
+              "products/atlas",
               "products/extensions",
               "products/mobile",
               "products/dex",
