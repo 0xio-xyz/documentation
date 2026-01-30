@@ -65,10 +65,10 @@
               "products/dex",
               "products/telegram-bot",
               "products/atlas",
-              "products/bridge-services/overview",
-              "products/bridge-services/solver",
-              "products/bridge-services/indexer",
-              "products/bridge-services/oracle"
+              "products/bridge/overview",
+              "products/bridge/solver",
+              "products/bridge/indexer",
+              "products/bridge/oracle"
             ]
           }
         ]
