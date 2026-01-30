@@ -94,14 +94,11 @@ This prevents "spoofing" attacks where malicious actors try to trick the bridge 
 
 # The Indexer
 
-The **Indexer** is the central nervous system of the 0xio Bridge. While the Solver executes transactions, the Indexer keeps track of what needs to be done.
+The **Indexer** is the central nervous system of the 0xio Bridge. It acts as the **State Coordinator** for the network.
 
-## The "Post Office" Analogy
-
-Imagine the Bridge as a mail delivery system.
-*   **You (The User)** drop a letter (Intent) into the mailbox.
-*   **The Indexer** is the post office. It sorts the mail, categorizes it (Deposit vs Withdrawal), and puts it in a "Pending" pile.
-*   **The Solver** is the mail carrier. It picks up the pending mail and delivers it.
+It does not hold funds or execute transactions. Instead, it acts as a real-time scoreboard, ensuring that:
+1.  **Users** know the exact status of their funds (Pending, Processing, Completed).
+2.  **Solvers** know exactly which intents are waiting to be filled.
 
 ## Key Responsibilities
 
@@ -134,13 +131,14 @@ The 0xio Oracle uses a unique hybrid model to determine the exchange rate betwee
 
 ### 1. The Virtual USD Pool
 Instead of fragmenting liquidity between multiple pairs (OCT/USDC and OCT/USDT), the Oracle combines all stablecoin liquidity into a single **"Virtual USD"** pool.
-*   **Benefit:** This creates a deeper liquidity pool, meaning large transfers suffer less "slippage" (price change).
-*   **Result:** Whether you withdraw to USDC on Ethereum or USDT on Solana, you get the same fair market rate.
+*   **OCT Pricing:** The price of OCT floats freely based on the **AMM Liquidity Curve** (Supply & Demand) against this unified USD pool.
+*   **Benefit:** This creates a deeper liquidity pool, meaning large transfers suffer less "slippage".
 
-### 2. Pyth Network Integration
-To prevent the internal bridge price from deviating from the global market, the Oracle integrates with **Pyth Network**, a high-fidelity real-time price feed.
-*   The Oracle constantly checks the global price of OCT, USDC, and USDT.
-*   It adjusts the internal curve to match these external prices, ensuring you never pay a significant premium compared to centralized exchanges.
+### 2. Stablecoin Peg Assurance (Pyth Network)
+To prevent stablecoin de-pegging from affecting the bridge's internal value, the Oracle integrates with **Pyth Network** for external verification.
+*   The Oracle monitors the real-time market price of **USDC** and **USDT**.
+*   This ensures that the "Virtual USD" side of the pool is always anchored to true market value, protecting the protocol from bad assets.
+
 
 ## Protection Mechanisms
 
