@@ -32,8 +32,8 @@ Keep your API key secret. Never expose it in client-side code or public reposito
 |----------|---------------|
 | `GET /health` | No |
 | `GET /api/health` | No |
-| `GET /api/keys` | No |
-| `POST /api/keys` | No |
+| `GET /api/keys` | Signature |
+| `POST /api/keys` | Signature |
 | `GET /api/price/:symbol` | Yes |
 | `GET /api/prices` | Yes |
 | `GET /api/quote` | Yes |
@@ -312,14 +312,22 @@ curl -H "x-api-key: YOUR_KEY" \
 ### List Your Keys
 
 ```http
-GET /api/keys?owner=:address
+GET /api/keys
 ```
 
-List all API keys associated with your wallet address. Returns masked keys.
+List all API keys associated with your wallet address. **Requires wallet signature for privacy.**
+
+**Query Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `owner` | string | Yes | Your wallet address |
+| `timestamp` | number | Yes | Unix timestamp |
+| `signature` | string | Yes | Base64-encoded signature of `0xio-list-keys:{owner}:{timestamp}` |
+| `public_key` | string | Yes | Base64-encoded Ed25519 public key |
 
 **Example:**
 ```bash
-curl "https://oracle.0xio.xyz/api/keys?owner=oct1abc..."
+curl "https://oracle.0xio.xyz/api/keys?owner=oct1...&timestamp=170...&signature=...&public_key=..."
 ```
 
 **Response:**

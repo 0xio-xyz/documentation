@@ -68,7 +68,7 @@
             ]
           },
           {
-            "group": "Bridge Services",
+            "group": "0xio Bridge",
             "pages": [
               "products/bridge-services/solver",
               "products/bridge-services/oracle",
