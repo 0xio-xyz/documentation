@@ -64,7 +64,11 @@ The Solver detects this request, verifies you've paid, and then uses its own liq
 
 ### 1. Privacy First (ECIES)
 Your privacy is paramount. When you initiate a transfer, the destination of your funds is **never revealed in plaintext** on the source chain.
-*   **Encryption:** Your intent (e.g., "Send to 0x123... on Ethereum") is encrypted using the Solver's Public Key.
+*   **Encryption:** Your intent (e.g., "Send to 0x123... on Ethereum") is encrypted using **ECIES (Secp256k1)**.
+*   **Delivery:**
+    *   **EVM:** The encrypted payload is passed directly to the **BridgeVault** contract.
+    *   **Solana:** It is attached as a **Memo instruction** to the transfer transaction.
+    *   **Octra:** It is embedded as the encrypted **Transaction Message**.
 *   **On-Chain Anonymity:** To the outside world, it looks like you simply sent tokens to a privacy pool. Only the Solver can decrypt your instructions.
 
 ### 2. Multi-Party Computation (MPC)
