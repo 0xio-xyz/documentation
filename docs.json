@@ -64,11 +64,7 @@
               "products/mobile",
               "products/dex",
               "products/telegram-bot",
-              "products/atlas",
-              "products/bridge/overview",
-              "products/bridge/solver",
-              "products/bridge/indexer",
-              "products/bridge/oracle"
+              "products/bridge"
             ]
           }
         ]
