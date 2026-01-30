@@ -1,7 +1,7 @@
 ---
 title: '0xio Bridge'
 description: 'Secure, private, and intent-based cross-chain interoperability.'
-icon: "bridge"
+icon: 'bridge'
 ---
 
 # Overview
@@ -73,10 +73,10 @@ To ensure funds are safe, the Solver doesn't rely on a single private key that c
 *   **Collaborative Signing:** To sign a transaction, multiple independent nodes must collaborate. No single node ever sees the full key. This mimics the security of a multisig wallet but acts as a standard single-signature wallet on-chain.
 
 ### 3. Source Verification (Security)
-Before release funds, the Solver performs rigorous security checks. It independently queries the blockchain to verify:
-*   Did the source transaction actually happen?
-*   Is it confirmed?
-*   Did the Solver receive the correct amount?
+Before release funds, the Solver performs rigorous security checks tailored to each chain:
+*   **EVM Checks:** Verifies that funds were deposited into the **BridgeVault V2** smart contract (validating event logs and sender), ensuring funds aren't just sent to an EOA.
+*   **Solana Checks:** Validates transfers to the Solver's **Associated Token Account (ATA)** using balance-diffing to confirm receipt.
+*   **Common Checks:** Confirms transaction finality, amount accuracy, and strict intent matching.
 
 This prevents "spoofing" attacks where malicious actors try to trick the bridge into releasing funds for fake transactions.
 
@@ -102,7 +102,9 @@ Imagine the Bridge as a mail delivery system.
 ## Key Responsibilities
 
 ### 1. Intent Discovery
-The Indexer listens for signals from the 0xio DEX and Wallet Extension. When you sign a transaction, the Indexer records the "Proof of Intent" — the transaction hash and the encrypted instructions.
+The Indexer listens for signals from the 0xio DEX and Wallet Extension. It enforces **Type-Safe Intents** (e.g., distinguishing `DEPOSIT_SOL` from `DEPOSIT_EVM`) to ensure that every request is routed to the correct validation logic from the moment it enters the system.
+
+When you sign a transaction, the Indexer records the "Proof of Intent" — the transaction hash and the encrypted instructions.
 
 ### 2. State Management
 A bridge transaction goes through several states:
