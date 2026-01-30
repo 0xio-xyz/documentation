@@ -1,0 +1,40 @@
+---
+title: The Solver Engine
+description: Understanding the MPC-powered execution layer of the 0xio Bridge.
+---
+
+# The Solver Engine
+
+The **Solver** is the beating heart of the 0xio Bridge. Unlike traditional bridges that rely on static smart contracts to lock and mint assets, the 0xio Bridge uses an **Intent-Based Architecture** powered by off-chain Solvers.
+
+## What is a Solver?
+
+Think of a Solver as a specialized, automated market maker. When you request a bridge transfer (an "Intent"), you aren't just sending tokens to a contract; you are broadcasting a request to the network: *"I have 100 OCT, and I want 100 USDC on Ethereum."*
+
+The Solver detects this request, verifies you've paid, and then uses its own liquidity to instantly release the funds to you on the destination chain.
+
+## How It Works
+
+### 1. Privacy First (ECIES)
+Your privacy is paramount. When you initiate a transfer, the destination of your funds is **never revealed in plaintext** on the source chain.
+*   **Encryption:** Your intent (e.g., "Send to 0x123... on Ethereum") is encrypted using the Solver's Public Key.
+*   **On-Chain Anonymity:** To the outside world, it looks like you simply sent tokens to a privacy pool. Only the Solver can decrypt your instructions.
+
+### 2. Multi-Party Computation (MPC)
+To ensure funds are safe, the Solver doesn't rely on a single private key that could be lost or stolen. It uses **Threshold MPC**.
+*   **Sharded Keys:** The key to the Solver's wallet is split into multiple pieces ("shares").
+*   **Collaborative Signing:** To sign a transaction, multiple independent nodes must collaborate. No single node ever sees the full key. This mimics the security of a multisig wallet but acts as a standard single-signature wallet on-chain.
+
+### 3. Source Verification (Security)
+Before release funds, the Solver performs rigorous security checks. It independently queries the blockchain to verify:
+*   Did the source transaction actually happen?
+*   Is it confirmed?
+*   Did the Solver receive the correct amount?
+
+This prevents "spoofing" attacks where malicious actors try to trick the bridge into releasing funds for fake transactions.
+
+## Why This Architecture?
+
+*   **Speed:** Solvers can execute transactions in parallel, limited only by the block time of the destination chain.
+*   **Cost:** By aggregating liquidity, Solvers reduce the gas costs associated with complex on-chain minting logic.
+*   **Privacy:** The Intent/Solver model naturally decouples the sender from the receiver, breaking the link analysis chain used by trackers.

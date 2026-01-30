@@ -79,6 +79,13 @@
             ]
           },
           {
+            "group": "API Reference",
+            "pages": [
+              "developers/oracle-api",
+              "developers/indexer-api"
+            ]
+          },
+          {
             "group": "Smart Contracts",
             "pages": []
           }

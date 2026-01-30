@@ -28,9 +28,9 @@ pnpm add @0xio/sdk
 
 **Package Details:**
 - **Package:** `@0xio/sdk`
-- **Version:** 2.1.4
+- **Version:** 2.1.7
 - **Min Extension:** v2.0.1+
-- **License:** Proprietary (Closed Source)
+- **License:** MIT
 
 ## Quick Start
 
@@ -54,6 +54,10 @@ async function initWallet() {
     console.log('Public:', balance.public, 'OCT');
     console.log('Private:', balance.private, 'OCT');
     console.log('Total:', balance.total, 'OCT');
+
+    // Sign a message for authentication
+    const signature = await wallet.signMessage('Welcome to My Privacy dApp!');
+    console.log('Signature:', signature);
   }
 }
 
@@ -98,7 +102,8 @@ Requests connection to the extension. User must approve in popup.
 const result = await wallet.connect({
   requestPermissions: [
     'read_balance',        // View public OCT balance
-    'send_transactions',   // Request signatures
+    'send_transactions',   // Request transaction signatures
+    'sign_messages',       // Sign arbitrary messages
     'view_private_balance' // Access FHE balance (optional)
   ]
 });
@@ -267,6 +272,46 @@ console.log('Has more:', history.hasMore);
 
 - **Parameters:** `page` (default: 1), `limit` (default: 20)
 - **Returns:** `Promise<TransactionHistory>`
+
+### Message Signing
+
+#### `signMessage(message)`
+
+Signs an arbitrary message with the wallet's private key using Ed25519. The user will be prompted to approve the signature request in the extension popup.
+
+```typescript
+// Simple message signing
+const signature = await wallet.signMessage('Hello, 0xio!');
+console.log('Signature:', signature);
+
+// Authentication challenge with timestamp
+const timestamp = Date.now();
+const challenge = `Sign in to MyDApp\nTimestamp: ${timestamp}\nAddress: ${wallet.getAddress()}`;
+const authSignature = await wallet.signMessage(challenge);
+
+// API key creation (for 0xio Oracle/Indexer)
+const owner = wallet.getAddress();
+const ts = Math.floor(Date.now() / 1000);
+const apiKeyMessage = `0xio-api-key:${owner}:${ts}`;
+const signature = await wallet.signMessage(apiKeyMessage);
+```
+
+- **Parameters:** `message: string` - The text message to sign (must be non-empty)
+- **Returns:** `Promise<string>` - Base64-encoded Ed25519 signature (64 bytes)
+- **Throws:**
+  - `SIGNATURE_FAILED` - If signing fails or message is invalid
+  - `USER_REJECTED` - If user rejects the signature request
+  - `WALLET_LOCKED` - If wallet is locked
+
+**Use Cases:**
+- **Authentication**: Prove wallet ownership for login/API access
+- **Attestation**: Sign data for on-chain verification
+- **Authorization**: Approve off-chain actions
+- **API Keys**: Create authenticated API credentials for Oracle/Indexer
+
+<Warning>
+Always include timestamps or nonces in messages to prevent replay attacks. Never sign messages you don't understand.
+</Warning>
 
 ### Privacy Operations
 
@@ -532,6 +577,11 @@ try {
         console.log('Transaction failed:', error.message);
         break;
 
+      case ErrorCode.SIGNATURE_FAILED:
+        console.log('Signing failed:', error.message);
+        showError('Failed to sign message');
+        break;
+
       default:
         console.error('Unexpected error:', error.message);
     }
@@ -558,6 +608,7 @@ try {
 | `INVALID_AMOUNT` | Negative or improperly formatted amount |
 | `PERMISSION_DENIED` | Requested permission not granted |
 | `TRANSACTION_FAILED` | Transaction reverted or rejected |
+| `SIGNATURE_FAILED` | Message signing failed or invalid input |
 | `WALLET_LOCKED` | Wallet is locked, user needs to unlock |
 | `CONNECTION_REFUSED` | Connection was refused |
 | `RATE_LIMIT_EXCEEDED` | Too many requests |
@@ -617,7 +668,7 @@ export function useWallet() {
   const connect = async () => {
     try {
       const result = await wallet.connect({
-        requestPermissions: ['read_balance', 'send_transactions']
+        requestPermissions: ['read_balance', 'send_transactions', 'sign_messages']
       });
       setAddress(result.address);
       setBalance(result.balance);
@@ -639,6 +690,11 @@ export function useWallet() {
     }
   };
 
+  const signMessage = async (message: string) => {
+    if (!isConnected) throw new Error('Not connected');
+    return await wallet.signMessage(message);
+  };
+
   return {
     wallet,
     address,
@@ -647,7 +703,8 @@ export function useWallet() {
     isReady,
     connect,
     disconnect,
-    refreshBalance
+    refreshBalance,
+    signMessage
   };
 }
 ```
@@ -696,7 +753,7 @@ export function useWallet() {
   const connect = async () => {
     try {
       const result = await wallet.connect({
-        requestPermissions: ['read_balance', 'send_transactions']
+        requestPermissions: ['read_balance', 'send_transactions', 'sign_messages']
       });
       address.value = result.address;
       balance.value = result.balance;
@@ -711,7 +768,12 @@ export function useWallet() {
     await wallet.disconnect();
   };
 
-  return { wallet, address, balance, isConnected, isReady, connect, disconnect };
+  const signMessage = async (message: string) => {
+    if (!isConnected.value) throw new Error('Not connected');
+    return await wallet.signMessage(message);
+  };
+
+  return { wallet, address, balance, isConnected, isReady, connect, disconnect, signMessage };
 }
 ```
 
@@ -782,8 +844,10 @@ interface NetworkInfo {
 }
 
 type Permission =
+  | 'read_address'
   | 'read_balance'
   | 'send_transactions'
+  | 'sign_messages'
   | 'view_private_balance'
   | 'private_transfers';
 ```
@@ -853,7 +917,7 @@ import {
   checkSDKCompatibility
 } from '@0xio/sdk';
 
-console.log('SDK Version:', SDK_VERSION); // "2.1.4"
+console.log('SDK Version:', SDK_VERSION); // "2.1.5"
 console.log('Min Extension:', MIN_EXTENSION_VERSION); // "2.0.1"
 console.log('Supported:', SUPPORTED_EXTENSION_VERSIONS); // "^2.0.1"
 
@@ -880,6 +944,13 @@ if (!compatible) {
 - Handle all error cases explicitly
 - Show loading states during confirmation
 - Provide transaction hash for tracking
+
+### Message Signing
+- Always include timestamps or nonces to prevent replay attacks
+- Display the full message to users before signing
+- Use `sign_messages` permission for authentication flows
+- Verify signatures server-side using Ed25519
+- Never sign messages that look like transaction data
 
 ### Privacy
 - Clearly indicate when using FHE features

@@ -1,0 +1,507 @@
+---
+title: "Oracle API"
+description: "Real-time price feeds and AMM quotes from 0xio Oracle"
+icon: "chart-line"
+---
+
+The **0xio Oracle** provides real-time price feeds, swap quotes, and AMM functionality for the 0xio DEX ecosystem.
+
+## Base URL
+
+```
+https://oracle.0xio.xyz
+```
+
+## Authentication
+
+Most API endpoints require an API key. Get your key from the [Developer Portal](https://devs.0xio.xyz).
+
+Include the key in the `x-api-key` header:
+
+```http
+x-api-key: 0xio-abc123def456-oracle
+```
+
+<Warning>
+Keep your API key secret. Never expose it in client-side code or public repositories.
+</Warning>
+
+### Protected vs Public Endpoints
+
+| Endpoint | Auth Required |
+|----------|---------------|
+| `GET /health` | No |
+| `GET /api/health` | No |
+| `GET /api/keys` | No |
+| `POST /api/keys` | No |
+| `GET /api/price/:symbol` | Yes |
+| `GET /api/prices` | Yes |
+| `GET /api/quote` | Yes |
+| `GET /api/reserves` | Yes |
+| `GET /api/chart/history` | Yes |
+| `POST /api/simulate-trade` | Yes |
+| `POST /api/liquidity` | Yes |
+| `DELETE /api/keys` | Yes |
+
+---
+
+## Health Check
+
+### Full Health Check
+
+```http
+GET /health
+```
+
+Returns detailed service status including database and cache connectivity.
+
+**Response:**
+```json
+{
+  "status": "healthy",
+  "timestamp": "2025-01-26T12:00:00+00:00",
+  "version": "2.0.0",
+  "services": {
+    "database": "connected",
+    "redis": "connected"
+  },
+  "environment": "production"
+}
+```
+
+### Simple Liveness Probe
+
+```http
+GET /api/health
+```
+
+Returns a simple response for load balancer health checks.
+
+**Response:**
+```json
+{
+  "status": "ok",
+  "timestamp": 1706270400000
+}
+```
+
+---
+
+## Prices
+
+### Get Token Price
+
+```http
+GET /api/price/:symbol
+```
+
+Get the current spot price for a specific token.
+
+**Parameters:**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `symbol` | path | Token symbol (e.g., `OCT`, `USDC`, `SOL`, `ETH`) |
+
+**Example:**
+```bash
+curl -H "x-api-key: YOUR_KEY" \
+  https://oracle.0xio.xyz/api/price/OCT
+```
+
+**Response:**
+```json
+{
+  "symbol": "OCT",
+  "price": 1.25,
+  "source": "amm"
+}
+```
+
+The `source` field indicates where the price came from:
+- `pyth` - Pyth Network oracle feed
+- `amm` - Calculated from AMM reserves
+- `static` - Hardcoded value (stablecoins like USDC/USDT)
+
+### Get All Prices
+
+```http
+GET /api/prices
+```
+
+Get current prices for all supported tokens (OCT, USDC, USDT, SOL, ETH).
+
+**Example:**
+```bash
+curl -H "x-api-key: YOUR_KEY" \
+  https://oracle.0xio.xyz/api/prices
+```
+
+**Response:**
+```json
+{
+  "OCT": 1.25,
+  "USDC": 1.0,
+  "USDT": 1.0,
+  "SOL": 180.50,
+  "ETH": 3200.00
+}
+```
+
+---
+
+## Trading
+
+### Get Swap Quote
+
+```http
+GET /api/quote
+```
+
+Get a swap quote with expected output amount and price impact.
+
+**Query Parameters:**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `inputMint` | string | Input token symbol |
+| `outputMint` | string | Output token symbol |
+| `amount` | string | Input amount (as string) |
+
+**Example:**
+```bash
+curl -H "x-api-key: YOUR_KEY" \
+  "https://oracle.0xio.xyz/api/quote?inputMint=OCT&outputMint=USDC&amount=100"
+```
+
+**Response:**
+```json
+{
+  "inputToken": "OCT",
+  "outputToken": "USDC",
+  "amountIn": 100,
+  "amountOut": 124.75,
+  "feeAmount": 0.25,
+  "priceImpact": 0.0005,
+  "spotPrice": 1.25,
+  "executionPrice": 1.2475,
+  "route": "Solver-AMM-v1"
+}
+```
+
+### Get AMM Reserves
+
+```http
+GET /api/reserves
+```
+
+Get current liquidity pool reserves.
+
+**Example:**
+```bash
+curl -H "x-api-key: YOUR_KEY" \
+  https://oracle.0xio.xyz/api/reserves
+```
+
+**Response:**
+```json
+{
+  "reserves": {
+    "OCT": 1000000,
+    "USDC": 1250000,
+    "USDT": 500000
+  },
+  "timestamp": 1706270400000
+}
+```
+
+### Simulate Trade
+
+```http
+POST /api/simulate-trade
+```
+
+Simulate a trade execution against the AMM. Updates internal reserves for quote accuracy.
+
+**Request Body:**
+```json
+{
+  "inputToken": "OCT",
+  "amountIn": 1000,
+  "outputToken": "USDC",
+  "amountOut": 1245.50
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "newReserves": {
+    "OCT": 1001000,
+    "USDC": 1248754.50
+  }
+}
+```
+
+### Update Liquidity (Admin)
+
+```http
+POST /api/liquidity
+```
+
+Update liquidity reserves. Used by the watcher service to sync on-chain balances.
+
+**Request Body:**
+```json
+{
+  "reserves": {
+    "OCT": 1000000,
+    "USDC": 1250000
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Liquidity Updated",
+  "currentReserves": {
+    "OCT": 1000000,
+    "USDC": 1250000
+  },
+  "newPriceOctUsdt": 1.25
+}
+```
+
+---
+
+## Chart Data
+
+### Get Price History
+
+```http
+GET /api/chart/history
+```
+
+Get historical price data for the last 24 hours.
+
+**Query Parameters:**
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `pair` | string | `OCT-USDC` | Trading pair |
+
+**Example:**
+```bash
+curl -H "x-api-key: YOUR_KEY" \
+  "https://oracle.0xio.xyz/api/chart/history?pair=OCT-USDC"
+```
+
+**Response:**
+```json
+[
+  { "value": 1.24, "time": 1706270400000 },
+  { "value": 1.25, "time": 1706274000000 },
+  { "value": 1.26, "time": 1706277600000 }
+]
+```
+
+---
+
+## API Key Management
+
+### List Your Keys
+
+```http
+GET /api/keys?owner=:address
+```
+
+List all API keys associated with your wallet address. Returns masked keys.
+
+**Example:**
+```bash
+curl "https://oracle.0xio.xyz/api/keys?owner=oct1abc..."
+```
+
+**Response:**
+```json
+[
+  {
+    "key_masked": "0xio-abc...cle",
+    "label": "Production App",
+    "created_at": "2025-01-15 10:30:00"
+  }
+]
+```
+
+### Generate New Key
+
+```http
+POST /api/keys
+```
+
+Generate a new API key. Requires wallet signature for verification. Keys follow the format `0xio-{hex}-oracle`.
+
+**Request Body:**
+```json
+{
+  "owner": "oct1abc...",
+  "label": "My App Production",
+  "signature": "base64_encoded_signature",
+  "timestamp": 1706270400
+}
+```
+
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `owner` | string | Yes | Your wallet address (oct1...) |
+| `public_key` | string | Yes | The Ed25519 public key in HEX or Base64 |
+| `label` | string | No | Descriptive label for the key |
+| `signature` | string | Yes | Base64-encoded ed25519 signature |
+| `timestamp` | number | Yes | Unix timestamp (must be within 5 minutes) |
+
+**Signature Message Format:**
+```
+0xio-api-key:{owner}:{timestamp}
+```
+
+Example: `0xio-api-key:oct1abc123...:1706270400`
+
+**Response:**
+```json
+{
+  "status": "created",
+  "key": "0xio-a1b2c3d4e5f6g7h8-oracle"
+}
+```
+
+<Warning>
+Store your API key securely! It will only be shown once.
+</Warning>
+
+<Tip>
+Use the [Developer Portal](https://devs.0xio.xyz) to create keys easily - it handles wallet signing automatically.
+</Tip>
+
+### Revoke Key
+
+```http
+DELETE /api/keys
+```
+
+Revoke an existing API key. The key to revoke must be provided in the header.
+
+**Headers:**
+```http
+x-api-key: KEY_TO_REVOKE
+```
+
+**Response:**
+```json
+{
+  "status": "deleted"
+}
+```
+
+---
+
+## Error Responses
+
+| HTTP Status | Description |
+|-------------|-------------|
+| 400 | Bad Request - Invalid parameters |
+| 401 | Unauthorized - Invalid or missing API key |
+| 404 | Not Found - Token or resource not found |
+| 500 | Internal Server Error |
+
+---
+
+## Code Examples
+
+### JavaScript/TypeScript
+
+```typescript
+const ORACLE_URL = 'https://oracle.0xio.xyz';
+const API_KEY = 'your_api_key';
+
+async function getQuote(input: string, output: string, amount: number) {
+  const response = await fetch(
+    `${ORACLE_URL}/api/quote?inputMint=${input}&outputMint=${output}&amount=${amount}`,
+    {
+      headers: { 'x-api-key': API_KEY }
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Oracle error: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+// Usage
+const quote = await getQuote('OCT', 'USDC', 100);
+console.log(`Expected output: ${quote.amountOut} USDC`);
+console.log(`Price impact: ${(quote.priceImpact * 100).toFixed(2)}%`);
+```
+
+### Python
+
+```python
+import requests
+
+ORACLE_URL = 'https://oracle.0xio.xyz'
+API_KEY = 'your_api_key'
+
+def get_price(symbol: str) -> dict:
+    response = requests.get(
+        f'{ORACLE_URL}/api/price/{symbol}',
+        headers={'x-api-key': API_KEY}
+    )
+    response.raise_for_status()
+    return response.json()
+
+# Usage
+price = get_price('OCT')
+print(f"OCT Price: ${price['price']} (source: {price['source']})")
+```
+
+### Rust
+
+```rust
+use reqwest::header::HeaderMap;
+use serde::Deserialize;
+
+const ORACLE_URL: &str = "https://oracle.0xio.xyz";
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct QuoteResponse {
+    input_token: String,
+    output_token: String,
+    amount_in: f64,
+    amount_out: f64,
+    price_impact: f64,
+}
+
+async fn get_quote(api_key: &str, input: &str, output: &str, amount: f64)
+    -> Result<QuoteResponse, reqwest::Error>
+{
+    let mut headers = HeaderMap::new();
+    headers.insert("x-api-key", api_key.parse().unwrap());
+
+    let client = reqwest::Client::new();
+    client
+        .get(format!("{}/api/quote", ORACLE_URL))
+        .query(&[
+            ("inputMint", input),
+            ("outputMint", output),
+            ("amount", &amount.to_string()),
+        ])
+        .headers(headers)
+        .send()
+        .await?
+        .json()
+        .await
+}
+```

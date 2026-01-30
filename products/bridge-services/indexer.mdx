@@ -1,0 +1,32 @@
+---
+title: The Indexer
+description: How 0xio tracks and organizes cross-chain intents.
+---
+
+# The Indexer
+
+The **Indexer** is the central nervous system of the 0xio Bridge. While the Solver executes transactions, the Indexer keeps track of what needs to be done.
+
+## The "Post Office" Analogy
+
+Imagine the Bridge as a mail delivery system.
+*   **You (The User)** drop a letter (Intent) into the mailbox.
+*   **The Indexer** is the post office. It sorts the mail, categorizes it (Deposit vs Withdrawal), and puts it in a "Pending" pile.
+*   **The Solver** is the mail carrier. It picks up the pending mail and delivers it.
+
+## Key Responsibilities
+
+### 1. Intent Discovery
+The Indexer listens for signals from the 0xio DEX and Wallet Extension. When you sign a transaction, the Indexer records the "Proof of Intent" — the transaction hash and the encrypted instructions.
+
+### 2. State Management
+A bridge transaction goes through several states:
+*   **PENDING:** The user has paid, waiting for the Solver.
+*   **PROCESSING:** The Solver has picked up the task.
+*   **COMPLETED:** Funds have been successfully delivered.
+*   **FAILED:** Something went wrong (e.g., transaction reverted).
+
+The Indexer maintains this state in real-time, allowing the UI to show you exactly where your funds are.
+
+### 3. Historical Record
+The Indexer provides a permanent history of your bridge activity. This allows you to audit your past deposits and withdrawals, even if the user interface or browser cache is cleared.
