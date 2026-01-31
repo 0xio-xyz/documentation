@@ -37,27 +37,35 @@ pnpm add @0xio/sdk
 The fastest way to get started:
 
 ```typescript
-import { createZeroXIOWallet } from '@0xio/sdk';
+import { ZeroXIOWallet } from '@0xio/sdk';
 
 async function initWallet() {
-  const wallet = await createZeroXIOWallet({
+  // 1. Create instance with config
+  const wallet = new ZeroXIOWallet({
     appName: 'My Privacy dApp',
     appDescription: 'An encrypted DeFi protocol on Octra',
-    autoConnect: true,
+    requiredPermissions: ['read_balance', 'send_transactions'], // Declare needs upfront
   });
 
-  if (wallet.isConnected()) {
-    const address = wallet.getAddress();
-    console.log('Connected to:', address);
+  // 2. Initialize (checks for extension)
+  const isAvailable = await wallet.initialize();
+  
+  if (!isAvailable) {
+    console.log("0xio Extension not detected. Please install it.");
+    return;
+  }
+
+  // 3. Connect
+  try {
+    const result = await wallet.connect();
+    console.log('Connected to:', result.address);
 
     const balance = await wallet.getBalance(true);
     console.log('Public:', balance.public, 'OCT');
     console.log('Private:', balance.private, 'OCT');
-    console.log('Total:', balance.total, 'OCT');
 
-    // Sign a message for authentication
-    const signature = await wallet.signMessage('Welcome to My Privacy dApp!');
-    console.log('Signature:', signature);
+  } catch (err) {
+    console.error("Failed to connect:", err);
   }
 }
 
@@ -619,53 +627,102 @@ try {
 ### React Hook
 
 ```typescript
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { ZeroXIOWallet, Balance, ConnectEvent } from '@0xio/sdk';
 
-const walletInstance = new ZeroXIOWallet({ appName: 'My DApp' });
+// Singleton instance to prevent multiple listeners
+let walletInstance: ZeroXIOWallet | null = null;
 
 export function useWallet() {
-  const [wallet] = useState(walletInstance);
+  const [wallet, setWallet] = useState<ZeroXIOWallet | null>(walletInstance);
   const [address, setAddress] = useState<string | null>(null);
   const [balance, setBalance] = useState<Balance | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    wallet.initialize().then(() => {
-      setIsReady(true);
+    let mounted = true;
 
-      // Check for existing connection
-      wallet.getConnectionStatus();
-    });
+    async function init() {
+      // Return existing instance if ready
+      if (walletInstance) {
+        if (mounted) {
+          setWallet(walletInstance);
+          setIsReady(true);
+          walletInstance.getConnectionStatus().then(status => {
+             if (status.isConnected && mounted) {
+                setAddress(status.address || null);
+                setIsConnected(true);
+             }
+          });
+        }
+        return;
+      }
 
-    wallet.on('connect', (event: ConnectEvent) => {
-      setAddress(event.address);
-      setBalance(event.balance);
-      setIsConnected(true);
-    });
+      // Create new instance
+      const sdk = new ZeroXIOWallet({ 
+        appName: 'My DApp',
+        debug: true 
+      });
 
-    wallet.on('disconnect', () => {
-      setAddress(null);
-      setBalance(null);
-      setIsConnected(false);
-    });
+      try {
+        // Initialize (waits for extension)
+        const ready = await sdk.initialize();
+        if (ready && mounted) {
+           walletInstance = sdk;
+           setWallet(sdk);
+           setIsReady(true);
+           
+           // Check existing connection
+           const status = await sdk.getConnectionStatus();
+           if (status.isConnected) {
+             setAddress(status.address || null);
+             setIsConnected(true);
+           }
+        }
+      } catch (e) {
+        console.error("SDK Init failed:", e);
+      }
+    }
 
-    wallet.on('balanceChanged', (event) => {
-      setBalance(event.newBalance);
-    });
+    init();
 
-    wallet.on('accountChanged', (event) => {
-      setAddress(event.newAddress);
-      if (event.balance) setBalance(event.balance);
-    });
+    // Setup listeners if wallet exists
+    if (wallet) {
+      const handleConnect = (event: ConnectEvent) => {
+        if (!mounted) return;
+        setAddress(event.address);
+        setBalance(event.balance);
+        setIsConnected(true);
+      };
 
-    return () => {
-      wallet.removeAllListeners();
-    };
+      const handleDisconnect = () => {
+        if (!mounted) return;
+        setAddress(null);
+        setBalance(null);
+        setIsConnected(false);
+      };
+
+      const handleAccountChanged = (event: any) => {
+        if (!mounted) return;
+        setAddress(event.newAddress);
+        if (event.balance) setBalance(event.balance);
+      };
+
+      wallet.on('connect', handleConnect);
+      wallet.on('disconnect', handleDisconnect);
+      wallet.on('accountChanged', handleAccountChanged);
+
+      return () => {
+        wallet.off('connect', handleConnect);
+        wallet.off('disconnect', handleDisconnect);
+        wallet.off('accountChanged', handleAccountChanged);
+      };
+    }
   }, [wallet]);
 
-  const connect = async () => {
+  const connect = useCallback(async () => {
+    if (!wallet) throw new Error("Wallet SDK not initialized");
     try {
       const result = await wallet.connect({
         requestPermissions: ['read_balance', 'send_transactions', 'sign_messages']
@@ -677,23 +734,9 @@ export function useWallet() {
       console.error('Connection failed:', error);
       throw error;
     }
-  };
+  }, [wallet]);
 
-  const disconnect = async () => {
-    await wallet.disconnect();
-  };
-
-  const refreshBalance = async () => {
-    if (isConnected) {
-      const newBalance = await wallet.getBalance(true);
-      setBalance(newBalance);
-    }
-  };
-
-  const signMessage = async (message: string) => {
-    if (!isConnected) throw new Error('Not connected');
-    return await wallet.signMessage(message);
-  };
+  // ... other methods (disconnect, signMessage, etc)
 
   return {
     wallet,
@@ -701,10 +744,7 @@ export function useWallet() {
     balance,
     isConnected,
     isReady,
-    connect,
-    disconnect,
-    refreshBalance,
-    signMessage
+    connect
   };
 }
 ```
