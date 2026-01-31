@@ -27,10 +27,67 @@ pnpm add @0xio/sdk
 </CodeGroup>
 
 **Package Details:**
-- **Package:** `@0xio/sdk`
 - **Version:** 2.1.7
 - **Min Extension:** v2.0.1+
 - **License:** MIT
+
+## Project Setup & Requirements
+
+> [!IMPORTANT]
+> The SDK relies on Node.js globals (`Buffer`, `process`, `crypto`) for secure operations. Modern build tools like **Vite** or **Webpack 5+** do not provide these by default. You MUST configure polyfills.
+
+### Vite Configuration
+
+1. Install the polyfill plugin:
+```bash
+npm install vite-plugin-node-polyfills
+```
+
+2. Update `vite.config.ts`:
+```typescript
+import { defineConfig } from 'vite';
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
+
+export default defineConfig({
+  plugins: [
+    nodePolyfills({
+      include: ['buffer', 'process', 'util', 'stream', 'events'],
+      globals: {
+        Buffer: true,
+        global: true,
+        process: true,
+      },
+    }),
+  ],
+});
+```
+
+### Webpack 5 Configuration
+
+If using Create React App (CRA) v5 or custom Webpack, install `react-app-rewired` or customize your config:
+
+```javascript
+// webpack.config.js
+const webpack = require('webpack');
+
+module.exports = {
+  // ...
+  resolve: {
+    fallback: {
+      "crypto": require.resolve("crypto-browserify"),
+      "stream": require.resolve("stream-browserify"),
+      "buffer": require.resolve("buffer/"),
+      "process": require.resolve("process/browser"),
+    }
+  },
+  plugins: [
+    new webpack.ProvidePlugin({
+      Buffer: ['buffer', 'Buffer'],
+      process: 'process/browser',
+    }),
+  ]
+};
+```
 
 ## Quick Start
 
