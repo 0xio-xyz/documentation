@@ -63,6 +63,7 @@
               "products/atlas",
               "products/extensions",
               "products/mobile",
+              "products/desktop",
               "products/dex",
               "products/telegram-bot",
               "products/bridge"

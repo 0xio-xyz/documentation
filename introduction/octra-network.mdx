@@ -86,11 +86,31 @@ Circles are best understood as:
 
 They scale independently, remain isolated, and inherit encrypted execution by default.
 
+## Networks
+
+Octra currently operates two public networks:
+
+| Network | Purpose | FHE Support | Explorer |
+|---------|---------|:---:|---|
+| **Mainnet Alpha** | Production network | No | [octrascan.io](https://octrascan.io) |
+| **Devnet** | Development and testing | Yes | [devnet.octrascan.io](https://devnet.octrascan.io) |
+
+**Devnet** is the primary testing ground for FHE-powered features — encrypted balances, private transfers, smart contract development, and the full encrypt/decrypt/claim flow. All 0xio products (extension, mobile app, desktop) support switching between networks.
+
 ## How 0xio Fits In
 
 0xio sits **above** Octra's execution layer.
 
 - Octra provides encrypted computation
 - 0xio provides usable interfaces, wallets, SDKs, and applications
+
+The 0xio product suite includes:
+
+- **[Browser Extension](/products/extensions)** — Primary gateway for web-based interaction
+- **[Mobile Wallet](/products/mobile)** — Privacy on the go with biometric security
+- **[Desktop Wallet](/products/desktop)** — Native computation engine that accelerates FHE operations
+- **[DEX](/products/dex)** — Privacy-preserving decentralized exchange
+- **[Atlas](/products/atlas)** — Network visualization and analytics
+- **[SDK](/developers/sdk-guide)** — TypeScript SDK for DApp integration
 
 Users interact with 0xio. 0xio securely interfaces with Octra.

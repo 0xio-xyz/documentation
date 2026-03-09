@@ -54,6 +54,39 @@ Already have the Browser Extension?
 2.  Enter your **12-word seed phrase** from the extension.
 3.  Your public and private balances will sync automatically.
 
+---
+
+## Network Support
+
+The mobile app supports multiple Octra networks:
+
+| Network | Privacy (FHE) | Explorer |
+|---------|:---:|---|
+| Mainnet Alpha | No | [octrascan.io](https://octrascan.io) |
+| Devnet | Yes | [devnet.octrascan.io](https://devnet.octrascan.io) |
+
+Switch networks in **Settings > Network**. Devnet is recommended for testing FHE features such as encrypted balances, private transfers, and the encrypt/decrypt flow.
+
+---
+
+## Smart Contract Interaction
+
+The mobile app includes a **Tasks** screen for interacting with deployed smart contracts:
+
+* **View calls**: Read contract state without a transaction (free).
+* **Call**: Execute state-changing methods that cost gas (OU).
+* **FHE parameter encryption**: Use `enc(42)` syntax to encrypt integer parameters before sending to the contract.
+* **Auto-decrypt results**: Long return values are automatically tested for FHE decryption.
+
+---
+
+## FHE Tools
+
+Standalone encrypt and decrypt tools are available for power users:
+
+* **Encrypt**: Convert a plaintext integer to an FHE ciphertext.
+* **Decrypt**: Recover the plaintext from an FHE ciphertext using your PVAC context.
+
 <CardGroup cols="1">
   <Card title="Join Waitlist" icon="envelope" href="https://0xio.xyz/mobile-waitlist">
     Be the first to know when the public beta launches.

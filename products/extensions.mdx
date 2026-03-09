@@ -88,3 +88,31 @@ The **Privacy** tab is the control center for Octra's FHE capabilities. It handl
 * **Address Book:** Save frequently used addresses. You can verify them locally to avoid phishing.
 * **Connected DApps:** View and revoke permissions for websites you have connected to.
 * **Lock Wallet:** Immediately locks the extension, requiring your password to re-enter.
+* **Network Switching:** Switch between Mainnet Alpha and Devnet from the settings page.
+
+---
+
+## Network Support
+
+The extension supports multiple Octra networks:
+
+| Network | Privacy (FHE) | Explorer |
+|---------|:---:|---|
+| Mainnet Alpha | No | [octrascan.io](https://octrascan.io) |
+| Devnet | Yes | [devnet.octrascan.io](https://devnet.octrascan.io) |
+
+**Devnet** is a test network with full FHE support enabled. Use it for testing encrypted balances, private transfers, and smart contract development. Switch networks in **Settings > Network**.
+
+---
+
+## Desktop Companion Mode
+
+When the **0xio Desktop** app is running on the same machine, the extension automatically connects to it and offloads heavy FHE computations to native code.
+
+* **Automatic pairing:** No setup required — the extension detects the desktop app on `127.0.0.1`.
+* **Faster privacy operations:** Range proof generation drops from 3–5 minutes (WASM) to 30–120 seconds (native Rust).
+* **Status indicator:** A "Desktop Connected" badge appears when paired.
+
+<Tip>
+Install the 0xio Desktop app to significantly speed up encrypt, decrypt, and claim operations. See the [Desktop Wallet](/products/desktop) page for details.
+</Tip>

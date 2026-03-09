@@ -1,0 +1,203 @@
+---
+title: 'Desktop Wallet'
+description: 'Native wallet with FHE computation engine for Octra Network'
+icon: 'desktop'
+---
+
+The **0xio Desktop** is a native desktop application built with [Tauri](https://tauri.app/) (Rust backend + React frontend). It serves two roles: a full-featured wallet for the Octra Network, and a **native computation engine** that accelerates FHE operations for the browser extension.
+
+<Note>
+  **Available on macOS.** Windows and Linux builds are coming soon.
+</Note>
+
+## Why Desktop?
+
+Browser extensions run in a sandboxed environment with limited CPU access and a 4GB memory ceiling. FHE operations — particularly range proof generation — are computationally heavy:
+
+| Platform | Range Proof Time | Reason |
+|----------|-----------------|--------|
+| Extension (WASM) | 3–5 minutes | Single-threaded, memory-limited |
+| Desktop (native Rust) | 30–120 seconds | Multi-core, native ARM64/x86 optimizations |
+
+The desktop app removes these bottlenecks by running **pvac-rs** natively, with full access to all CPU cores and system memory.
+
+---
+
+## Core Wallet Features
+
+### Dashboard & Balances
+
+The home screen displays your public and private (FHE-encrypted) balances, recent transactions, and token holdings — identical to the extension and mobile app.
+
+### Sending & Receiving
+
+- **Standard transfers**: Public on-chain transactions with memo support
+- **Private transfers**: FHE-encrypted stealth transfers (recipient must have a registered PVAC public key)
+- **QR codes**: Generate and share receive addresses
+- **OU control**: Customize Operational Unit (gas) fees per transaction
+
+### Privacy Operations
+
+Full encrypt/decrypt/claim support, same as the extension:
+
+<Steps>
+  <Step title="Encrypt (Public → Private)">
+    Shield funds using FHE. Your device generates a Pedersen commitment and zero-knowledge bound proof locally.
+  </Step>
+  <Step title="Decrypt (Private → Public)">
+    Unshield funds back to your public balance.
+  </Step>
+  <Step title="Claim">
+    Scan the blockchain for incoming private transfers and decrypt them into your wallet.
+  </Step>
+</Steps>
+
+### Multi-Wallet Support
+
+Create or import multiple wallets using 12/24-word seed phrases. All wallets use the same HD derivation path as the extension (`m/345'/0'/0'/0'/0'/0'/0'/0`), so importing the same seed phrase produces the same address across all 0xio platforms.
+
+---
+
+## Companion Mode — Accelerating the Extension
+
+The desktop app runs a **local WebSocket server** on `ws://127.0.0.1:19345` that the browser extension connects to automatically when both are running.
+
+### How It Works
+
+1. The extension detects the desktop app on the local machine
+2. Extension sends the wallet seed (encrypted, loopback-only) to initialize the PVAC context
+3. For heavy FHE operations, the extension delegates computation to the desktop app
+4. Desktop computes using native Rust with all CPU cores, returns the result
+5. Extension uses the result as if it computed locally
+
+### What Gets Accelerated
+
+| Operation | Without Desktop | With Desktop |
+|-----------|----------------|--------------|
+| Range proof generation | 3–5 min (WASM) | 30–120s (native) |
+| PVAC key decompression | ~10s | ~3s |
+| Pedersen commitment | ~1s | ~200ms |
+| Bound proof | ~2s | ~500ms |
+
+### Security
+
+- **Loopback only**: The WebSocket server binds to `127.0.0.1` — no remote connections accepted
+- **Connection limit**: Maximum 8 concurrent connections
+- **Message size cap**: 16MB per message (range proofs can be 1–3MB)
+- **Idle timeout**: 300 seconds
+- **Memory safety**: Seed bytes are zeroized after use
+
+### Status Indicators
+
+- **Sidebar badge**: Shows "Extension Connected" when paired
+- **System tray icon**: Changes color during proof computation
+- **Computing state**: Real-time progress display for active FHE operations
+
+---
+
+## Contract Developer Tools
+
+The desktop app includes a full smart contract development suite — compile, deploy, verify, and interact with contracts directly.
+
+### Write & Compile
+
+Write contracts in two languages:
+
+| Language | Extension | Description |
+|----------|-----------|-------------|
+| **AppliedML** | `.aml` | High-level language with automatic ABI generation. Recommended for most developers. |
+| **Assembly** | `.oasm` | Low-level bytecodes for advanced users. |
+
+- **File import**: Load `.aml` or `.oasm` source files
+- **Compile**: Sends source to the network compiler, returns bytecode + ABI
+- **Error reporting**: Line numbers and error messages from the compiler
+
+### Deploy
+
+- **Address preview**: Predict your contract's address before deploying (based on sender + nonce)
+- **Constructor parameters**: JSON array input for initialization values
+- **Source verification**: Verify deployed bytecode matches your source on-chain
+
+### Interact
+
+- **ABI-driven forms**: Load a contract's ABI to get typed input fields for each method
+- **View vs Call**: Read-only queries (free) or state-changing transactions (costs OU)
+- **FHE parameter encryption**: Use `enc(42)` syntax to encrypt integer parameters with FHE before sending
+- **Auto-decrypt results**: Long return values are automatically tested for FHE decryption
+
+### Contract Registry
+
+Keep a local registry of your deployed contracts with name, address, language, and ABI for quick access.
+
+---
+
+## FHE Tools
+
+Standalone encrypt/decrypt utilities for developers and power users:
+
+- **Encrypt**: Convert a plaintext integer to an FHE ciphertext (`hfhe_v1|...` format)
+- **Decrypt**: Recover the plaintext from an FHE ciphertext using your PVAC context
+
+These are useful for testing contract parameters, verifying encrypted balances, or debugging FHE operations.
+
+---
+
+## Built-in Browser
+
+Browse Octra ecosystem dApps without leaving the desktop wallet:
+
+- **dApp directory**: Quick links to Octrascan, 0xio DEX, Atlas, and developer docs
+- **URL navigation**: Visit any URL directly
+- **Open in window**: Launch dApps in a native window for sites that don't support iframe embedding
+
+---
+
+## Networks
+
+The desktop app supports switching between Octra networks:
+
+| Network | RPC | Privacy (FHE) | Explorer |
+|---------|-----|:---:|---|
+| Mainnet Alpha | `https://octra.network` | No | [octrascan.io](https://octrascan.io) |
+| Devnet | `http://165.227.225.79:8080` | Yes | [devnet.octrascan.io](https://devnet.octrascan.io) |
+
+Switch networks in **Settings**. Devnet is recommended for testing FHE operations and smart contract development.
+
+---
+
+## Security
+
+- **Encrypted vault**: All private keys encrypted with AES-GCM at rest
+- **PBKDF2 key derivation**: 100,000 iterations for password-to-key conversion
+- **Auto-lock**: Configurable inactivity timeout
+- **Seed phrase backup**: Requires password re-entry to view
+- **Input validation**: Address format, amount bounds, and JSON parsing checks
+- **Sandboxed browser**: Restricted iframe permissions, blocks `javascript:`, `data:`, and `file:` schemes
+
+---
+
+## Getting Started
+
+### Installation
+
+1. Download the latest `.dmg` from [0xio.xyz](https://0xio.xyz)
+2. Drag **0xio Desktop** to your Applications folder
+3. Open the app — it will appear in your menu bar and dock
+
+### Creating a Wallet
+
+1. Set a **master password** to encrypt your vault
+2. Choose **Create New Wallet** or **Import** with an existing seed phrase
+3. Your wallet address and balances will appear on the dashboard
+
+### Pairing with the Extension
+
+No configuration needed. If both the desktop app and the browser extension are running with the same wallet:
+
+1. The extension detects the desktop app automatically
+2. A "Desktop Connected" indicator appears in the extension
+3. FHE operations are now accelerated through the desktop engine
+
+<Tip>
+For the best experience, keep the desktop app running while using the browser extension. All heavy cryptographic operations will be silently offloaded to native code.
+</Tip>
