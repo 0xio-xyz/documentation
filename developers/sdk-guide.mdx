@@ -27,8 +27,9 @@ pnpm add @0xio/sdk
 </CodeGroup>
 
 **Package Details:**
-- **Version:** 2.1.8
-- **Min Extension:** v2.0.1+
+- **Version:** 2.3.0
+- **Min Extension (Mainnet Alpha):** v2.0.1+
+- **Min Extension (Devnet):** v2.2.1+ (contract calls, privacy features)
 - **License:** MIT
 
 ## Project Setup & Requirements
@@ -378,6 +379,98 @@ const signature = await wallet.signMessage(apiKeyMessage);
 Always include timestamps or nonces in messages to prevent replay attacks. Never sign messages you don't understand.
 </Warning>
 
+### Smart Contract Methods
+
+#### `callContract(data)`
+
+Executes a state-changing smart contract call. The extension builds, signs, and submits the transaction via `octra_submit`. The user will see an approval popup.
+
+```typescript
+import { ContractCallData } from '@0xio/sdk';
+
+const result = await wallet.callContract({
+  contract: 'oct26LiaGUz78Jnby2TWEHcmboKHyupnu1NX1G3Evz28YHm',
+  method: 'swap',
+  params: [100000, true, 90000],  // Flat primitives, NOT array-wrapped
+  amount: '0',     // Native OCT to send (optional, default '0')
+  ou: '10000',     // Operational units (optional, default '10000')
+});
+
+console.log('TX Hash:', result.txHash);
+console.log('Success:', result.success);
+```
+
+- **Parameters:**
+  ```typescript
+  type ContractParams = ReadonlyArray<string | number | boolean>;
+
+  interface ContractCallData {
+    contract: string;           // Contract address (oct-prefixed, 47 chars)
+    method: string;             // AML method name
+    params: ContractParams;     // Method arguments — flat primitives
+    amount?: string | number;   // Native OCT to send (default '0')
+    ou?: string | number;       // Operational units (default '10000')
+  }
+  ```
+- **Returns:** `Promise<TransactionResult>` with `txHash`, `success`, `finality`
+
+<Warning>
+AML contract calls use **flat arguments**: `params: [arg1, arg2]` — NOT `params: [[arg1, arg2]]`. The extension handles nonce, signing, and broadcasting automatically.
+</Warning>
+
+#### `contractCallView(data)`
+
+Read-only contract query. Does **not** require wallet unlock, signing, or user approval. Only requires `initialize()` (not `connect()`).
+
+```typescript
+// Query contract state
+const price = await wallet.contractCallView({
+  contract: 'oct26LiaGUz78Jnby2TWEHcmboKHyupnu1NX1G3Evz28YHm',
+  method: 'get_active_price',
+  params: [],
+});
+console.log('Active price:', price);
+
+// Query with parameters
+const reserves = await wallet.contractCallView({
+  contract: 'oct26LiaGUz78Jnby2TWEHcmboKHyupnu1NX1G3Evz28YHm',
+  method: 'get_bin_reserves',
+  params: [8388608],
+  caller: 'oct1youraddress...',  // Optional caller context
+});
+console.log('Reserves:', reserves);
+```
+
+- **Parameters:**
+  ```typescript
+  interface ContractViewCallData {
+    contract: string;           // Contract address (oct-prefixed, 47 chars)
+    method: string;             // View method name
+    params: ContractParams;     // Method arguments — flat primitives
+    caller?: string;            // Optional caller address
+  }
+  ```
+- **Returns:** `Promise<any>` — The raw result from the contract method
+
+#### `getContractStorage(contract, key)`
+
+Read a single key from contract storage. No wallet unlock or approval needed.
+
+```typescript
+const totalSupply = await wallet.getContractStorage(
+  'oct7qrpW3T8mXYbZfAZrkLQKGAtD6ZswCf9Px5jPXnfmtiK',
+  'total_supply'
+);
+console.log('Total supply:', totalSupply);
+
+// Returns null if key doesn't exist
+const missing = await wallet.getContractStorage(contractAddr, 'nonexistent');
+console.log(missing); // null
+```
+
+- **Parameters:** `contract: string` (contract address), `key: string` (storage key)
+- **Returns:** `Promise<string | null>` — The storage value, or `null` if not found
+
 ### Privacy Operations
 
 #### `encryptBalance(amount)`
@@ -677,6 +770,13 @@ try {
 | `WALLET_LOCKED` | Wallet is locked, user needs to unlock |
 | `CONNECTION_REFUSED` | Connection was refused |
 | `RATE_LIMIT_EXCEEDED` | Too many requests |
+| `MALFORMED_TRANSACTION` | Transaction is malformed |
+| `SELF_TRANSFER` | Cannot send to yourself |
+| `SENDER_NOT_FOUND` | Sender address not found |
+| `INVALID_SIGNATURE` | Invalid transaction signature |
+| `DUPLICATE_TRANSACTION` | Duplicate transaction detected |
+| `NONCE_TOO_FAR` | Transaction nonce too far ahead |
+| `INTERNAL_ERROR` | Internal server error |
 | `UNKNOWN_ERROR` | Unexpected error occurred |
 
 ## Framework Integration
@@ -906,6 +1006,11 @@ import type {
   TransactionConfirmedEvent,
   ErrorEvent,
 
+  // Contract types
+  ContractCallData,
+  ContractViewCallData,
+  ContractParams,
+
   // Private balance types
   PrivateBalanceInfo,
   PrivateTransferData,
@@ -932,13 +1037,19 @@ interface TransactionData {
 }
 
 interface NetworkInfo {
-  id: string;              // Network identifier
-  name: string;            // Display name
-  rpcUrl: string;          // RPC endpoint
-  explorerUrl?: string;    // Block explorer URL
-  color: string;           // UI color
-  isTestnet: boolean;      // Is testnet network
+  id: string;                    // 'mainnet' | 'devnet' | 'custom'
+  name: string;                  // Display name
+  rpcUrl: string;                // RPC endpoint
+  explorerUrl?: string;          // Transaction explorer base URL
+  explorerAddressUrl?: string;   // Address explorer base URL
+  indexerUrl?: string;           // Indexer/API base URL
+  supportsPrivacy: boolean;      // FHE encrypted balance support
+  color: string;                 // Brand color hex
+  isTestnet: boolean;            // Whether this is a test network
 }
+
+// Contract parameter types
+type ContractParams = ReadonlyArray<string | number | boolean>;
 
 type Permission =
   | 'read_address'
@@ -1010,12 +1121,14 @@ await delay(1000); // Wait 1 second
 import {
   SDK_VERSION,
   MIN_EXTENSION_VERSION,
+  MIN_EXTENSION_VERSION_DEVNET,
   SUPPORTED_EXTENSION_VERSIONS,
   checkSDKCompatibility
 } from '@0xio/sdk';
 
-console.log('SDK Version:', SDK_VERSION); // "2.1.8"
-console.log('Min Extension:', MIN_EXTENSION_VERSION); // "2.0.1"
+console.log('SDK Version:', SDK_VERSION); // "2.3.0"
+console.log('Min Extension (Mainnet):', MIN_EXTENSION_VERSION); // "2.0.1"
+console.log('Min Extension (Devnet):', MIN_EXTENSION_VERSION_DEVNET); // "2.2.1"
 console.log('Supported:', SUPPORTED_EXTENSION_VERSIONS); // "^2.0.1"
 
 // Check browser compatibility
