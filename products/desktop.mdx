@@ -16,8 +16,8 @@ Browser extensions run in a sandboxed environment with limited CPU access and a 
 
 | Platform | Range Proof Time | Reason |
 |----------|-----------------|--------|
-| Extension (WASM) | 3–5 minutes | Single-threaded, memory-limited |
-| Desktop (native Rust) | 30–120 seconds | Multi-core, native ARM64/x86 optimizations |
+| Extension (WASM) | ~80 seconds | Multithreaded via rayon, batched LC assembly |
+| Desktop (native Rust) | ~17 seconds | Full CPU access, native ARM64/x86 optimizations |
 
 The desktop app removes these bottlenecks by running **pvac-rs** natively, with full access to all CPU cores and system memory.
 
@@ -54,7 +54,7 @@ Full encrypt/decrypt/claim support, same as the extension:
 
 ### Multi-Wallet Support
 
-Create or import multiple wallets using 12/24-word seed phrases. All wallets use the same HD derivation path as the extension (`m/345'/0'/0'/0'/0'/0'/0'/0`), so importing the same seed phrase produces the same address across all 0xio platforms.
+Create or import multiple wallets using 12/24-word seed phrases. All wallets use the same master root key derivation (`HMAC-SHA512("Octra seed", seed)[0:32]`) as the extension and mobile app, so importing the same seed phrase produces the same address across all 0xio platforms.
 
 ---
 
@@ -74,7 +74,7 @@ The desktop app runs a **local WebSocket server** on `ws://127.0.0.1:19345` that
 
 | Operation | Without Desktop | With Desktop |
 |-----------|----------------|--------------|
-| Range proof generation | 3–5 min (WASM) | 30–120s (native) |
+| Range proof generation | ~80s (WASM) | ~17s (native) |
 | PVAC key decompression | ~10s | ~3s |
 | Pedersen commitment | ~1s | ~200ms |
 | Bound proof | ~2s | ~500ms |

@@ -28,7 +28,7 @@ icon: "key"
 - Protects your encrypted keys on device
 - Ensures data integrity and confidentiality
 
-## Key Derivation (HD Wallets)
+## Key Derivation
 
 ### Mnemonic Standard
 
@@ -46,15 +46,17 @@ icon: "key"
 - Converts mnemonic to cryptographic seed
 - Salt: Configurable passphrase (optional)
 
-### Derivation Path
+### Master Root Key Derivation
+
+All 0xio platforms (extension, mobile, desktop) use the same canonical key derivation:
 
 ```
-m/345'/0'/0'/0'/0'/0'/0'/0'
+master_key = HMAC-SHA512("Octra seed", seed)[0:32]
 ```
 
-- **Purpose (345'):** Octra Network specific hardened path
-- All levels use hardened derivation for maximum security
-- Prevents key leakage from public key exposure
+- **Deterministic:** The same seed phrase always produces the same master key
+- **Cross-platform:** Importing the same seed phrase produces the same address on all 0xio products
+- **Secure:** HMAC-SHA512 provides cryptographic strength; only the first 32 bytes are used as the Ed25519 private key
 
 ## Address Format
 
@@ -91,12 +93,27 @@ m/345'/0'/0'/0'/0'/0'/0'/0'
 **Privacy First:** 0xio implements zero telemetry. We never collect IP addresses, wallet addresses, or usage data.
 </Warning>
 
-## FHE Integration
+## Privacy Cryptography (PVAC)
 
-While Octra handles the heavy lifting of Fully Homomorphic Encryption, 0xio:
+0xio implements PVAC (Privacy Via Additive Ciphers), a custom privacy system built on fully homomorphic encryption. All PVAC operations are performed locally on your device using **pvac-rs**, a purpose-built Rust cryptographic library.
 
-1. **Encrypts locally:** Your device encrypts transaction data before broadcast
-2. **Signs encrypted payloads:** Maintains authenticity without revealing content
-3. **Decrypts locally:** Only your device can decrypt your private balance state
+### Core Operations
 
-This ensures end-to-end privacy without trusting intermediaries.
+1. **FHE Encrypt/Decrypt:** Additively homomorphic encryption of token amounts — encrypted values can be added on-chain without decryption
+2. **Range Proofs:** Zero-knowledge proofs (64-bit) proving an encrypted amount is non-negative and within bounds, without revealing the value
+3. **Pedersen Commitments:** Binding commitments to amounts using elliptic curve points, used for transaction integrity
+4. **Stealth Transfers:** ECDH key agreement generates one-time stealth addresses for unlinkable private sends
+5. **Zero Proofs:** Proof that a ciphertext encrypts zero, used during decrypt (withdrawal) operations
+
+### pvac-rs
+
+The **pvac-rs** library compiles to multiple targets to run natively on each platform:
+
+| Platform | Target | Performance |
+|----------|--------|-------------|
+| Extension | WebAssembly (rayon multithreading) | ~80s range proof |
+| Desktop | Native Rust binary | ~17s range proof |
+| iOS | Static library (aarch64) | ~59s range proof |
+| Android | Shared library (arm64, armv7, x86_64) | ~103s range proof |
+
+**Key dependencies:** `curve25519-dalek` for elliptic curve arithmetic, `@noble/hashes` for PBKDF2/SHA-256/HMAC.
