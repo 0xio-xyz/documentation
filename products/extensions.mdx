@@ -83,12 +83,53 @@ The **Privacy** tab is the control center for Octra's FHE capabilities. It handl
 
 ---
 
+## Asset Management
+
+### Custom Token Import
+
+Import any fungible token by entering its contract address. The extension validates the contract on-chain (checking `name`, `symbol`, and `decimals`) and tracks your balance via `balance_of`. Imported tokens appear alongside the default token list and can be managed in **Settings > Imported Tokens**.
+
+### NFT Gallery
+
+The **NFTs** tab in the wallet dashboard lets you import and browse NFT collections.
+
+<Steps>
+  <Step title="Import Collection">
+    Click the **+** button on the NFTs tab and enter a contract address. The extension validates it by querying `name`, `symbol`, and `total_supply` from the contract.
+  </Step>
+  <Step title="View Owned NFTs">
+    Each collection card shows how many NFTs you own (via `balance_of`). Click a collection to expand it and see individual token IDs.
+  </Step>
+  <Step title="Token Metadata">
+    When expanded, the extension fetches `token_uri` for each owned token. Contracts without enumeration support still display the owned count.
+  </Step>
+</Steps>
+
+<Note>
+  NFT collections are stored per-network and auto-refresh every 60 seconds. You can remove a collection by hovering over it and clicking the trash icon.
+</Note>
+
+---
+
 ## Settings & Management
 
+* **Security & Backup:** Manage seed phrase backup and security settings.
 * **Address Book:** Save frequently used addresses. You can verify them locally to avoid phishing.
 * **Connected DApps:** View and revoke permissions for websites you have connected to.
+* **Imported Tokens:** View and manage custom tokens imported by contract address.
 * **Lock Wallet:** Immediately locks the extension, requiring your password to re-enter.
 * **Network Switching:** Switch between Mainnet Alpha and Devnet from the settings page.
+
+---
+
+## dApp Interaction
+
+When a dApp requests a transaction or message signature, the extension opens an approval popup with:
+
+* **Origin verification:** The requesting site's domain and favicon are displayed prominently.
+* **Wallet context:** Shows which wallet address will sign the transaction.
+* **Network fee (OU):** Displays the estimated Operational Unit cost.
+* **Auto-reject:** If the popup window is closed without a response, the request is automatically rejected — no timeout delay.
 
 ---
 
