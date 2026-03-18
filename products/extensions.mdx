@@ -95,7 +95,7 @@ The **NFTs** tab in the wallet dashboard lets you import and browse NFT collecti
 
 <Steps>
   <Step title="Import Collection">
-    Click the **+** button on the NFTs tab and enter a contract address. The extension validates it by querying `name`, `symbol`, and `total_supply` from the contract.
+    Click the **+** button on the NFTs tab and enter a contract address. The extension validates it by calling `collection_name()`, `symbol()`, and `total_supply()` view functions (SNS-1 compatible).
   </Step>
   <Step title="View Owned NFTs">
     Each collection card shows how many NFTs you own (via `balance_of`). Click a collection to expand it and see individual token IDs.
