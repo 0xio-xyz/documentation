@@ -4,7 +4,7 @@ description: "Build dApps with the 0xio Wallet SDK"
 icon: "code"
 ---
 
-The **0xio Wallet SDK** enables seamless integration between your decentralized application and the 0xio Wallet Extension, with full support for Octra's FHE privacy features.
+The **0xio Wallet SDK** enables seamless integration between your decentralized application and the 0xio Wallet across all platforms — Extension, Desktop (iframe), and Mobile (WebView) — with full support for Octra's FHE privacy features.
 
 ## Installation
 
@@ -27,7 +27,7 @@ pnpm add @0xio/sdk
 </CodeGroup>
 
 **Package Details:**
-- **Version:** 2.3.0
+- **Version:** 2.4.0
 - **Min Extension (Mainnet Alpha):** v2.0.1+
 - **Min Extension (Devnet):** v2.2.1+ (contract calls, privacy features)
 - **License:** MIT
@@ -129,6 +129,27 @@ async function initWallet() {
 
 initWallet();
 ```
+
+## Desktop & Mobile Support
+
+Starting in v2.4.0, the SDK automatically detects when your DApp is running inside **0xio Desktop** or **0xio App** and uses the appropriate bridge transport. No code changes are required.
+
+| Platform | Transport | Description |
+|----------|-----------|-------------|
+| **0xio Wallet Extension** | `window.postMessage` | Standard browser extension communication |
+| **0xio Desktop** | `window.parent.postMessage` (iframe) | DApp loaded in Desktop's built-in BrowserScreen |
+| **0xio App** | `window.parent.postMessage` (WebView) | DApp loaded in App's built-in browser |
+
+### How It Works
+
+- **Auto Frame Detection**: When `window.parent !== window`, the SDK assumes a wallet bridge (Desktop or Mobile) is available and marks the wallet as detected.
+- **Dual Posting**: `postMessageToExtension()` posts to both `window` (for extension content script) and `window.parent` (for iframe/WebView bridge).
+- **Frame-Aware Listener**: `setupMessageListener()` accepts messages from `window.parent` in addition to same-window messages.
+- **walletReady via postMessage**: Extension detection recognizes `walletReady` events sent via `postMessage` from parent frames.
+
+<Tip>
+DApp developers do not need to change any code. Just use the SDK as normal — it auto-detects the environment and selects the correct transport.
+</Tip>
 
 ## Core API
 
@@ -1126,7 +1147,7 @@ import {
   checkSDKCompatibility
 } from '@0xio/sdk';
 
-console.log('SDK Version:', SDK_VERSION); // "2.3.0"
+console.log('SDK Version:', SDK_VERSION); // "2.4.0"
 console.log('Min Extension (Mainnet):', MIN_EXTENSION_VERSION); // "2.0.1"
 console.log('Min Extension (Devnet):', MIN_EXTENSION_VERSION_DEVNET); // "2.2.1"
 console.log('Supported:', SUPPORTED_EXTENSION_VERSIONS); // "^2.0.1"
