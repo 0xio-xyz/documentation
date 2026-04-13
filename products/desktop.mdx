@@ -7,7 +7,7 @@ icon: 'desktop'
 The **0xio Desktop** is a native desktop application built with [Tauri](https://tauri.app/) (Rust backend + React frontend). It serves two roles: a full-featured wallet for the Octra Network, and a **native computation engine** that accelerates FHE operations for the browser extension.
 
 <Note>
-  **Coming soon.** The desktop wallet is currently in development. macOS, Windows, and Linux builds will be available at launch.
+  **Status: Alpha (v0.1.0)** — The desktop wallet is available for early access. Download the latest build from [alpha.0xio.xyz](https://alpha.0xio.xyz/). macOS ARM64 builds are notarized and signed. Windows and Linux builds are also available.
 </Note>
 
 ## Why Desktop?
@@ -156,10 +156,12 @@ Browse Octra ecosystem dApps without leaving the desktop wallet:
 
 The desktop app supports switching between Octra networks:
 
-| Network | RPC | Privacy (FHE) | Explorer |
-|---------|-----|:---:|---|
-| Mainnet | `http://46.101.86.250:8080` | Yes | [lite.octrascan.io](https://lite.octrascan.io) |
-| Devnet | `http://165.227.225.79:8080` | Yes | [devnet.octrascan.io](https://devnet.octrascan.io) |
+| Network | Privacy (FHE) | Explorer |
+|---------|:---:|---|
+| Mainnet | Yes | [lite.octrascan.io](https://lite.octrascan.io) |
+| Devnet | Yes | [devnet.octrascan.io](https://devnet.octrascan.io) |
+
+RPC endpoints are configured automatically by the app. Network settings can be viewed in **Settings**.
 
 Switch networks in **Settings**. Devnet is recommended for testing FHE operations and smart contract development.
 
@@ -180,7 +182,7 @@ Switch networks in **Settings**. Devnet is recommended for testing FHE operation
 
 ### Installation
 
-1. Download the latest build from [0xio.xyz](https://0xio.xyz) when available
+1. Download the latest build from [alpha.0xio.xyz](https://alpha.0xio.xyz/)
 2. Follow the platform-specific installer instructions
 3. Open the app — it will appear in your menu bar (macOS) or system tray
 

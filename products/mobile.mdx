@@ -5,18 +5,40 @@ icon: 'mobile'
 ---
 
 <Note>
-  **Status: In Development**
-  The 0xio Mobile Wallet is currently in active development. Features listed below are available in the latest TestFlight/APK builds but may change before public release.
+  **Status: Alpha (v1.0.0)**
+  The 0xio Mobile Wallet is available for early access. Download from [alpha.0xio.xyz](https://alpha.0xio.xyz/).
 </Note>
 
 The **0xio Mobile App** brings the power of the Octra Network to your pocket. Built with React Native, it offers the same high-grade encryption as the extension but optimized for touch interfaces and mobile security.
 
 ## Mobile-Exclusive Features
 
-### Biometric Security
+### PIN & Biometric Security
 Forget typing passwords every time. The mobile app integrates directly with your device's secure enclave.
+* **PIN Code:** Set a 6-digit PIN with rate-limited retry protection.
 * **FaceID / TouchID:** Log in and sign transactions using your unique biometric signature.
 * **Secure Storage:** Your encrypted keys are protected by the device's hardware-backed Keychain/Keystore.
+
+### Push Notifications
+Stay informed with real-time alerts for incoming transactions, claim-ready private transfers, and network events.
+
+### DApp Browser
+Browse and interact with Octra dApps directly from the mobile wallet without leaving the app.
+
+### NFT Support
+Import and browse NFT collections, view owned tokens, and manage your NFT portfolio on the go.
+
+### Address Book
+Save and label frequently used addresses for quick access when sending transactions.
+
+### Multi-Wallet Support
+Create or import multiple wallets and switch between them seamlessly. All wallets use the same master root key derivation as the extension and desktop.
+
+### Stealth Transfers
+Send private FHE-encrypted transfers where the amount is hidden from everyone except the recipient.
+
+### Bulk Send
+Send to up to 5 recipients in a single batch, saving time on multi-party payments.
 
 ---
 
@@ -43,7 +65,7 @@ Just like the extension, you have full control over your visibility:
 ## Getting Started
 
 ### Creating a Wallet
-1.  Download the app (Link coming soon).
+1.  Download the app from [alpha.0xio.xyz](https://alpha.0xio.xyz/).
 2.  Tap **"Create New Wallet"**.
 3.  **Backup your Recovery Phrase:** You will be shown a 12-word seed phrase. Write this down offline.
 4.  **Enable Biometrics:** secure your vault with FaceID/Fingerprint.
@@ -88,7 +110,7 @@ Standalone encrypt and decrypt tools are available for power users:
 * **Decrypt**: Recover the plaintext from an FHE ciphertext using your PVAC context.
 
 <CardGroup cols="1">
-  <Card title="Join Waitlist" icon="envelope" href="https://0xio.xyz/mobile-waitlist">
-    Be the first to know when the public beta launches.
+  <Card title="Download Alpha" icon="download" href="https://alpha.0xio.xyz/">
+    Get the 0xio Mobile Wallet for iOS and Android.
   </Card>
 </CardGroup>
