@@ -27,7 +27,7 @@ pnpm add @0xio/sdk
 </CodeGroup>
 
 **Package Details:**
-- **Version:** 2.4.0
+- **Version:** 2.4.1
 - **Min Extension (Mainnet):** v2.0.1+
 - **Min Extension (Devnet):** v2.2.1+ (contract calls, privacy features)
 - **License:** MIT
@@ -130,9 +130,19 @@ async function initWallet() {
 initWallet();
 ```
 
+## Security (v2.4.1)
+
+The SDK includes several security hardening measures:
+
+- **Origin-validated messaging** — `postMessage` communication validates origins against a strict trusted set. No wildcard origins.
+- **No auto-trust for iframes** — the SDK does not assume an iframe parent is a wallet. It requires a verified `walletReady` signal from a trusted origin.
+- **Response binding** — only responses matching a pending request ID are accepted. Forged responses are rejected.
+- **No retry on rejection** — user-rejected transactions do not trigger automatic retries.
+- **Configurable trusted origins** — use `setTrustedOrigins()` if your dApp runs inside a custom frame.
+
 ## Desktop & Mobile Support
 
-Starting in v2.4.0, the SDK automatically detects when your DApp is running inside **0xio Desktop** or **0xio App** and uses the appropriate bridge transport. No code changes are required.
+Starting in v2.4.1, the SDK automatically detects when your DApp is running inside **0xio Desktop** or **0xio App** and uses the appropriate bridge transport. No code changes are required.
 
 | Platform | Transport | Description |
 |----------|-----------|-------------|
@@ -591,12 +601,12 @@ User switched wallets in the extension.
 
 ```typescript
 wallet.on('accountChanged', (event) => {
-  console.log('New Address:', event.newAddress);
+  console.log('New Address:', event.data.newAddress);
   console.log('Previous Address:', event.previousAddress);
-  console.log('Balance:', event.balance);
+  console.log('Balance:', event.data.balance);
 
   // Re-fetch user data, update UI
-  updateUserInterface(event.newAddress);
+  updateUserInterface(event.data.newAddress);
 });
 ```
 
@@ -607,10 +617,10 @@ User switched networks (mainnet/testnet).
 ```typescript
 wallet.on('networkChanged', (event) => {
   console.log('Previous:', event.previousNetwork?.name);
-  console.log('New:', event.newNetwork.name);
+  console.log('New:', event.data.newNetwork.name);
 
   // Update RPC endpoint, refresh data
-  reconnectToNetwork(event.newNetwork);
+  reconnectToNetwork(event.data.newNetwork);
 });
 ```
 
@@ -620,12 +630,12 @@ Balance updated after transaction confirmation.
 
 ```typescript
 wallet.on('balanceChanged', (event) => {
-  console.log('Address:', event.address);
-  console.log('Previous:', event.previousBalance?.total);
-  console.log('New:', event.newBalance.total);
+  console.log('Address:', event.data.address);
+  console.log('Previous:', event.data.previousBalance?.total);
+  console.log('New:', event.data.newBalance.total);
 
   // Update UI with new amounts
-  updateBalanceDisplay(event.newBalance);
+  updateBalanceDisplay(event.data.newBalance);
 });
 ```
 
@@ -635,9 +645,9 @@ Wallet connected successfully.
 
 ```typescript
 wallet.on('connect', (event) => {
-  console.log('Connected to:', event.address);
-  console.log('Balance:', event.balance.total);
-  console.log('Permissions:', event.permissions);
+  console.log('Connected to:', event.data.address);
+  console.log('Balance:', event.data.balance.total);
+  console.log('Permissions:', event.data.permissions);
 });
 ```
 
@@ -869,8 +879,8 @@ export function useWallet() {
     if (wallet) {
       const handleConnect = (event: ConnectEvent) => {
         if (!mounted) return;
-        setAddress(event.address);
-        setBalance(event.balance);
+        setAddress(event.data.address);
+        setBalance(event.data.balance);
         setIsConnected(true);
       };
 
@@ -883,8 +893,8 @@ export function useWallet() {
 
       const handleAccountChanged = (event: any) => {
         if (!mounted) return;
-        setAddress(event.newAddress);
-        if (event.balance) setBalance(event.balance);
+        setAddress(event.data.newAddress);
+        if (event.data.balance) setBalance(event.data.balance);
       };
 
       wallet.on('connect', handleConnect);
@@ -948,8 +958,8 @@ export function useWallet() {
     wallet.getConnectionStatus();
 
     wallet.on('connect', (event) => {
-      address.value = event.address;
-      balance.value = event.balance;
+      address.value = event.data.address;
+      balance.value = event.data.balance;
       isConnected.value = true;
     });
 
@@ -960,7 +970,7 @@ export function useWallet() {
     });
 
     wallet.on('balanceChanged', (event) => {
-      balance.value = event.newBalance;
+      balance.value = event.data.newBalance;
     });
   });
 
@@ -1147,7 +1157,7 @@ import {
   checkSDKCompatibility
 } from '@0xio/sdk';
 
-console.log('SDK Version:', SDK_VERSION); // "2.4.0"
+console.log('SDK Version:', SDK_VERSION); // "2.4.1"
 console.log('Min Extension (Mainnet):', MIN_EXTENSION_VERSION); // "2.0.1"
 console.log('Min Extension (Devnet):', MIN_EXTENSION_VERSION_DEVNET); // "2.2.1"
 console.log('Supported:', SUPPORTED_EXTENSION_VERSIONS); // "^2.0.1"
