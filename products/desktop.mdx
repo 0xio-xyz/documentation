@@ -7,7 +7,7 @@ icon: 'desktop'
 The **0xio Desktop** is a native desktop application built with [Tauri](https://tauri.app/) (Rust backend + React frontend). It serves two roles: a full-featured wallet for the Octra Network, and a **native computation engine** that accelerates FHE operations for the browser extension.
 
 <Note>
-  **Status: Alpha (v0.1.0)** — The desktop wallet is available for early access. Download the latest build from [alpha.0xio.xyz](https://alpha.0xio.xyz/). macOS ARM64 builds are notarized and signed. Windows and Linux builds are also available.
+  **Status: Alpha (v0.1.0)** — The desktop wallet is available for early access. Download the latest build from [alpha.0xio.xyz](https://alpha.0xio.xyz/). Currently available for macOS (Apple Silicon), signed and notarized by Apple. Windows and Linux builds coming soon.
 </Note>
 
 ## Why Desktop?
@@ -95,6 +95,16 @@ The desktop app runs a **local WebSocket server** on `ws://127.0.0.1:19345` that
 
 ---
 
+## AI Contract Assistant
+
+The desktop app includes an AI-powered assistant for smart contract development:
+
+- **AML Brainstorming**: Describe what you want your contract to do and get AML code suggestions
+- **Code Generation**: Generate complete contract templates from natural language descriptions
+- **Error Fixing**: Paste compiler errors and get automated fix suggestions
+
+---
+
 ## Contract Developer Tools
 
 The desktop app includes a full smart contract development suite — compile, deploy, verify, and interact with contracts directly.
@@ -142,13 +152,14 @@ These are useful for testing contract parameters, verifying encrypted balances, 
 
 ---
 
-## Built-in Browser
+## Built-in DApp Browser
 
 Browse Octra ecosystem dApps without leaving the desktop wallet:
 
-- **dApp directory**: Quick links to Octrascan, 0xio DEX, Atlas, and developer docs
+- **DApp directory**: Quick links to Octrascan, 0xio DEX, Atlas, and developer docs
 - **URL navigation**: Visit any URL directly
 - **Open in window**: Launch dApps in a native window for sites that don't support iframe embedding
+- **Connected DApp management**: View and manage permissions for connected dApps
 
 ---
 
@@ -161,7 +172,7 @@ The desktop app supports switching between Octra networks:
 | Mainnet | Yes | [lite.octrascan.io](https://lite.octrascan.io) |
 | Devnet | Yes | [devnet.octrascan.io](https://devnet.octrascan.io) |
 
-RPC endpoints are configured automatically by the app. Network settings can be viewed in **Settings**.
+RPC endpoints are configured automatically by the app. An **RPC proxy toggle** is available in Settings for switching between direct and proxied RPC connections.
 
 Switch networks in **Settings**. Devnet is recommended for testing FHE operations and smart contract development.
 
@@ -170,11 +181,34 @@ Switch networks in **Settings**. Devnet is recommended for testing FHE operation
 ## Security
 
 - **Encrypted vault**: All private keys encrypted with AES-GCM at rest
-- **PBKDF2 key derivation**: 100,000 iterations for password-to-key conversion
+- **PBKDF2 key derivation**: 600,000 iterations for password-to-key conversion
 - **Auto-lock**: Configurable inactivity timeout
 - **Seed phrase backup**: Requires password re-entry to view
 - **Input validation**: Address format, amount bounds, and JSON parsing checks
 - **Sandboxed browser**: Restricted iframe permissions, blocks `javascript:`, `data:`, and `file:` schemes
+- **Sentry crash reporting**: Automated error reporting for stability improvements
+
+---
+
+## Debug Console
+
+The desktop app includes a built-in debug console for developers and advanced users:
+
+- **RPC logs**: View raw RPC requests and responses
+- **PVAC timing**: Monitor FHE operation performance (proof generation, key decompression)
+- **Network diagnostics**: Check connectivity, latency, and endpoint status
+
+---
+
+## Auto-Updater
+
+The desktop app checks for updates automatically via [alpha.0xio.xyz](https://alpha.0xio.xyz/) and prompts you to install new versions when available.
+
+---
+
+## Collapsible Sidebar
+
+The sidebar can be collapsed to maximize screen real estate when working with contracts or browsing dApps.
 
 ---
 

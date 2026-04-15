@@ -7,6 +7,8 @@ icon: 'mobile'
 <Note>
   **Status: Alpha (v1.0.0)**
   The 0xio Mobile Wallet is available for early access. Download from [alpha.0xio.xyz](https://alpha.0xio.xyz/).
+  - **iOS**: Available on TestFlight
+  - **Android**: Under Google Play review
 </Note>
 
 The **0xio Mobile App** brings the power of the Octra Network to your pocket. Built with React Native, it offers the same high-grade encryption as the extension but optimized for touch interfaces and mobile security.
@@ -39,6 +41,27 @@ Send private FHE-encrypted transfers where the amount is hidden from everyone ex
 
 ### Bulk Send
 Send to up to 5 recipients in a single batch, saving time on multi-party payments.
+
+### RPC Proxy for Fast History
+Transaction history is fetched through an RPC proxy that compresses responses from ~8MB to ~7KB, enabling fast loading even on slow connections.
+
+### Dual-Network History
+View a merged transaction history from both mainnet and devnet in a single timeline, with clear network indicators for each entry.
+
+### Infinite Scroll Pagination
+Transaction history loads progressively as you scroll, with no manual "load more" buttons.
+
+### Sentry Crash Reporting
+Automated crash reporting with session replay for stability improvements and rapid bug resolution.
+
+### Dynamic Recommended Fees
+The app recommends different OU fee amounts per operation type (standard transfer, FHE encrypt, decrypt, etc.) based on current network conditions.
+
+### PVAC Key Switch Detection
+Automatically detects when your PVAC public key has changed on-chain and triggers auto-recovery to re-register, ensuring uninterrupted private operations.
+
+### Stealth Claim Caching
+Previously claimed stealth transfers are cached locally, so the claim scan only processes new transfers on subsequent runs.
 
 ---
 

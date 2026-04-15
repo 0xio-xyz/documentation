@@ -4,7 +4,11 @@ description: 'Complete guide to the 0xio Wallet Extension'
 icon: 'chrome'
 ---
 
-The **0xio Browser Extension** (v2.2.6) is your primary gateway to the Octra Network. It allows you to manage assets, interact with dApps, and perform private FHE operations directly from your browser.
+The **0xio Browser Extension** (v2.2.7) is your primary gateway to the Octra Network. It allows you to manage assets, interact with dApps, and perform private FHE operations directly from your browser.
+
+<Note>
+  **Status: Live on Chrome Web Store** — Install from the [Chrome Web Store](https://chromewebstore.google.com/detail/0xio-wallet/anknhjilldkeelailocijnfibefmepcc).
+</Note>
 
 ## Getting Started
 
@@ -85,6 +89,10 @@ The **Privacy** tab is the control center for Octra's FHE capabilities. It handl
 
 ## Asset Management
 
+### Token Auto-Discovery
+
+The extension automatically discovers tokens associated with your address and displays them on the dashboard. You can also manually import any fungible token.
+
 ### Custom Token Import
 
 Import any fungible token by entering its contract address. The extension validates the contract on-chain (checking `name`, `symbol`, and `decimals`) and tracks your balance via `balance_of`. Imported tokens appear alongside the default token list and can be managed in **Settings > Imported Tokens**.
@@ -108,6 +116,24 @@ The **NFTs** tab in the wallet dashboard lets you import and browse NFT collecti
 <Note>
   NFT collections are stored per-network and auto-refresh every 60 seconds. You can remove a collection by hovering over it and clicking the trash icon.
 </Note>
+
+---
+
+## FHE Tools in Contract Calls
+
+When interacting with smart contracts, the extension supports inline FHE encryption of parameters using the `enc(42)` syntax. Return values from contract calls are automatically tested for FHE decryption, allowing seamless encrypted contract interaction.
+
+---
+
+## Staging & Mempool View
+
+Monitor pending transactions and network activity with the built-in staging/mempool view. See your transactions as they propagate through the network before confirmation.
+
+---
+
+## Language Support
+
+The extension is available in **5 languages**, making it accessible to a global user base.
 
 ---
 

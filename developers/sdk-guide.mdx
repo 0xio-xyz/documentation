@@ -27,9 +27,9 @@ pnpm add @0xio/sdk
 </CodeGroup>
 
 **Package Details:**
-- **Version:** 2.4.1
-- **Min Extension (Mainnet):** v2.0.1+
-- **Min Extension (Devnet):** v2.2.1+ (contract calls, privacy features)
+- **Version:** 2.4.2
+- **Min Extension (Mainnet):** v2.2.7+
+- **Min Extension (Devnet):** v2.2.7+ (contract calls, privacy features)
 - **License:** MIT
 
 ## Project Setup & Requirements
@@ -130,7 +130,7 @@ async function initWallet() {
 initWallet();
 ```
 
-## Security (v2.4.1)
+## Security (v2.4.2)
 
 The SDK includes several security hardening measures:
 
@@ -142,7 +142,7 @@ The SDK includes several security hardening measures:
 
 ## Desktop & Mobile Support
 
-Starting in v2.4.1, the SDK automatically detects when your DApp is running inside **0xio Desktop** or **0xio App** and uses the appropriate bridge transport. No code changes are required.
+Starting in v2.4.2, the SDK automatically detects when your DApp is running inside **0xio Desktop** or **0xio App** and uses the appropriate bridge transport. No code changes are required.
 
 | Platform | Transport | Description |
 |----------|-----------|-------------|
@@ -160,6 +160,10 @@ Starting in v2.4.1, the SDK automatically detects when your DApp is running insi
 <Tip>
 DApp developers do not need to change any code. Just use the SDK as normal — it auto-detects the environment and selects the correct transport.
 </Tip>
+
+### Cross-Origin Iframe Bridge (v2.4.2)
+
+Starting in v2.4.2, the SDK supports cross-origin iframe communication for localhost development. This allows DApps running on `localhost` or `127.0.0.1` during development to communicate with the wallet through an iframe bridge, without requiring the extension content script to be injected into the development server origin. Use `setTrustedOrigins()` to allowlist your local dev server if needed.
 
 ## Core API
 
@@ -1157,10 +1161,10 @@ import {
   checkSDKCompatibility
 } from '@0xio/sdk';
 
-console.log('SDK Version:', SDK_VERSION); // "2.4.1"
-console.log('Min Extension (Mainnet):', MIN_EXTENSION_VERSION); // "2.0.1"
-console.log('Min Extension (Devnet):', MIN_EXTENSION_VERSION_DEVNET); // "2.2.1"
-console.log('Supported:', SUPPORTED_EXTENSION_VERSIONS); // "^2.0.1"
+console.log('SDK Version:', SDK_VERSION); // "2.4.2"
+console.log('Min Extension (Mainnet):', MIN_EXTENSION_VERSION); // "2.2.7"
+console.log('Min Extension (Devnet):', MIN_EXTENSION_VERSION_DEVNET); // "2.2.7"
+console.log('Supported:', SUPPORTED_EXTENSION_VERSIONS); // "^2.2.7"
 
 // Check browser compatibility
 const { compatible, issues, recommendations } = checkSDKCompatibility();
