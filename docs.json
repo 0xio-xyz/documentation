@@ -54,7 +54,8 @@
               "wallet/sending",
               "wallet/receiving",
               "wallet/privacy-operations",
-              "wallet/security"
+              "wallet/security",
+              "wallet/nft-standards"
             ]
           },
           {
