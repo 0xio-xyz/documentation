@@ -1,0 +1,119 @@
+---
+title: NFT Standards
+description: NFT standards supported by 0xio Wallet on the Octra Network
+---
+
+# NFT Standards
+
+0xio Wallet supports two NFT standards on the Octra Network. The wallet automatically detects which standard a contract uses via on-chain ABI inspection and adapts its behavior accordingly.
+
+## SNS-1 (Spectrum NFT Standard)
+
+SNS-1 is the collection-based NFT standard on Octra, designed by [Spectrum](https://biont.network). It supports multiple tokens per contract with sequential token IDs, IPFS metadata, royalties, and operator approvals.
+
+### View Functions
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `collection_name()` | `→ string` | Collection display name |
+| `symbol()` | `→ string` | Collection ticker symbol |
+| `total_supply()` | `→ int` | Total minted tokens |
+| `token_uri(token_id)` | `int → string` | IPFS URI to metadata JSON |
+| `owner_of(token_id)` | `int → address` | Current token owner |
+| `creator_of(token_id)` | `int → address` | Original minter |
+| `royalty_of(token_id)` | `int → int` | Royalty in basis points (e.g. 500 = 5%) |
+| `balance_of(addr)` | `address → int` | Number of tokens owned by address |
+| `get_token_info(token_id)` | `int → string` | Extended token information |
+
+### State-Changing Functions
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `mint(to, collection, metadata_uri, royalty_bps)` | `address, string, string, int` | Mint a new token |
+| `transfer(to, token_id)` | `address, int → bool` | Transfer token ownership |
+| `transfer_from(from, to, token_id)` | `address, address, int → bool` | Transfer on behalf of owner |
+| `approve(approved, token_id)` | `address, int → bool` | Approve address for token |
+| `set_operator(operator, approved)` | `address, bool → bool` | Set operator for all tokens |
+
+### Metadata JSON (IPFS)
+
+```json
+{
+  "name": "Token Name",
+  "description": "Token description",
+  "image": "ipfs://bafybei...",
+  "attributes": [
+    { "trait_type": "Network", "value": "Octra" },
+    { "trait_type": "Edition", "value": "Genesis" }
+  ],
+  "collection": "Collection Name",
+  "creator": "oct...",
+  "royalty_bps": 500
+}
+```
+
+Token IDs are sequential starting from 0.
+
+### Example Contract
+
+- **Devnet**: `octFc9ynSen79FarWJqsLExjJTHbp27iQAfy3CG9218pr9z`
+
+---
+
+## Biont Standard (Single-Contract NFT)
+
+Bionts are autonomous, single-contract NFTs created by [Euint Labs](https://biont.network), where each biont is its own deployed smart contract. Total supply is always 1, and the token ID is always 0. The `token_uri()` function returns full SVG markup directly from contract state — fully on-chain, no IPFS or external servers.
+
+### View Functions
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `name()` | `→ string` | Token name (also `biont_name()`) |
+| `symbol()` | `→ string` | Token symbol |
+| `total_supply()` | `→ int` | Always 1 |
+| `token_uri()` | `→ string` | Raw SVG markup (on-chain generative art) |
+| `biont_owner()` | `→ address` | Current owner |
+| `balance_of(addr)` | `address → int` | Returns 1 if owner, 0 otherwise |
+| `is_alive()` | `→ bool` | Whether the biont is alive |
+| `defense_level()` | `→ int` | Current defense stat |
+
+### State-Changing Functions
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `transfer_to(new_owner)` | `address → bool` | Transfer ownership (no token_id needed) |
+| `wander()` | `→ bool` | Move the biont |
+| `hunt()` | `→ bool` | Hunt another biont |
+
+### On-Chain SVG
+
+Unlike SNS-1 which uses IPFS for metadata, Bionts return full SVG markup from `token_uri()`. The SVG is generated from live contract state — name, wander count, defense stats, and alive/dead status all render dynamically.
+
+0xio Wallet detects raw SVG responses (strings starting with `<svg`) and renders them inline via base64 data URIs.
+
+### Example Contract
+
+- **Devnet**: `octHgHJLvxtEhjzXT5ZyBHTEAKYf8s7da4iWfmHShLrtdbM`
+
+---
+
+## How 0xio Wallet Detects the Standard
+
+1. **Fetch ABI** via `octra_contractAbi` — determines which methods the contract exposes
+2. **Name detection**: tries `collection_name()` (SNS-1), `name()`, `biont_name()` in priority order
+3. **Transfer method**: detects `transfer(to, token_id)` (SNS-1) or `transfer_to(address)` (Biont) from ABI
+4. **Image rendering**: if `token_uri()` returns `<svg...`, renders inline; if it returns `ipfs://...`, fetches metadata JSON and resolves the image URL
+
+When the ABI is unavailable (returns 0 methods), the wallet defaults to SNS-1 behavior (`transfer(to, token_id)` and IPFS metadata).
+
+## Supported Across All Platforms
+
+| Feature | Extension | Mobile | Desktop |
+|---------|-----------|--------|---------|
+| SNS-1 display | Yes | Yes | Yes |
+| Biont SVG rendering | Yes | Yes | Yes |
+| SNS-1 transfer | Yes | Yes | Yes |
+| Biont transfer_to | Yes | Yes | Yes |
+| IPFS image loading | Yes (blob proxy) | Yes | Yes |
+| On-chain SVG | Yes (base64 data URI) | Yes | Yes |
+| ABI-based detection | Yes | Planned | Planned |
