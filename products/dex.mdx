@@ -37,11 +37,76 @@ Trade tokens with **amount privacy** using FHE:
 The following features are available now on devnet:
 
 - **CLMM Swap**: Concentrated liquidity swaps are live on devnet for testing
-- **Bridge Tab**: OCT to wOCT (wrapped OCT) bridging interface — claim step pending Merkle proof API from the Octra team
+- **Bridge Tab**: OCT to wOCT (wrapped OCT) bridging — see [Bridge section](#bridge-oct--woct) below
 - **Dynamic Fee Estimation**: Network fees are estimated dynamically based on current conditions
 - **MAX Button**: One-tap to fill the maximum available balance for a swap
 - **Slippage Persistence**: Your slippage tolerance setting is saved across sessions
 - **Network Indicator**: Clear visual indicator showing which network (mainnet/devnet) you are connected to
+
+## Bridge (OCT ↔ wOCT)
+
+The DEX includes a built-in bridge for moving OCT between the Octra Network and Ethereum. This uses the **BridgeVault** smart contract on Octra and the **EthereumBridge** contract on Ethereum.
+
+### How It Works
+
+OCT on Octra is **locked** (not burned) in the BridgeVault, and an equivalent amount of **wOCT** (wrapped OCT, ERC-20) is minted on Ethereum. The reverse burns wOCT and unlocks OCT.
+
+### OCT → wOCT (Octra to Ethereum)
+
+<Steps>
+  <Step title="Connect Both Wallets">
+    Connect your 0xio wallet (Octra) and MetaMask (Ethereum) in the Bridge tab
+  </Step>
+  <Step title="Enter Amount">
+    Enter the amount of OCT to bridge (minimum 1 OCT)
+  </Step>
+  <Step title="Lock OCT">
+    Confirm the `lock_to_eth` transaction — your OCT is locked in the BridgeVault contract
+  </Step>
+  <Step title="Wait for Bridge Header">
+    The bridge relayer submits a Merkle root to the OctraLightClient on Ethereum (~2 minutes)
+  </Step>
+  <Step title="Claim wOCT">
+    Once the bridge header is verified, claim your wOCT on Ethereum
+  </Step>
+</Steps>
+
+<Warning>
+  The claim step requires a Merkle proof from the bridge relayer. This feature is pending the Merkle proof API from the Octra team. Currently, the lock step works but claiming must be done manually or via the relayer.
+</Warning>
+
+### wOCT → OCT (Ethereum to Octra)
+
+<Steps>
+  <Step title="Approve wOCT">
+    Approve the EthereumBridge contract to spend your wOCT
+  </Step>
+  <Step title="Burn wOCT">
+    Call `burnToOctra` with your Octra recipient address — wOCT is burned on Ethereum
+  </Step>
+  <Step title="Automatic Unlock">
+    The bridge relayer detects the burn and calls `unlock_trusted` on the BridgeVault — OCT is sent to your Octra address automatically
+  </Step>
+</Steps>
+
+### Bridge Limits
+
+| Parameter | Value |
+|-----------|-------|
+| Minimum lock | 1 OCT |
+| Maximum per transaction | 115,000,000 OCT |
+| Daily cap (lock + unlock) | 115,000,000 OCT |
+| Cooldown between locks | 6 epochs per address |
+| Rate | 1 OCT = 1 wOCT (always) |
+
+### Contract Addresses
+
+| Contract | Network | Address |
+|----------|---------|---------|
+| BridgeVault | Octra | On-chain (AML contract) |
+| EthereumBridge | Ethereum | `0xE7eD69b852fd2a1406080B26A37e8E04e7dA4caE` |
+| wOCT (ERC-20) | Ethereum | `0x205Fc25be91bdc4703E2B5e7A5673060F2F7830b` |
+| OctraLightClient | Ethereum | `0x8f70C28eE6831F3592Cfe4b9751b29C81Fb0d915` |
 
 ---
 
@@ -91,7 +156,7 @@ Control your trade privacy level:
 - Anyone can see your trade size
 - Subject to front-running
 
-#### FHE On (Shielded Mode) 🛡️
+#### FHE On (Shielded Mode)
 
 - Private swap with encrypted amounts
 - Trade amount encrypted on your device
