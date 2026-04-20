@@ -56,6 +56,52 @@ All keys are generated and stored locally. 0xio cannot freeze, access, or recove
 
 Sensitive data is encrypted **before** it is broadcast to the network. Validators process encrypted payloads without learning their contents.
 
+## Architecture
+
+The 0xio ecosystem spans multiple client platforms unified by a shared SDK layer, backed by infrastructure services, all interfacing with the Octra Network's FHE-enabled blockchain.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                          Client Applications                        │
+│                                                                     │
+│  ┌──────────────┐  ┌──────────────┐  ┌─────────────┐  ┌──────────┐  │
+│  │  Extension   │  │  Mobile App  │  │ Desktop App │  │   DEX    │  │
+│  │  v2.3.0      │  │  v1.0.2      │  │  v0.2.0     │  │  devnet  │  │
+│  │  React+Vite  │  │  RN+Expo 54  │  │ Tauri+Rust  │  │  CLMM    │  │
+│  │  WASM PVAC   │  │  Native FFI  │  │ Native PVAC │  │  Bridge  │  │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬──────┘  └────┬─────┘  │
+└─────────┼─────────────────┼─────────────────┼──────────────┼────────┘
+          └─────────────────┼─────────────────┘              │
+                            │                                │
+               ┌────────────┴────────────┐                   │
+               │     @0xio/sdk v2.4.2    │◄──────────────────┘
+               │    TypeScript · npm     │
+               └────────────┬────────────┘
+                            │
+          ┌─────────────────┼──────────────────┐
+          │                 │                  │
+  ┌───────┴────────┐   ┌────┴──────┐  ┌────────┴────────┐
+  │   RPC Proxy    │   │ Push Svr  │  │  Alpha Portal   │
+  │ 8.3MB → 7KB    │   │  Ed25519  │  │  Code-gated     │
+  │ 15s cache/addr │   │  auth     │  │  R2 storage     │
+  └───────┬────────┘   └────┬──────┘  └────────┬────────┘
+          └─────────────────┼──────────────────┘
+                            │
+               ┌────────────┴────────────┐
+               │     Octra Network       │
+               │  AML Smart Contracts    │
+               │  BridgeVault · wOCT     │
+               │  On-chain Verification  │
+               └─────────────────────────┘
+```
+
+| Layer | Components |
+|-------|-----------|
+| **Client Applications** | Browser Extension (React + Vite + WASM), Mobile App (React Native + Expo 54 + Native FFI), Desktop App (Tauri + Rust + Native PVAC), DEX (React + Vite, CLMM + Bridge) |
+| **Developer SDK** | @0xio/sdk v2.4.2 — TypeScript, npm, iframe bridge, postMessage security |
+| **Infrastructure** | RPC Proxy (caching, 1,200x response reduction), Push Server (Ed25519 authenticated notifications), Alpha Portal (code-gated distribution, R2 signed URLs) |
+| **Blockchain** | Octra Network — FHE encrypted balances, AML smart contracts, BridgeVault, wOCT (ERC-20), on-chain proof verification |
+
 ## The 0xio Ecosystem
 
 <CardGroup cols="2">
