@@ -36,6 +36,7 @@ Because Octra relies on FHE, data must be encrypted *before* it leaves your devi
 | **Signing Algorithm** | **Ed25519** (Twisted Edwards Curve) for high-speed, secure transaction signatures. |
 | **Vault Encryption** | **AES-GCM (256-bit)**. Your keys are encrypted at rest on your device. |
 | **Key Derivation** | **PBKDF2** with high iteration counts to prevent brute-force attacks on your password. |
+| **Price Feeds** | **0xio Oracle** — Multi-source aggregation (CoinGecko + DexScreener) with anomaly detection, median pricing, and persistent PostgreSQL history. |
 | **Telemetry** | **Zero**. No tracking scripts, analytics, or IP logging are integrated into the wallet. |
 
 <Note>
