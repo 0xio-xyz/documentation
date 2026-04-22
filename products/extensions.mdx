@@ -4,7 +4,7 @@ description: 'Complete guide to the 0xio Wallet Extension'
 icon: 'chrome'
 ---
 
-The **0xio Browser Extension** (v2.2.7) is your primary gateway to the Octra Network. It allows you to manage assets, interact with dApps, and perform private FHE operations directly from your browser.
+The **0xio Browser Extension** (v2.3.1) is your primary gateway to the Octra Network. It allows you to manage assets, interact with dApps, and perform private FHE operations directly from your browser.
 
 <Note>
   **Status: Live on Chrome Web Store** — Install from the [Chrome Web Store](https://chromewebstore.google.com/detail/0xio-wallet/anknhjilldkeelailocijnfibefmepcc).
@@ -39,7 +39,9 @@ The main screen gives you a snapshot of your financial privacy.
 
 * **Public Balance:** Your visible `OCT` balance, usable for standard transactions and gas fees.
 * **Private Balance:** Your FHE-encrypted balance. These funds are visible only to you and are used for shielded transfers.
-* **Widgets:** Quick access to price feeds and network status.
+* **Portfolio Worth:** Real-time USD value of your holdings powered by the 0xio Oracle (CoinGecko + DexScreener aggregation). Toggle between USD and OCT display.
+* **24h Chart:** Portfolio worth chart reflecting actual price movement over the last 24 hours. Hover to see interpolated worth at any point in time.
+* **24h Change:** Percentage change in portfolio value based on oracle price data.
 
 ---
 
@@ -103,7 +105,7 @@ The **NFTs** tab in the wallet dashboard lets you import and browse NFT collecti
 
 <Steps>
   <Step title="Import Collection">
-    Click the **+** button on the NFTs tab and enter a contract address. The extension validates it by calling `collection_name()`, `symbol()`, and `total_supply()` view functions (SNS-1 compatible).
+    Click the **+** button on the NFTs tab and enter a contract address. The extension validates it by calling `collection_name()`, `symbol()`, and `total_supply()` view functions. Supports SNS-1 (Spectrum) and Biont (Euint Labs) NFT standards.
   </Step>
   <Step title="View Owned NFTs">
     Each collection card shows how many NFTs you own (via `balance_of`). Click a collection to expand it and see individual token IDs.
@@ -114,7 +116,7 @@ The **NFTs** tab in the wallet dashboard lets you import and browse NFT collecti
 </Steps>
 
 <Note>
-  NFT collections are stored per-network and auto-refresh every 60 seconds. You can remove a collection by hovering over it and clicking the trash icon.
+  NFT collections are stored per-network and auto-refresh every 60 seconds. To remove a collection, click the **⋮** (three-dot) menu on the collection header and select **Remove Collection**.
 </Note>
 
 ---
