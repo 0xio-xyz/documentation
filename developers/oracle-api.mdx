@@ -4,11 +4,7 @@ description: "Real-time price feeds and AMM quotes from 0xio Oracle"
 icon: "chart-line"
 ---
 
-<Warning>
-**Under Construction** — This API is currently under development and not yet available for public use. Documentation will be updated when the service launches.
-</Warning>
-
-The **0xio Oracle** provides real-time price feeds, swap quotes, and AMM functionality for the 0xio DEX ecosystem.
+The **0xio Oracle** provides real-time price feeds, swap quotes, and historical price data for the 0xio ecosystem. Prices are aggregated from multiple sources (CoinGecko + DexScreener) with anomaly detection and stored in PostgreSQL for historical chart data.
 
 ## Base URL
 
@@ -38,6 +34,7 @@ Keep your API key secret. Never expose it in client-side code or public reposito
 | `GET /api/health` | No |
 | `GET /api/keys` | Signature |
 | `POST /api/keys` | Signature |
+| `GET /api/price/oct/details` | Yes |
 | `GET /api/price/:symbol` | Yes |
 | `GET /api/prices` | Yes |
 | `GET /api/quote` | Yes |
@@ -122,9 +119,9 @@ curl -H "x-api-key: YOUR_KEY" \
 ```
 
 The `source` field indicates where the price came from:
-- `pyth` - Pyth Network oracle feed
-- `amm` - Calculated from AMM reserves
-- `static` - Hardcoded value (stablecoins like USDC/USDT)
+- `aggregated(coingecko+dexscreener)` — Multi-source median with anomaly detection
+- `pyth` — Pyth Network oracle feed (stablecoins, SOL, ETH)
+- `static` — Hardcoded value (stablecoins like USDC/USDT)
 
 ### Get All Prices
 
@@ -148,6 +145,40 @@ curl -H "x-api-key: YOUR_KEY" \
   "USDT": 1.0,
   "SOL": 180.50,
   "ETH": 3200.00
+}
+```
+
+### Get OCT Detailed Market Data
+
+```http
+GET /api/price/oct/details
+```
+
+Get full aggregated market data for OCT including 24h change, volume, liquidity, and source breakdown.
+
+**Example:**
+```bash
+curl -H "x-api-key: YOUR_KEY" \
+  https://oracle.0xio.xyz/api/price/oct/details
+```
+
+**Response:**
+```json
+{
+  "symbol": "OCT",
+  "priceUsd": 0.024816,
+  "priceChange24h": -2.15,
+  "volume24h": 12500.00,
+  "liquidityUsd": 85000.00,
+  "source": "aggregated(coingecko+dexscreener)",
+  "confidence": "high",
+  "spreadPct": 0.8,
+  "allSources": {
+    "coingecko": 0.024800,
+    "dexscreener": 0.024832
+  },
+  "ethUsd": 1780.50,
+  "timestamp": 1745312400000
 }
 ```
 
@@ -292,12 +323,12 @@ Get historical price data for the last 24 hours.
 **Query Parameters:**
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `pair` | string | `OCT-USDC` | Trading pair |
+| `pair` | string | `OCT` | Token symbol |
 
 **Example:**
 ```bash
 curl -H "x-api-key: YOUR_KEY" \
-  "https://oracle.0xio.xyz/api/chart/history?pair=OCT-USDC"
+  "https://oracle.0xio.xyz/api/chart/history?pair=OCT"
 ```
 
 **Response:**
