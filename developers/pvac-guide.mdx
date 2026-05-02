@@ -1,0 +1,139 @@
+---
+title: 'PVAC SDK (@0xio/pvac)'
+description: 'FHE privacy primitives for building privacy-aware DApps on Octra'
+icon: 'lock'
+---
+
+## Overview
+
+`@0xio/pvac` provides standalone FHE (Fully Homomorphic Encryption) primitives for DApps that need to work with encrypted balances on Octra Network. It runs entirely client-side via WASM — no wallet extension dependency for cryptographic operations.
+
+Use `@0xio/pvac` for FHE crypto, and `@0xio/sdk` for wallet signing. They work together:
+
+| Package | Purpose |
+|---|---|
+| `@0xio/pvac` | Encrypt, decrypt, proofs, cipher math |
+| `@0xio/sdk` | Connect wallet, sign transactions, broadcast |
+
+## Installation
+
+```bash
+npm install @0xio/pvac
+```
+
+## Quick Start
+
+```typescript
+import { PvacContext, initPvac } from '@0xio/pvac';
+
+// 1. Initialize WASM module
+const wasm = await initPvac();
+
+// 2. Create context from wallet seed
+const seed = new Uint8Array(32); // derive from wallet key
+const ctx = await PvacContext.create(seed, wasm);
+
+// 3. Encrypt an amount
+const cipher = ctx.encrypt(100_000_000n); // 100 OCT in microOCT
+
+// 4. Create proofs
+const blinding = crypto.getRandomValues(new Uint8Array(32));
+const boundProof = ctx.makeBoundProof(cipher, 100_000_000n, blinding);
+const commitment = ctx.pedersenCommit(100_000_000n, blinding);
+```
+
+## API Reference
+
+### Encryption
+
+| Method | Description |
+|---|---|
+| `encrypt(value)` | Encrypt an amount (bigint) |
+| `encryptSeeded(value, seed)` | Encrypt with deterministic seed |
+| `encryptZero()` | Encrypt zero (for account initialization) |
+| `decrypt(cipher)` | Decrypt a cipher → bigint |
+
+### Cipher Arithmetic
+
+| Method | Description |
+|---|---|
+| `ctAdd(a, b)` | Add two ciphers: `enc(a) + enc(b) = enc(a+b)` |
+| `ctSub(a, b)` | Subtract: `enc(a) - enc(b) = enc(a-b)` |
+
+### Proofs
+
+| Method | Description | Time |
+|---|---|---|
+| `makeBoundProof(cipher, value, blinding)` | Prove cipher encrypts specific value | ~100ms |
+| `makeRangeProof(cipher, value)` | Prove decrypted value ≥ 0 | 30-60s |
+| `makeRangeProofParallel(cipher, value)` | Parallel range proof (rayon) | 15-30s |
+| `pedersenCommit(value, blinding)` | Create Pedersen commitment | ~1ms |
+| `verifyRangeProof(cipher, proof)` | Verify a range proof | ~100ms |
+| `verifyBoundProof(cipher, proof, commitment)` | Verify a bound proof | ~50ms |
+
+## Private DEX Example
+
+```typescript
+import { PvacContext, initPvac } from '@0xio/pvac';
+import { ZeroXIOWallet } from '@0xio/sdk';
+
+// Setup
+const wasm = await initPvac();
+const ctx = await PvacContext.create(seed, wasm);
+const wallet = new ZeroXIOWallet({ appName: 'My DEX' });
+await wallet.initialize();
+await wallet.connect();
+
+// Open private account on pool contract
+const pubkey = ctx.serializePubkey();
+const zeroCipher = ctx.encryptZero();
+const blinding = crypto.getRandomValues(new Uint8Array(32));
+const zeroProof = ctx.makeBoundProof(zeroCipher, 0n, blinding);
+const rangeProof = ctx.makeRangeProof(zeroCipher, 0n);
+
+await wallet.callContract({
+  contract: 'octYourPoolAddress...',
+  method: 'open_private_account',
+  params: [
+    btoa(String.fromCharCode(...pubkey)),
+    btoa(String.fromCharCode(...zeroCipher)),
+    btoa(String.fromCharCode(...zeroProof)),
+    btoa(String.fromCharCode(...rangeProof)),
+  ],
+  amount: 0,
+});
+```
+
+### Subtracting a Public Amount
+
+To subtract a known amount from an encrypted balance (e.g., after a swap):
+
+```typescript
+// Subtract 50 OCT from encrypted balance
+const amountCipher = ctx.encrypt(50_000_000n);
+const newBalance = ctx.ctSub(currentCipher, amountCipher);
+
+// Prove remaining balance ≥ 0
+const proof = ctx.makeRangeProof(newBalance, expectedNewValue);
+```
+
+This is mathematically identical to `fhe_sub_const`. Both produce `enc(balance - amount)`.
+
+## Platform Support
+
+| Platform | Package | Notes |
+|---|---|---|
+| Browser / Web DApp | `@0xio/pvac` | Full support via WASM |
+| Browser Extension | `@0xio/pvac` | Same WASM, runs in page context |
+| React Native | `pvac-rs` FFI | Native ARM binary |
+| Desktop (Tauri) | `pvac-rs` crate | Native Rust |
+| Node.js | Not supported | No WASM threading |
+
+## Approval Popup
+
+When your DApp calls `wallet.callContract()`, the 0xio extension shows an approval popup:
+
+- **Amount** = native OCT sent to the contract. Set `amount: 0` if none.
+- **Fee** = OU (operational units / gas). Shown separately below the amount.
+
+If you see a non-zero amount and expect 0, check your `amount` parameter.

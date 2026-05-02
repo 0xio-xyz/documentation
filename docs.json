@@ -61,7 +61,7 @@
           {
             "group": "Products",
             "pages": [
-              "products/atlas",
+              
               "products/extensions",
               "products/mobile",
               "products/desktop",
@@ -78,7 +78,8 @@
           {
             "group": "SDK Documentation",
             "pages": [
-              "developers/sdk-guide"
+              "developers/sdk-guide",
+              "developers/pvac-guide"
             ]
           },
           {
