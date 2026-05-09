@@ -1,155 +1,116 @@
 ---
 title: '0xio Bridge'
-description: 'Overview of the 0xio Bridge, an intent-based cross-chain protocol connecting Octra with EVM chains and Solana using FHE-encrypted intents.'
+description: 'Bridge OCT between Octra and Ethereum — lock OCT to mint wOCT, burn wOCT to unlock OCT.'
 icon: 'bridge'
 ---
 
 <Note>
-  **Status: In Development**
-  The 0xio Bridge is currently in active development. Features described represent the planned functionality and may change before production release.
+  **Status: Live on Mainnet**
+  The 0xio Bridge is live at [bridge.0xio.xyz](https://bridge.0xio.xyz). Bridge OCT between Octra and Ethereum.
 </Note>
 
-# Overview
+## Overview
 
-The **0xio Bridge** is a next-generation interoperability protocol designed to connect **Octra** with **EVM** (Ethereum, Arbitrum, Optimism) and **Solana** chains. unlike traditional lock-and-mint bridges, 0xio utilizes an **Intent-Based Architecture** powered by a decentralized network of Solvers.
+The **0xio Bridge** connects the **Octra Network** with **Ethereum**, enabling bidirectional transfers between native OCT and wrapped OCT (wOCT, an ERC-20 token on Ethereum).
 
-## Why 0xio Bridge?
-
-### 1. Privacy-First
-Leveraging Octra's **Fully Homomorphic Encryption (FHE)**, cross-chain intents are encrypted locally on the user's device. Solvers execute these intents without ever seeing the raw transaction details until necessary, ensuring protection against front-running (MEV) and preserving user financial privacy.
-
-### 2. Instant Finality
-Traditional bridges rely on slow consensus verification. 0xio Solvers take on the risk of finality in exchange for a fee, providing users with **near-instant** transfers. As soon as a Solver verifies your deposit, they release funds on the destination chain immediately.
-
-### 3. Unified Liquidity
-By using **0xio-oracle** and a constant-product AMM model for pricing, we ensure deep liquidity and fair rates. Users don't need to worry about fragmented liquidity pools; the protocol routes optimally.
-
----
+Unlike intent-based bridges, the 0xio Bridge uses a **light client architecture** — an Octra Light Client contract on Ethereum verifies Merkle proofs of Octra transactions, providing trustless verification without relying on external oracles.
 
 ## How It Works
 
-The bridge operates on a **Fetch-Verify-Execute** loop:
+### OCT → wOCT (Octra to Ethereum)
 
-1.  **Intent Creation**: User signs an intent (e.g., "Swap 100 USDC on Eth to OCT on Octra").
-2.  **Solver Pickup**: Solvers (taking the role of Market Makers) detect this intent via the **0xio-indexer**.
-3.  **Execution**: The winning Solver fulfills the request on the destination chain using their own liquidity.
-4.  **Settlement**: The **0xio-oracle** verifies the execution and releases the user's original deposit to the Solver.
+<Steps>
+  <Step title="Connect Wallets">
+    Connect your 0xio wallet (Octra) and EVM wallet (MetaMask, Rabby, etc.)
+  </Step>
+  <Step title="Lock OCT">
+    Lock OCT in the BridgeVault contract on Octra with your Ethereum destination address
+  </Step>
+  <Step title="Wait for Bridge Header">
+    The bridge relayer submits epoch roots to the OctraLightClient on Ethereum (~2-5 minutes)
+  </Step>
+  <Step title="Claim wOCT">
+    Once the epoch root is verified, claim your wOCT using a Merkle proof
+  </Step>
+</Steps>
 
----
+### wOCT → OCT (Ethereum to Octra)
 
-## Architecture Components
+<Steps>
+  <Step title="Approve wOCT">
+    Approve the EthereumBridge contract to spend your wOCT
+  </Step>
+  <Step title="Burn wOCT">
+    Burn wOCT on Ethereum with your Octra recipient address
+  </Step>
+  <Step title="Automatic Unlock">
+    The bridge relayer detects the burn and unlocks OCT on Octra (~2 minutes)
+  </Step>
+</Steps>
 
-The 0xio Bridge is composed of three core microservices working in unison.
+## Features
 
-<CardGroup cols={3}>
-  <Card title="Solver Engine" icon="microchip" href="#the-solver-engine">
-    The execution engine that fulfills user intents across chains using MPC wallets.
-  </Card>
-  <Card title="Indexer" icon="database" href="#the-indexer">
-    Stateless tracking service that indexes intents and monitors transaction status.
-  </Card>
-  <Card title="Oracle" icon="scale-balanced" href="#the-oracle">
-    Decentralized pricing and security module that verifies cross-chain state.
-  </Card>
-</CardGroup>
+- **Trustless Verification**: Octra Light Client on Ethereum verifies Merkle proofs — no trusted oracle
+- **Multi-Wallet Support**: EIP-6963 detection for Rabby, MetaMask, Phantom, and other EVM wallets
+- **WalletConnect**: Scan QR code from the mobile app to bridge
+- **Auto-Reconnect**: Wallets persist across page refreshes
+- **Bridge History**: Full transaction history with claim actions and recovery
+- **Network Dashboard**: Live chain stats at [bridge.0xio.xyz/octra](https://bridge.0xio.xyz/octra)
+- **Bridge Stats**: Volume, transactions, unique wallets at [bridge.0xio.xyz/stats](https://bridge.0xio.xyz/stats)
 
----
+## Contract Addresses
 
-# The Solver Engine
+| Contract | Network | Address |
+|----------|---------|---------|
+| BridgeVault | Octra | `oct5MrNfjiXFNRDLwsodn8Zm9hDKNGAYt3eQDCQ52bSpCHq` |
+| wOCT (ERC-20) | Ethereum | `0x4647e1fE715c9e23959022C2416C71867F5a6E80` |
+| EthereumBridge | Ethereum | `0xE7eD69b852fd2a1406080B26A37e8E04e7dA4caE` |
+| OctraLightClient | Ethereum | `0xC01cA57dc7f7C4B6f1B6b87B85D79e5ddf0dF55d` |
 
-The **Solver** is the beating heart of the 0xio Bridge. Unlike traditional bridges that rely on static smart contracts to lock and mint assets, the 0xio Bridge uses an **Intent-Based Architecture** powered by off-chain Solvers.
+## Bridge Limits
 
-## What is a Solver?
+| Parameter | Value |
+|-----------|-------|
+| Minimum lock | 1 OCT |
+| Rate | 1 OCT = 1 wOCT (always) |
+| Cooldown | 6 epochs per address between locks |
+| wOCT → OCT | Automatic unlock via relayer (~2 min) |
 
-Think of a Solver as a specialized, automated market maker. When you request a bridge transfer (an "Intent"), you aren't just sending tokens to a contract; you are broadcasting a request to the network: *"I have 100 OCT, and I want 100 USDC on Ethereum."*
+## Architecture
 
-The Solver detects this request, verifies you've paid, and then uses its own liquidity to instantly release the funds to you on the destination chain.
+```
+User (0xio Wallet + EVM Wallet)
+    │
+    ├── Octra: BridgeVault (lock/unlock OCT)
+    │
+    ├── Ethereum: EthereumBridge + wOCT ERC-20
+    │
+    ├── OctraLightClient (Merkle proof verification)
+    │
+    └── Bridge Relayer (epoch root updater)
+```
 
-## How It Works
+## Services
 
-### 1. Privacy First (ECIES)
-Your privacy is paramount. When you initiate a transfer, the destination of your funds is **never revealed in plaintext** on the source chain.
-*   **Encryption:** Your intent (e.g., "Send to 0x123... on Ethereum") is encrypted using **ECIES (Secp256k1)**.
-*   **Delivery:**
-    *   **EVM:** The encrypted payload is passed directly to the **BridgeVault** contract.
-    *   **Solana:** It is attached as a **Memo instruction** to the transfer transaction.
-    *   **Octra:** It is embedded as the encrypted **Transaction Message**.
-*   **On-Chain Anonymity:** To the outside world, it looks like you simply sent tokens to a privacy pool. Only the Solver can decrypt your instructions.
+| Service | URL | Role |
+|---------|-----|------|
+| Bridge UI | [bridge.0xio.xyz](https://bridge.0xio.xyz) | User interface |
+| Network Dashboard | [bridge.0xio.xyz/octra](https://bridge.0xio.xyz/octra) | Chain stats, privacy ops |
+| Bridge Stats | [bridge.0xio.xyz/stats](https://bridge.0xio.xyz/stats) | Volume, wallets, activity |
+| Oracle | oracle.0xio.xyz | Price feeds, bridge event tracking |
 
-### 2. Multi-Party Computation (MPC)
-To ensure funds are safe, the Solver doesn't rely on a single private key that could be lost or stolen. It uses **Threshold MPC**.
-*   **Sharded Keys:** The key to the Solver's wallet is split into multiple pieces ("shares").
-*   **Collaborative Signing:** To sign a transaction, multiple independent nodes must collaborate. No single node ever sees the full key. This mimics the security of a multisig wallet but acts as a standard single-signature wallet on-chain.
+## Known Limitations
 
-### 3. Source Verification (Security)
-Before release funds, the Solver performs rigorous security checks tailored to each chain:
-*   **EVM Checks:** Verifies that funds were deposited into the **BridgeVault V2** smart contract (validating event logs and sender), ensuring funds aren't just sent to an EOA.
-*   **Solana Checks:** Validates transfers to the Solver's **Associated Token Account (ATA)** using balance-diffing to confirm receipt.
-*   **Common Checks:** Confirms transaction finality, amount accuracy, and strict intent matching.
+- **Epoch Sync Delay**: The ETH light client epoch updater may fall behind chain production. This causes Merkle proofs to be temporarily unverifiable until the sync catches up.
+- **Pruned Epochs**: Old epoch roots are pruned from the light client contract. Bridge transactions referencing pruned epochs cannot be claimed — users should claim promptly.
 
-This prevents "spoofing" attacks where malicious actors try to trick the bridge into releasing funds for fake transactions.
+## Security
 
-## Why This Architecture?
+- **No trusted oracle**: Verification is on-chain via Merkle proofs against the light client
+- **Bridge pause**: Owner can pause the bridge during emergencies
+- **Cooldown protection**: Rate limits prevent rapid drain attacks
+- **Account change detection**: Frontend detects wallet account switches to prevent sending to wrong address
 
-*   **Speed:** Solvers can execute transactions in parallel, limited only by the block time of the destination chain.
-*   **Cost:** By aggregating liquidity, Solvers reduce the gas costs associated with complex on-chain minting logic.
-*   **Privacy:** The Intent/Solver model naturally decouples the sender from the receiver, breaking the link analysis chain used by trackers.
-
----
-
-# The Indexer
-
-The **Indexer** is the central nervous system of the 0xio Bridge. It acts as the **State Coordinator** for the network.
-
-It does not hold funds or execute transactions. Instead, it acts as a real-time scoreboard, ensuring that:
-1.  **Users** know the exact status of their funds (Pending, Processing, Completed).
-2.  **Solvers** know exactly which intents are waiting to be filled.
-
-## Key Responsibilities
-
-### 1. Intent Discovery
-The Indexer listens for signals from the 0xio DEX and Wallet Extension. It enforces **Type-Safe Intents** (e.g., distinguishing `DEPOSIT_SOL` from `DEPOSIT_EVM`) to ensure that every request is routed to the correct validation logic from the moment it enters the system.
-
-When you sign a transaction, the Indexer records the "Proof of Intent" — the transaction hash and the encrypted instructions.
-
-### 2. State Management
-A bridge transaction goes through several states:
-*   **PENDING:** The user has paid, waiting for the Solver.
-*   **PROCESSING:** The Solver has picked up the task.
-*   **COMPLETED:** Funds have been successfully delivered.
-*   **FAILED:** Something went wrong (e.g., transaction reverted).
-
-The Indexer maintains this state in real-time, allowing the UI to show you exactly where your funds are.
-
-### 3. Historical Record
-The Indexer provides a permanent history of your bridge activity. This allows you to audit your past deposits and withdrawals, even if the user interface or browser cache is cleared.
-
----
-
-# The Oracle
-
-The **Oracle** ensures that every bridge transfer happens at a fair, transparent market price. It combines the reliability of an Automated Market Maker (AMM) with the accuracy of real-time off-chain data.
-
-## Hybrid Pricing Engine
-
-The 0xio Oracle uses a unique hybrid model to determine the exchange rate between Octra (OCT) and Stablecoins (USDC/USDT).
-
-### 1. The Virtual USD Pool
-Instead of fragmenting liquidity between multiple pairs (OCT/USDC and OCT/USDT), the Oracle combines all stablecoin liquidity into a single **"Virtual USD"** pool.
-*   **OCT Pricing:** The price of OCT floats freely based on the **AMM Liquidity Curve** (Supply & Demand) against this unified USD pool.
-*   **Benefit:** This creates a deeper liquidity pool, meaning large transfers suffer less "slippage".
-
-### 2. Stablecoin Peg Assurance (Pyth Network)
-To prevent stablecoin de-pegging from affecting the bridge's internal value, the Oracle integrates with **Pyth Network** for external verification.
-*   The Oracle monitors the real-time market price of **USDC** and **USDT**.
-*   This ensures that the "Virtual USD" side of the pool is always anchored to true market value, protecting the protocol from bad assets.
-
-
-## Protection Mechanisms
-
-### Slippage Protection
-When you submit an intent, you specify a `minAmountOut` — the minimum amount of tokens you are willing to accept.
-*   If the price changes unfavorably while your transaction is in flight, and the output would fall below your minimum, the Solver will **wait** or **abort** rather than executing a bad trade.
-
-### Liquidity Guard
-The Oracle continuously monitors the Solver's available funds on all chains (via the **Watcher Service**). It will never give you a quote for a swap if there isn't enough liquidity to fulfill it immediately.
+<Warning>
+Always verify the full destination address in the confirmation dialog before bridging. The bridge shows the complete address (not truncated) to prevent address injection attacks.
+</Warning>

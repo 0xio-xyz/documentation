@@ -1,467 +1,217 @@
 ---
 title: "0xio DEX"
-description: "Learn about 0xio DEX, a concentrated-liquidity AMM on Octra that uses FHE to hide trade sizes and prevent MEV and front-running attacks."
+description: "Cross-chain swap protocol for Octra Network — swap OCT and ETH with on-chain settlement and solver-based fills."
 icon: "arrow-right-arrow-left"
 ---
 
 <Note>
-  **Status: In Development**
-  The 0xio DEX is actively being developed. A concentrated liquidity (CLMM) swap is live on devnet for testing. Follow our announcements for updates on the mainnet launch timeline.
+  **Status: Live on Devnet**
+  The 0xio DEX is live at [dex.0xio.xyz](https://dex.0xio.xyz). Cross-chain swaps between OCT and ETH are available on devnet.
 </Note>
 
 ## Overview
 
-**0xio DEX** is a **Concentrated Liquidity Market Maker (CLMM)** built for the **Octra Network**, leveraging **Fully Homomorphic Encryption (FHE)** to enable truly private trading.
+**0xio DEX** is a **cross-chain swap protocol** that enables users to swap native tokens across chains — starting with **OCT ↔ ETH** between Octra and Ethereum Sepolia. The protocol uses a **solver-based architecture** with on-chain escrow and oracle verification.
 
-### The Problem with Traditional DEXs
+## How It Works
 
-On standard decentralized exchanges:
-
-- Your trade sizes are publicly visible
-- Front-running bots exploit your transactions
-- Trading strategies become transparent
-- Competitors can track your activity
-- MEV (Maximal Extractable Value) extraction
-
-### The 0xio DEX Solution
-
-Trade tokens with **amount privacy** using FHE:
-
-- **Input Privacy:** Swap amounts encrypted on-chain
-- **Hidden Balances:** Account balances remain confidential
-- **Front-Running Protection:** Bots can't see your trade size
-- **Strategy Privacy:** Your trading patterns stay private
-
-## Current Features (Devnet)
-
-The following features are available now on devnet:
-
-- **CLMM Swap**: Concentrated liquidity swaps are live on devnet for testing
-- **Bridge Tab**: OCT to wOCT (wrapped OCT) bridging — see [Bridge section](#bridge-oct--woct) below
-- **Dynamic Fee Estimation**: Network fees are estimated dynamically based on current conditions
-- **MAX Button**: One-tap to fill the maximum available balance for a swap
-- **Slippage Persistence**: Your slippage tolerance setting is saved across sessions
-- **Network Indicator**: Clear visual indicator showing which network (mainnet/devnet) you are connected to
-
-## Bridge (OCT ↔ wOCT)
-
-The DEX includes a built-in bridge for moving OCT between the Octra Network and Ethereum. This uses the **BridgeVault** smart contract on Octra and the **EthereumBridge** contract on Ethereum.
-
-### How It Works
-
-OCT on Octra is **locked** (not burned) in the BridgeVault, and an equivalent amount of **wOCT** (wrapped OCT, ERC-20) is minted on Ethereum. The reverse burns wOCT and unlocks OCT.
-
-### OCT → wOCT (Octra to Ethereum)
+### OCT → ETH
 
 <Steps>
-  <Step title="Connect Both Wallets">
-    Connect your 0xio wallet (Octra) and MetaMask (Ethereum) in the Bridge tab
+  <Step title="Connect Wallets">
+    Connect your 0xio wallet (Octra) and MetaMask (Sepolia)
   </Step>
-  <Step title="Enter Amount">
-    Enter the amount of OCT to bridge (minimum 1 OCT)
+  <Step title="Get Quote">
+    Enter the OCT amount — the solver provides a real-time quote with TWAP pricing
   </Step>
   <Step title="Lock OCT">
-    Confirm the `lock_to_eth` transaction — your OCT is locked in the BridgeVault contract
+    OCT is locked in the SwapVault contract on Octra with a minimum receive commitment
   </Step>
-  <Step title="Wait for Bridge Header">
-    The bridge relayer submits a Merkle root to the OctraLightClient on Ethereum (~2 minutes)
+  <Step title="Solver Fills">
+    The solver detects the lock, sends ETH to your Sepolia address (~30s)
   </Step>
-  <Step title="Claim wOCT">
-    Once the bridge header is verified, claim your wOCT on Ethereum
+  <Step title="Oracle Attests">
+    The oracle independently verifies the ETH was sent and attests on-chain
+  </Step>
+  <Step title="Settlement">
+    After a challenge window, the solver claims the locked OCT
   </Step>
 </Steps>
 
-<Warning>
-  The claim step requires a Merkle proof from the bridge relayer. This feature is pending the Merkle proof API from the Octra team. Currently, the lock step works but claiming must be done manually or via the relayer.
-</Warning>
-
-### wOCT → OCT (Ethereum to Octra)
+### ETH → OCT (Commit-Then-Fill)
 
 <Steps>
-  <Step title="Approve wOCT">
-    Approve the EthereumBridge contract to spend your wOCT
+  <Step title="Connect Wallets">
+    Connect MetaMask (Sepolia) and 0xio wallet (Octra)
   </Step>
-  <Step title="Burn wOCT">
-    Call `burnToOctra` with your Octra recipient address — wOCT is burned on Ethereum
+  <Step title="Lock ETH">
+    ETH is locked in the EthEscrow contract on Sepolia
   </Step>
-  <Step title="Automatic Unlock">
-    The bridge relayer detects the burn and calls `unlock_trusted` on the BridgeVault — OCT is sent to your Octra address automatically
+  <Step title="Solver Commits">
+    The solver calls `fill()` on the escrow to reserve the order (no OCT sent yet)
+  </Step>
+  <Step title="Solver Sends OCT">
+    Only after `fill()` confirms on Ethereum, the solver sends OCT on Octra
+  </Step>
+  <Step title="Oracle Attests + Settlement">
+    Oracle verifies, solver settles, receives the locked ETH
   </Step>
 </Steps>
 
-### Bridge Limits
+<Info>
+The **commit-then-fill** pattern ensures the solver never sends OCT before the escrow commitment is confirmed on Ethereum. This eliminates the risk of the solver losing funds if the fill transaction fails.
+</Info>
 
-| Parameter | Value |
-|-----------|-------|
-| Minimum lock | 1 OCT |
-| Maximum per transaction | 115,000,000 OCT |
-| Daily cap (lock + unlock) | 115,000,000 OCT |
-| Cooldown between locks | 6 epochs per address |
-| Rate | 1 OCT = 1 wOCT (always) |
+## Features
 
-### Contract Addresses
+- **Cross-Chain Swaps**: OCT ↔ ETH between Octra and Ethereum Sepolia
+- **TWAP Pricing**: 5-minute time-weighted average prices from CoinGecko + DexScreener
+- **On-Chain Rate Protection**: `min_receive` committed at lock time — solver can't underpay
+- **Slippage Control**: Configurable slippage tolerance (0.5%, 1%, 2%, custom)
+- **Liquidity Display**: Real-time solver balance shown before swap
+- **Network Detection**: Auto-prompts MetaMask to switch to Sepolia
+- **Swap History**: Live-updating transaction list with on-chain state at [dex.0xio.xyz/history](https://dex.0xio.xyz/history)
+- **DEX Stats**: Volume, fees, solver status at [dex.0xio.xyz/stats](https://dex.0xio.xyz/stats)
+- **Price Chart**: Live OCT/USD sparkline on the swap page
+
+## Security
+
+The protocol has been through **4 independent security audit passes** with all critical findings resolved.
+
+### 5-Layer Defense
+
+| Layer | Protection |
+|-------|-----------|
+| **Solver Bond** | 20K OCT staked as collateral, slashed on fraud |
+| **On-Chain Rate Commitment** | `min_receive` prevents solver from underpaying |
+| **Oracle Verification** | Independent fill verification before attestation |
+| **Challenge Window** | Dispute period before settlement (10 epochs on devnet) |
+| **Stale Fill Refund** | User reclaims funds if oracle doesn't attest within timeout |
+
+### Key Security Properties
+
+- **Commit-then-fill**: Solver calls `fill()` on escrow BEFORE sending destination tokens — zero solver risk
+- **Fee snapshot**: Fee rate locked at swap time, can't be changed retroactively
+- **Reentrancy guard**: All ETH transfer functions protected
+- **Emergency refund**: Owner can refund unfilled swaps (blocked after fill)
+- **Reconciliation**: Solver auto-reconciles DB vs on-chain state every 5 minutes
+
+## Contract Addresses (Devnet)
 
 | Contract | Network | Address |
 |----------|---------|---------|
-| BridgeVault | Octra | On-chain (AML contract) |
-| EthereumBridge | Ethereum | `0xE7eD69b852fd2a1406080B26A37e8E04e7dA4caE` |
-| wOCT (ERC-20) | Ethereum | `0x205Fc25be91bdc4703E2B5e7A5673060F2F7830b` |
-| OctraLightClient | Ethereum | `0x8f70C28eE6831F3592Cfe4b9751b29C81Fb0d915` |
-
----
-
-## Getting Started
-
-### Connecting Your Wallet
-
-<Steps>
-  <Step title="Access DEX">
-    Navigate to Swap tab in 0xio wallet or visit DEX interface
-  </Step>
-  <Step title="Wallet Auto-Connect">
-    Your 0xio wallet connects automatically if using extension
-  </Step>
-  <Step title="Verify Connection">
-    Check connected status in top-right corner
-  </Step>
-  <Step title="View Balances">
-    Your public and private balances display automatically
-  </Step>
-</Steps>
-
-## Understanding the Interface
-
-### Swap Card
-
-The main trading interface includes:
-
-- **From Token:** Token you're selling
-- **To Token:** Token you're buying
-- **Amount Input:** How much you want to swap
-- **FHE Toggle:** Switch between public and private mode
-- **Estimated Output:** Expected tokens received
-- **Price Impact:** How your trade affects the pool
-- **Swap Button:** Execute the transaction
-
-### Privacy Toggle (Shield Button)
-
-Control your trade privacy level:
-
-#### FHE Off (Public Mode)
-
-- Standard public swap
-- Trade amounts visible on blockchain
-- Faster execution (3-5 seconds)
-- Lower gas costs
-- Anyone can see your trade size
-- Subject to front-running
-
-#### FHE On (Shielded Mode)
-
-- Private swap with encrypted amounts
-- Trade amount encrypted on your device
-- Network validates without seeing amounts
-- Higher gas costs
-- Protection from front-running
-- Complete trade privacy
-
-<Tip>
-**When to use FHE:** Large trades, sensitive strategies, or any time you want privacy.
-</Tip>
-
-## Making a Public Swap
-
-For transparent, faster, cheaper swaps:
-
-<Steps>
-  <Step title="Select Tokens">
-    Choose token to sell from dropdown and token to buy
-  </Step>
-  <Step title="Enter Amount">
-    Input amount to swap
-  </Step>
-  <Step title="Disable FHE">
-    Ensure FHE toggle is OFF
-  </Step>
-  <Step title="Review Details">
-    Check:
-    - Exchange rate
-    - Estimated output
-    - Price impact
-    - Network fee
-    - Slippage tolerance
-  </Step>
-  <Step title="Execute Swap">
-    Click "Swap" button
-  </Step>
-  <Step title="Confirm in Wallet">
-    Approve transaction in popup
-  </Step>
-  <Step title="Wait for Confirmation">
-    Typically 3-5 seconds
-  </Step>
-</Steps>
-
-### Public Swap Details
-
-- **Speed:** 3-5 seconds
-- **Privacy:** Amounts visible on-chain
-- **Gas Cost:** ~15,000-20,000 OU
-- **Best For:** Small trades, when privacy isn't critical
-
-## Making a Private Swap
-
-For confidential, front-running resistant trading:
-
-<Steps>
-  <Step title="Check Private Balance">
-    Ensure sufficient **Private Balance**
-  </Step>
-  <Step title="Enable FHE">
-    Toggle FHE shield to ON
-  </Step>
-  <Step title="Select Tokens">
-    Choose trading pair
-  </Step>
-  <Step title="Enter Amount">
-    Input swap amount
-  </Step>
-  <Step title="Review Encrypted Details">
-    Review (amount will be encrypted):
-    - Token pair
-    - Estimated output range
-    - Gas fee (higher for FHE)
-    - Slippage settings
-  </Step>
-  <Step title="Execute Swap">
-    Click "Swap"
-  </Step>
-  <Step title="Local Encryption">
-    Your device encrypts the swap amount
-  </Step>
-  <Step title="Confirm">
-    Approve encrypted transaction
-  </Step>
-  <Step title="Wait for Processing">
-    5-10 seconds for encrypted transaction
-  </Step>
-</Steps>
-
-### How Private Swaps Work
-
-1. **Device Encryption:** Your browser performs FHE encryption on swap amount
-2. **Encrypted Broadcast:** Encrypted payload sent to blockchain
-3. **Private Validation:** Smart contracts validate on encrypted data
-4. **Encrypted Execution:** AMM processes swap without seeing amounts
-5. **Private Receipt:** Tokens delivered to your Private Balance
-6. **Zero Leakage:** Nobody sees your trade size
-
-### Private Swap Details
-
-- **Speed:** 5-10 seconds
-- **Privacy:** Amounts fully encrypted
-- **Gas Cost:** ~40,000-50,000 OU
-- **Best For:** Large trades, strategic positions
-
-<Warning>
-Private swaps require sufficient **Private Balance**. If your funds are in Public Balance, encrypt them first using the Privacy tab.
-</Warning>
-
-## Slippage Protection
-
-Control how much price movement you'll tolerate:
-
-### Slippage Settings
-
-| Setting | Recommended For |
-|---------|----------------|
-| **0.1%** | Stablecoins, high-liquidity pairs |
-| **0.5%** | Standard tokens, moderate liquidity |
-| **1.0%** | Lower liquidity, volatile pairs |
-| **Custom** | Advanced users, specific strategies |
-
-### Setting Slippage
-
-1. Click settings icon
-2. Select or enter slippage percentage
-3. Higher slippage = more likely to execute, worse price
-4. Lower slippage = better price, might fail
-
-<Info>
-During high volatility, consider increasing slippage to ensure your swap executes. You'll never pay more than your slippage tolerance.
-</Info>
-
-## Transaction States
-
-### Pending 
-
-- Transaction submitted to DEX contract
-- Awaiting validator confirmation
-- Typically 3-10 seconds
-- Can't be cancelled once submitted
-
-### Confirmed 
-
-- Swap executed successfully
-- Tokens in your wallet
-- Transaction hash available
-- View in block explorer
-
-### Failed 
-
-- Transaction rejected or reverted
-- Funds safely returned
-- **Common causes:**
-  - Insufficient balance for gas
-  - Price moved beyond slippage tolerance
-  - Insufficient liquidity
-  - Network connectivity issue
-
-## Liquidity Pools (Coming Soon)
-
-### Providing Liquidity
-
-Earn fees by providing liquidity to trading pairs:
-
-1. Select token pair
-2. Deposit equal value of both tokens
-3. Receive LP (Liquidity Provider) tokens
-4. Earn portion of trading fees
-5. Withdraw anytime
-
-### Public Pools
-
-- Standard AMM liquidity pools
-- Transparent reserves and pricing
-- Maximum composability
-- Higher fee earnings potential
-
-### Shielded Pools (Experimental)
-
-- Privacy-enabled liquidity
-- Encrypted pool balances
-- Private LP positions
-- FHE-validated trades
-
-<Note>
-Shielded pools are experimental and may have limitations during early phases. Start with public pools to understand the mechanics.
-</Note>
-
-## Best Practices
-
-### Trading Strategy
-
-<AccordionGroup>
-  <Accordion title="Start with Small Test Swaps">
-    Before large trades, execute a small test swap to verify the flow and pricing.
-  </Accordion>
-
-  <Accordion title="Monitor Price Impact">
-    Large trades relative to pool size will have higher price impact. Consider breaking into smaller swaps.
-  </Accordion>
-
-  <Accordion title="Use FHE for Large Trades">
-    Protect yourself from front-running on significant positions by enabling FHE privacy.
-  </Accordion>
-
-  <Accordion title="Check Pool Liquidity">
-    Verify sufficient liquidity exists for your trade size to minimize slippage.
-  </Accordion>
-</AccordionGroup>
-
-### Gas Optimization
-
-- **Public swaps** during off-peak hours for lowest fees
-- **Batch multiple small swaps** into fewer larger ones
-- **Monitor network congestion** before trading
-- **Use custom gas settings** for time-sensitive trades
-
-### Privacy Considerations
-
-**Maximum Privacy:**
-- Enable FHE for all trades
-- Keep majority of funds in Private Balance
-- Use different addresses for public/private activity
-
-**Balanced Approach:**
-- FHE for large or strategic trades
-- Public for routine small swaps
-- Mix of public/private based on needs
-
-## Advanced Features (Roadmap)
-
-### Limit Orders
-
-Set specific prices for automatic execution:
-
-- **Private Limit Orders:** Orders with encrypted amounts
-- **Good-til-Cancelled:** Remains active until filled or cancelled
-- **Fill-or-Kill:** Execute immediately or cancel
-
-### Advanced Routing
-
-Optimize swap paths across multiple pools:
-
-- Multi-hop routing for best prices
-- Automatic pool selection
-- Split orders across pools
-- MEV protection
-
-### Price Charts
-
-Technical analysis tools:
-
-- Real-time price feeds
-- Historical charts
-- Volume indicators
-- Liquidity depth
-
-## Troubleshooting
-
-### "Insufficient Balance for Swap"
-
-- Check you have enough tokens to cover swap amount + gas
-- Verify correct balance type (Public vs Private)
-- Ensure gas fee reserve (minimum 50,000 OU worth)
-
-### "Slippage Tolerance Exceeded"
-
-- Price moved beyond your tolerance
-- Increase slippage tolerance
-- Try again when market is less volatile
-- Break large trades into smaller chunks
-
-### "Swap Taking Too Long"
-
-- Network congestion can delay processing
-- Check transaction status in History tab
-- Wait up to 60 seconds during peak times
-- Increase gas fee for future trades
-
-### "FHE Swap Failed"
-
-- Ensure sufficient Private Balance
-- Verify FHE operations are not rate-limited
-- Check network status
-- Try public swap as alternative
-
-<Tip>
-For urgent trades during congestion, use custom gas fees to set higher OU for priority processing.
-</Tip>
+| SwapVault v7 | Octra Devnet | `octHqBuw3TGsgeGpu6GiumRTjQwc8VCRAo1ANhy5zL4ZVPc` |
+| EthEscrowV2 | Sepolia | `0x835454daE518108105BC2ac22cb11738A5D69554` |
+| Solver Wallet | Octra | `oct4Ay2HKoKbVSndUVdDaf1gxtYhdXeRVpkHvv43rhRoxio` |
+| Solver Wallet | Sepolia | `0x3ec4bd68e2E3190FB3050005D8B9C132aFd9D684` |
+| Treasury | Octra | `octCWWvj4EKPk1QA9TZrNTXZ6dJEbcQaS3fWAcmobPnyuqt` |
+| Treasury | Sepolia | `0x80961b1e16D483c7EB5CA32e1fFd8157E5188598` |
+
+## Architecture
+
+```
+User (0xio Wallet + MetaMask)
+    │
+    ▼
+Frontend (dex.0xio.xyz)
+    │
+    ├── Quote: Solver API (solver.0xio.xyz)
+    │     └── TWAP pricing from Oracle (oracle.0xio.xyz)
+    │
+    ├── OCT→ETH: SwapVault v7 (Octra) → Solver sends ETH (Sepolia)
+    │
+    └── ETH→OCT: EthEscrowV2 (Sepolia) → Solver sends OCT (Octra)
+```
+
+### Swap Lifecycle (OCT → ETH)
+
+```
+lock() → fill() → attest() → [challenge window] → settle()
+  │        │         │                                │
+  │        │         │                                └── Solver gets OCT
+  │        │         └── Oracle verifies ETH was sent
+  │        └── Solver sends ETH + posts dest tx hash
+  └── User locks OCT with min_receive commitment
+```
+
+### Swap Lifecycle (ETH → OCT)
+
+```
+lock() → fill() → send OCT → updateFill() → attest() → settle()
+  │        │         │            │              │           │
+  │        │         │            │              │           └── Solver gets ETH
+  │        │         │            │              └── Oracle verifies
+  │        │         │            └── Post real Octra tx hash
+  │        │         └── Safe: fill is confirmed on Ethereum
+  │        └── Solver commits on escrow (no OCT sent yet)
+  └── User locks ETH in EthEscrowV2
+```
+
+## Fee Structure
+
+| Parameter | Value |
+|-----------|-------|
+| Swap fee | 0.5% (50 bps) |
+| Fee destination | Protocol treasury (per-chain) |
+| Minimum swap (OCT→ETH) | 1 OCT |
+| Minimum swap (ETH→OCT) | 0.001 ETH |
+| Maximum swap | 10,000 OCT / 10 ETH |
+
+## Services
+
+| Service | URL | Role |
+|---------|-----|------|
+| DEX Frontend | [dex.0xio.xyz](https://dex.0xio.xyz) | Swap interface |
+| Swap History | [dex.0xio.xyz/history](https://dex.0xio.xyz/history) | Transaction list + on-chain state |
+| DEX Stats | [dex.0xio.xyz/stats](https://dex.0xio.xyz/stats) | Volume, fees, solver status |
+| Solver API | solver.0xio.xyz | Quote, swap tracking, health |
+| Oracle | oracle.0xio.xyz | TWAP prices, fill verification |
+
+## Solver API
+
+### GET /api/quote
+
+Get a swap quote with current TWAP pricing.
+
+```
+GET https://solver.0xio.xyz/api/quote?from=OCT&to=ETH&amount=100
+```
+
+Response includes: rate, receive amount, fee, liquidity availability, intent hash.
+
+### GET /api/swaps
+
+List recent swaps with status tracking.
+
+### GET /api/health
+
+Solver status: RPC connectivity, bond amount, liquidity on both chains.
+
+### GET /api/price
+
+Proxied oracle price feed (no API key needed from frontend).
+
+## Refund Mechanisms
+
+| Scenario | Mechanism | Timeout |
+|----------|-----------|---------|
+| Solver never fills | User calls `refund()` after expiry | 4 hours |
+| Solver fills but oracle never attests | User calls `refundStaleFill()` | 30 min (ETH) / 500 epochs (Octra) |
+| Emergency | Owner calls `emergencyRefund()` | Immediate (unfilled only) |
+
+## Related Repos
+
+| Repo | Role |
+|------|------|
+| **0xio-solver** | Rust solver backend (Axum + Tokio) |
+| **0xio-oracle** | Price feeds (TWAP) + fill verification |
+| **@0xio/sdk** | Octra wallet SDK for DApp integration |
 
 ## Roadmap
 
-### Coming Soon
-
-- Production smart contract deployment
-- Real liquidity pools with mainnet tokens
-- Advanced AMM routing algorithms
-- Limit order functionality
-- Liquidity provider interface
-- Fee earning mechanisms
-- Additional token pair support
-- Wallets integration
-
-<Info>
-All features are subject to security audits and network readiness. Follow our announcements for updates on DEX launch timeline.
-</Info>
+- Solana support (SOL ↔ OCT)
+- Multi-token support (wOCT, USDC)
+- Liquidity pools (CLMM)
+- Limit orders
+- Multi-solver competition
+- Mainnet deployment
