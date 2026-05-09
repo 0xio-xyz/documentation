@@ -274,6 +274,34 @@ const address = wallet.getAddress();
 
 - **Returns:** `string | null`
 
+#### `switchNetwork(networkId)`
+
+Silently switch the extension's active network. No popup, no user confirmation — works like Rabby's `wallet_switchEthereumChain`.
+
+```typescript
+// Detect wrong network
+const networkId = wallet.getNetworkId(); // 'mainnet' or 'devnet'
+if (networkId !== 'devnet') {
+  const result = await wallet.switchNetwork('devnet');
+  console.log('Switched:', result.switched); // true
+}
+```
+
+- **Params:** `networkId: string` — `'mainnet'` or `'devnet'`
+- **Returns:** `Promise<{ network: string; switched: boolean }>`
+- **Requires:** Extension v2.3.6+
+
+#### `getNetworkId()`
+
+Gets the extension's current active network.
+
+```typescript
+const networkId = wallet.getNetworkId();
+// Returns: 'mainnet', 'devnet', or null
+```
+
+- **Returns:** `string | null`
+
 ### Balance Methods
 
 #### `getBalance(forceRefresh?)`
