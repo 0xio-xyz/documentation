@@ -293,9 +293,9 @@ Each withdrawal is a separate DEX swap at a different time to a different addres
 | Step | Latency | Notes |
 |------|---------|-------|
 | DEX swap (ETH→OCT) | ~30s | Solver fills on Octra |
-| Encrypt OCT | <1s | Client-side PVAC, cached |
+| Encrypt OCT | &lt;1s | Client-side PVAC, cached |
 | Private transfer | ~10s | FHE ciphertext processing |
-| Decrypt OCT | <1s | Client-side with cached context |
+| Decrypt OCT | &lt;30s | Client-side with cached context |
 | DEX swap (OCT→ETH) | ~30s | Solver fills on Sepolia |
 | **Total (no hold)** | **~90s** | End-to-end with minimal hold |
 | **Recommended hold** | **Hours to days** | For meaningful anonymity set |
