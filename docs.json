@@ -43,7 +43,8 @@
             "group": "Core Concepts",
             "pages": [
               "concepts/balances",
-              "concepts/cryptography"
+              "concepts/cryptography",
+              "concepts/privacy-layer"
             ]
           },
           {
