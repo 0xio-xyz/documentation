@@ -209,9 +209,24 @@ Proxied oracle price feed (no API key needed from frontend).
 
 ## Roadmap
 
+### Near Term
 - Solana support (SOL ↔ OCT)
 - Multi-token support (wOCT, USDC)
-- Liquidity pools (CLMM)
-- Limit orders
 - Multi-solver competition
 - Mainnet deployment
+
+### Medium Term
+- Liquidity pools (CLMM)
+- Limit orders
+- Advanced routing (multi-hop, split orders)
+
+### Long Term — Cross-Chain Privacy Layer
+- **Accept wETH/wSOL on their native chains, encrypt via Octra's FHE, transfer privately, withdraw anywhere**
+- Octra becomes a privacy middleware — users put in wETH, get out wETH, with full amount privacy in between
+- FHE-powered private swaps (AMM operating on encrypted data)
+- Relayer network for gasless, unlinkable withdrawals
+- Compliance via selective disclosure (viewing keys)
+
+<Card title="Cross-Chain Privacy Layer — Full Design" icon="shield-halved" href="/concepts/privacy-layer">
+  Deep dive into how 0xio uses Octra's FHE as a privacy backend for any blockchain. Architecture, phases, and comparison with Umbra, Railgun, and Aztec.
+</Card>
