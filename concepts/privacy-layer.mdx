@@ -47,10 +47,10 @@ The simplest version — uses only the existing 0xio DEX + Octra FHE. Deposits a
 
 ```
 [PUBLIC]  User swaps 1 ETH → OCT via DEX         ← visible on Etherscan
-[PRIVATE] OCT encrypted on Octra via FHE          ← amount hidden
-[PRIVATE] Transfer encrypted OCT to recipient     ← sender, receiver, amount all hidden
-[PRIVATE] Recipient holds encrypted OCT            ← invisible
-[PUBLIC]  Recipient swaps OCT → SOL via DEX       ← visible on Solana
+[PRIVATE] OCT encrypted on Octra via FHE         ← amount hidden
+[PRIVATE] Transfer encrypted OCT to recipient    ← sender, receiver, amount all hidden
+[PRIVATE] Recipient holds encrypted OCT          ← invisible
+[PUBLIC]  Recipient swaps OCT → SOL via DEX      ← visible on Solana
 ```
 
 **What's private**: who sent to whom, how much, when the recipient cashes out.
@@ -66,11 +66,11 @@ Uses mature, live privacy tech on **every chain** in the pipeline. Each hop is s
 
 ```
 [PRIVATE] User shields ETH into RAILGUN pool       ← sender unlinked from deposit
-[PRIVATE] Unshield to 0xio bridge deposit           ← looks like generic RAILGUN withdrawal
-[PRIVATE] Bridge swaps to OCT on Octra              ← encrypted by FHE
-[PRIVATE] Transfer encrypted OCT to recipient       ← amount + parties hidden
-[PRIVATE] Recipient decrypts, swaps OCT out          ← exit via stealth addr or Umbra
-[PRIVATE] Funds arrive at fresh stealth address      ← recipient fully unlinked
+[PRIVATE] Unshield to 0xio bridge deposit          ← looks like generic RAILGUN withdrawal
+[PRIVATE] Bridge swaps to OCT on Octra             ← encrypted by FHE
+[PRIVATE] Transfer encrypted OCT to recipient      ← amount + parties hidden
+[PRIVATE] Recipient decrypts, swaps OCT out        ← exit via stealth addr or Umbra
+[PRIVATE] Funds arrive at fresh stealth address    ← recipient fully unlinked
 ```
 
 **Every hop is private.** No public link between sender and receiver on any chain.
@@ -137,7 +137,7 @@ The relayer submits withdrawal transactions on behalf of the user. The gas cost 
 Example: User withdraws 200 OCT as ETH. Relayer fee is ~5 OCT. User receives 195 OCT worth of ETH. The relayer is compensated from the withdrawal amount, not from a separate gas payment.
 
 ### 5. Volume
-Privacy strength scales with usage. More users depositing and withdrawing → harder to correlate. OCT-as-denomination helps — all privacy transfers share one encrypted pool instead of fragmented per-token pools.
+Privacy strength scales with usage. More users holding encrypted OCT on Octra → harder to correlate any single deposit to a withdrawal. Unlike mixer pools (Tornado Cash), there is no shared pool — each user has their own encrypted balance on their own Octra address. The anonymity comes from the volume of encrypted balances existing on-chain simultaneously.
 
 ## Why OCT as the Privacy Denomination
 
@@ -146,10 +146,10 @@ Instead of creating octaWETH, octaWSOL, octaUSDC (separate wrapped tokens on Oct
 | Approach | Pros | Cons |
 |----------|------|------|
 | **Per-token wrapping** (octaWETH, etc.) | Same asset in/out, no price exposure | Fragmented anonymity sets, new bridge contracts per asset |
-| **OCT as denomination** | Single large anonymity pool, uses existing DEX, simpler infrastructure | Price exposure during hold period, extra swap fees |
+| **OCT as denomination** | Single asset = more encrypted balances on-chain, uses existing DEX, simpler infrastructure | Price exposure during hold period, extra swap fees |
 
 We chose OCT because:
-- **Larger anonymity set** — all privacy users share one encrypted OCT pool
+- **Larger anonymity set** — all privacy users hold encrypted OCT on Octra (more encrypted balances = harder to correlate)
 - **Existing infrastructure** — DEX swap (live), encrypted OCT balances (live), private transfers (live)
 - **No new contracts** — no octaWETH mint/burn, no per-asset bridge extensions
 - **OCT utility** — every privacy transfer drives OCT demand
