@@ -361,16 +361,19 @@ console.log('Success:', result.success);
 
 #### `sendPrivateTransfer(txData)`
 
-Executes an FHE-encrypted private transfer.
+<Warning>
+**Not yet available via SDK.** Privacy operations must be performed from within the 0xio Wallet extension directly. This method returns `NOT_AVAILABLE`. DApp-initiated privacy operations are planned for a future release with `@0xio/pvac` integration.
+</Warning>
+
+Executes an FHE-encrypted private transfer (future).
 
 ```typescript
+// Currently returns NOT_AVAILABLE — use extension UI instead
 const result = await wallet.sendPrivateTransfer({
   to: 'oct1x...',
-  amount: 20,                    // Will be encrypted
-  message: 'Encrypted Payroll'   // Also encrypted
+  amount: 20,
+  message: 'Encrypted Payroll'
 });
-
-console.log('Private TX Hash:', result.txHash);
 ```
 
 - **Parameters:**
