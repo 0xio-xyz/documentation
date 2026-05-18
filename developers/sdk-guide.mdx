@@ -28,8 +28,9 @@ pnpm add @0xio/sdk
 
 **Package Details:**
 - **Version:** 2.7.0
-- **Min Extension (Mainnet):** v2.4.0+
-- **Min Extension (Devnet):** v2.4.0+ (contract calls, privacy features)
+- **Min Extension (Mainnet):** v2.0.1+
+- **Min Extension (Devnet):** v2.2.1+ (contract calls, privacy features)
+- **RFC-O-1 support:** Extension v2.4.0+ (for `window.octra` provider)
 - **License:** MIT
 
 ## Project Setup & Requirements
@@ -92,42 +93,46 @@ module.exports = {
 
 ## Quick Start
 
-The fastest way to get started:
+The fastest way to get started — `createZeroXIOWallet` handles initialization and optional auto-connect:
+
+```typescript
+import { createZeroXIOWallet } from '@0xio/sdk';
+
+// One-liner: create, initialize, and auto-connect
+const wallet = await createZeroXIOWallet({
+  appName: 'My Privacy dApp',
+  appDescription: 'An encrypted DeFi protocol on Octra',
+  autoConnect: true,  // Auto-reconnects if user previously approved
+});
+
+const balance = await wallet.getBalance(true);
+console.log('Public:', balance.public, 'OCT');
+console.log('Private:', balance.private, 'OCT');
+```
+
+Or with manual control:
 
 ```typescript
 import { ZeroXIOWallet } from '@0xio/sdk';
 
-async function initWallet() {
-  // 1. Create instance with config
-  const wallet = new ZeroXIOWallet({
-    appName: 'My Privacy dApp',
-    appDescription: 'An encrypted DeFi protocol on Octra',
-    requiredPermissions: ['read_balance', 'send_transactions'], // Declare needs upfront
-  });
+const wallet = new ZeroXIOWallet({
+  appName: 'My Privacy dApp',
+  appDescription: 'An encrypted DeFi protocol on Octra',
+});
 
-  // 2. Initialize (checks for 0xio extension or any RFC-O-1 wallet)
-  const isAvailable = await wallet.initialize();
-
-  if (!isAvailable) {
-    console.log("No compatible wallet detected. Install 0xio or any RFC-O-1 wallet.");
-    return;
-  }
-
-  // 3. Connect
-  try {
-    const result = await wallet.connect();
-    console.log('Connected to:', result.address);
-
-    const balance = await wallet.getBalance(true);
-    console.log('Public:', balance.public, 'OCT');
-    console.log('Private:', balance.private, 'OCT');
-
-  } catch (err) {
-    console.error("Failed to connect:", err);
-  }
+// Initialize — detects 0xio extension or any RFC-O-1 wallet
+const isAvailable = await wallet.initialize();
+if (!isAvailable) {
+  console.log("No compatible wallet detected.");
+  return;
 }
 
-initWallet();
+// Connect — user approves in wallet popup
+const result = await wallet.connect({
+  requestPermissions: ['read_balance', 'send_transactions', 'sign_messages']
+});
+console.log('Connected to:', result.address);
+console.log('Network:', result.networkInfo.name);
 ```
 
 ## Security (v2.7.0)
@@ -499,6 +504,18 @@ const signature = await wallet.signMessage(apiKeyMessage);
 Always include timestamps or nonces in messages to prevent replay attacks. Never sign messages you don't understand.
 </Warning>
 
+#### `signAuthMessage(service, nonce)`
+
+Convenience wrapper that builds a domain-separated auth message and signs it. Includes the current origin for anti-phishing.
+
+```typescript
+const signature = await wallet.signAuthMessage('MyDApp', 'abc123');
+// Signs: "0xio auth\nService: MyDApp\nNonce: abc123\nOrigin: https://mydapp.com"
+```
+
+- **Parameters:** `service: string` (service name), `nonce: string` (unique challenge)
+- **Returns:** `Promise<string>` - Base64-encoded Ed25519 signature
+
 ### Smart Contract Methods
 
 #### `callContract(data)`
@@ -595,35 +612,33 @@ console.log(missing); // null
 
 #### `encryptBalance(amount)`
 
-Moves funds from Public → Private balance (shielding).
+Moves funds from Public → Private balance (shielding). The extension generates the FHE cipher, bound proof, and submits the transaction.
 
 ```typescript
-// Encrypt 5 OCT from public to private balance
-const success = await wallet.encryptBalance(5.0);
-
-if (success) {
-  console.log('Balance shielded!');
-}
+const result = await wallet.encryptBalance(5.0);
+console.log('TX Hash:', result.txHash);
+console.log('Success:', result.success);
 ```
 
-- **Parameters:** `amount: number` (OCT amount to shield)
-- **Returns:** `Promise<boolean>`
+- **Parameters:** `amount: number | string` (OCT amount to shield)
+- **Returns:** `Promise<TransactionResult>` with `txHash`, `success`, `finality`
 
 #### `decryptBalance(amount)`
 
-Moves funds from Private → Public balance (unshielding).
+Moves funds from Private → Public balance (unshielding). Includes range proof generation (17-300s depending on engine).
 
 ```typescript
-// Decrypt 10 OCT from private to public balance
-const success = await wallet.decryptBalance(10.0);
-
-if (success) {
-  console.log('Balance unshielded!');
-}
+const result = await wallet.decryptBalance(10.0);
+console.log('TX Hash:', result.txHash);
+console.log('Success:', result.success);
 ```
 
-- **Parameters:** `amount: number` (OCT amount to unshield)
-- **Returns:** `Promise<boolean>`
+- **Parameters:** `amount: number | string` (OCT amount to unshield)
+- **Returns:** `Promise<TransactionResult>` with `txHash`, `success`, `finality`
+
+<Note>
+Decrypt operations involve 64-circuit range proof generation. The SDK uses a 180s timeout for these calls.
+</Note>
 
 #### `getPrivateBalanceInfo()`
 
@@ -1247,9 +1262,9 @@ import {
 } from '@0xio/sdk';
 
 console.log('SDK Version:', SDK_VERSION); // "2.7.0"
-console.log('Min Extension (Mainnet):', MIN_EXTENSION_VERSION); // "2.4.0"
-console.log('Min Extension (Devnet):', MIN_EXTENSION_VERSION_DEVNET); // "2.4.0"
-console.log('Supported:', SUPPORTED_EXTENSION_VERSIONS); // "^2.4.0"
+console.log('Min Extension (Mainnet):', MIN_EXTENSION_VERSION); // "2.0.1"
+console.log('Min Extension (Devnet):', MIN_EXTENSION_VERSION_DEVNET); // "2.2.1"
+console.log('Supported:', SUPPORTED_EXTENSION_VERSIONS); // "^2.0.1"
 
 // Check browser compatibility
 const { compatible, issues, recommendations } = checkSDKCompatibility();
