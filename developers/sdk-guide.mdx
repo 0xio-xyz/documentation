@@ -27,9 +27,9 @@ pnpm add @0xio/sdk
 </CodeGroup>
 
 **Package Details:**
-- **Version:** 2.4.4
-- **Min Extension (Mainnet):** v2.2.7+
-- **Min Extension (Devnet):** v2.2.7+ (contract calls, privacy features)
+- **Version:** 2.7.0
+- **Min Extension (Mainnet):** v2.4.0+
+- **Min Extension (Devnet):** v2.4.0+ (contract calls, privacy features)
 - **License:** MIT
 
 ## Project Setup & Requirements
@@ -105,11 +105,11 @@ async function initWallet() {
     requiredPermissions: ['read_balance', 'send_transactions'], // Declare needs upfront
   });
 
-  // 2. Initialize (checks for extension)
+  // 2. Initialize (checks for 0xio extension or any RFC-O-1 wallet)
   const isAvailable = await wallet.initialize();
-  
+
   if (!isAvailable) {
-    console.log("0xio Extension not detected. Please install it.");
+    console.log("No compatible wallet detected. Install 0xio or any RFC-O-1 wallet.");
     return;
   }
 
@@ -130,7 +130,7 @@ async function initWallet() {
 initWallet();
 ```
 
-## Security (v2.4.4)
+## Security (v2.7.0)
 
 The SDK includes several security hardening measures:
 
@@ -142,11 +142,12 @@ The SDK includes several security hardening measures:
 
 ## Desktop & Mobile Support
 
-Starting in v2.4.4, the SDK automatically detects when your DApp is running inside **0xio Desktop** or **0xio App** and uses the appropriate bridge transport. No code changes are required.
+The SDK automatically detects the wallet environment and uses the appropriate transport. No code changes are required.
 
 | Platform | Transport | Description |
 |----------|-----------|-------------|
 | **0xio Wallet Extension** | `window.postMessage` | Standard browser extension communication |
+| **RFC-O-1 Third-Party Wallet** | `window.octra.request()` | Any wallet implementing the RFC-O-1 standard |
 | **0xio Desktop** | `window.parent.postMessage` (iframe) | DApp loaded in Desktop's built-in BrowserScreen |
 | **0xio App** | `window.parent.postMessage` (WebView) | DApp loaded in App's built-in browser |
 
@@ -164,6 +165,59 @@ DApp developers do not need to change any code. Just use the SDK as normal — i
 ### Cross-Origin Iframe Bridge (v2.4.4)
 
 Starting in v2.4.4, the SDK supports cross-origin iframe communication for localhost development. This allows DApps running on `localhost` or `127.0.0.1` during development to communicate with the wallet through an iframe bridge, without requiring the extension content script to be injected into the development server origin. Use `setTrustedOrigins()` to allowlist your local dev server if needed.
+
+## RFC-O-1 Provider Standard (v2.7.0)
+
+Starting in v2.7.0, the SDK includes an `OctraProviderAdapter` that enables any RFC-O-1 compliant wallet (not just 0xio) to work with the SDK. This allows third-party wallets that implement `window.octra` to be used as a drop-in transport.
+
+### How It Works
+
+The SDK's adapter registry tries transports in priority order:
+
+| Priority | Adapter | Detects |
+|----------|---------|---------|
+| 1 | `ZeroXIOAdapter` | `window.wallet0xio` or `window.ZeroXIOWallet` (0xio extension) |
+| 2 | `OctraProviderAdapter` | `window.octra.isOctra` (any RFC-O-1 wallet) |
+
+If the 0xio extension is installed, it takes priority. If not, any RFC-O-1 compliant wallet works automatically.
+
+### Using a Third-Party Wallet
+
+No code changes needed — the SDK auto-detects:
+
+```typescript
+import { ZeroXIOWallet } from '@0xio/sdk';
+
+const wallet = new ZeroXIOWallet({ appName: 'My DApp' });
+await wallet.initialize(); // Finds window.octra from any compliant wallet
+await wallet.connect();    // Uses RFC-O-1 request() under the hood
+```
+
+### Direct Provider Access
+
+For advanced use cases, you can use the provider directly:
+
+```typescript
+import { OctraProviderAdapter } from '@0xio/sdk';
+
+// Check if any RFC-O-1 wallet is available
+if (OctraProviderAdapter.detect()) {
+  const accounts = await window.octra.request({ method: 'octra_requestAccounts' });
+  const balance = await window.octra.request({ method: 'octra_getEncryptedBalance' });
+}
+```
+
+### RFC-O-1 Error Codes
+
+| Code | Meaning | SDK Error Code |
+|------|---------|---------------|
+| 4001 | User rejected | `USER_REJECTED` |
+| 4100 | Unauthorized | `PERMISSION_DENIED` |
+| 4200 | Unsupported method | `NETWORK_ERROR` |
+| 4900 | Disconnected | `CONNECTION_REFUSED` |
+| 4901 | Network unavailable | `NETWORK_ERROR` |
+
+---
 
 ## Core API
 
@@ -361,20 +415,20 @@ console.log('Success:', result.success);
 
 #### `sendPrivateTransfer(txData)`
 
-<Warning>
-**Not yet available via SDK.** Privacy operations must be performed from within the 0xio Wallet extension directly. This method returns `NOT_AVAILABLE`. DApp-initiated privacy operations are planned for a future release with `@0xio/pvac` integration.
-</Warning>
-
-Executes an FHE-encrypted private transfer (future).
+Executes an FHE-encrypted stealth transfer. The extension handles PVAC ciphertext generation, range proofs, and ECDH key exchange. User must approve via the extension approval popup. Requires `private_transfers` permission.
 
 ```typescript
-// Currently returns NOT_AVAILABLE — use extension UI instead
 const result = await wallet.sendPrivateTransfer({
   to: 'oct1x...',
   amount: 20,
   message: 'Encrypted Payroll'
 });
+console.log('TX Hash:', result.txHash);
 ```
+
+<Note>
+**Requires Extension v2.4.0+.** The extension generates FHE range proofs (64 circuits) which takes 17-300s depending on the execution engine (Desktop native → WASM rayon → WASM sequential).
+</Note>
 
 - **Parameters:**
   ```typescript
@@ -1192,10 +1246,10 @@ import {
   checkSDKCompatibility
 } from '@0xio/sdk';
 
-console.log('SDK Version:', SDK_VERSION); // "2.4.4"
-console.log('Min Extension (Mainnet):', MIN_EXTENSION_VERSION); // "2.2.7"
-console.log('Min Extension (Devnet):', MIN_EXTENSION_VERSION_DEVNET); // "2.2.7"
-console.log('Supported:', SUPPORTED_EXTENSION_VERSIONS); // "^2.2.7"
+console.log('SDK Version:', SDK_VERSION); // "2.7.0"
+console.log('Min Extension (Mainnet):', MIN_EXTENSION_VERSION); // "2.4.0"
+console.log('Min Extension (Devnet):', MIN_EXTENSION_VERSION_DEVNET); // "2.4.0"
+console.log('Supported:', SUPPORTED_EXTENSION_VERSIONS); // "^2.4.0"
 
 // Check browser compatibility
 const { compatible, issues, recommendations } = checkSDKCompatibility();
