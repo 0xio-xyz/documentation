@@ -4,7 +4,7 @@ description: 'Overview of the 0xio Browser Extension wallet for Chrome, Brave, E
 icon: 'chrome'
 ---
 
-The **0xio Browser Extension** (v2.3.4) is your primary gateway to the Octra Network. It allows you to manage assets, interact with dApps, and perform private FHE operations directly from your browser.
+The **0xio Browser Extension** (v2.4.0) is your primary gateway to the Octra Network. It allows you to manage assets, interact with dApps, and perform private FHE operations directly from your browser.
 
 <Note>
   **Status: Live on Chrome Web Store** — Install from the [Chrome Web Store](https://chromewebstore.google.com/detail/0xio-wallet/anknhjilldkeelailocijnfibefmepcc).
@@ -75,15 +75,15 @@ The **Privacy** tab is the control center for Octra's FHE capabilities. It handl
 
 <Steps>
   <Step title="Encrypt (Public → Private)">
-    Moves `OCT` from your Public Balance to your Private Balance.
+    Moves `OCT` from your Public Balance to your Private Balance. A **review sheet** shows the transaction details (from/to, amount, fee, total) before confirmation. MAX button available to encrypt your full balance (minus fee reserve).
     * *Use case:* Prepare funds for a private transfer.
   </Step>
   <Step title="Decrypt (Private → Public)">
-    Moves funds back to your Public Balance.
+    Moves funds back to your Public Balance. Includes FHE encryption + range proof generation. A **proof overlay** shows real-time progress: verify → encrypt → range proof (with circuit counter) → submit.
     * *Use case:* Cashing out or sending to an exchange that doesn't support FHE.
   </Step>
   <Step title="Claim Transfers">
-    If someone sends you a **Private Transfer**, it doesn't appear in your balance immediately. You must **Scan & Claim** it here to decrypt the incoming funds and add them to your wallet.
+    If someone sends you a **Private Transfer**, it doesn't appear in your balance immediately. Navigate to the **Claim** tab to scan for pending transfers. The scan shows live progress ("Scanning 80/150 outputs (2 found)..."). Once found, review and claim individual transfers or all at once with a **claim review sheet** showing output details and fees.
   </Step>
 </Steps>
 
@@ -161,6 +161,24 @@ When a dApp requests a transaction or message signature, the extension opens an 
 
 ---
 
+## RFC-O-1 Provider Standard
+
+The extension implements the **RFC-O-1** wallet provider standard, exposing `window.octra` for third-party wallet and dApp interoperability.
+
+```javascript
+// Any RFC-O-1 compliant dApp can connect
+const accounts = await window.octra.request({ method: 'octra_requestAccounts' });
+const balance = await window.octra.request({ method: 'octra_getEncryptedBalance' });
+
+// Listen for events
+window.octra.on('accountsChanged', (accounts) => { ... });
+window.octra.on('connect', (info) => { ... });
+```
+
+The `@0xio/sdk` includes an `OctraProviderAdapter` that automatically uses `window.octra` as a transport, so any RFC-O-1 compliant wallet works with the SDK.
+
+---
+
 ## Network Support
 
 The extension supports multiple Octra networks:
@@ -179,7 +197,7 @@ The extension supports multiple Octra networks:
 When the **0xio Desktop** app is running on the same machine, the extension automatically connects to it and offloads heavy FHE computations to native code.
 
 * **Automatic pairing:** No setup required — the extension detects the desktop app on `127.0.0.1`.
-* **Faster privacy operations:** Range proof generation drops from ~80 seconds (WASM) to ~17 seconds (native Rust).
+* **Faster privacy operations:** Range proof generation drops from ~80 seconds (WASM) to ~17 seconds (native Rust). Decrypt operations also benefit from parallel PRF computation.
 * **Status indicator:** A "Desktop Connected" badge appears when paired.
 
 <Tip>
