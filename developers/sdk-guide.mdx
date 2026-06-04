@@ -27,10 +27,11 @@ pnpm add @0xio/sdk
 </CodeGroup>
 
 **Package Details:**
-- **Version:** 2.7.0
+- **Version:** 2.7.1
 - **Min Extension (Mainnet):** v2.0.1+
 - **Min Extension (Devnet):** v2.2.1+ (contract calls, privacy features)
-- **RFC-O-1 support:** Extension v2.4.0+ (for `window.octra` provider)
+- **RFC-O-1 support:** Extension v2.4.3+ (for the `window.octra` provider and `octra#initialized` event)
+- **Browser:** Chrome 111+ required for the extension transport (uses `crypto` + structured-clone messaging)
 - **License:** MIT
 
 ## Project Setup & Requirements
@@ -135,15 +136,17 @@ console.log('Connected to:', result.address);
 console.log('Network:', result.networkInfo.name);
 ```
 
-## Security (v2.7.0)
+## Security (v2.7.x)
 
 The SDK includes several security hardening measures:
 
 - **Origin-validated messaging** — `postMessage` communication validates origins against a strict trusted set. No wildcard origins.
+- **Session-nonce binding** — every bridge response must carry the session nonce issued at connect time. Same-origin impersonation and forged responses are rejected.
 - **No auto-trust for iframes** — the SDK does not assume an iframe parent is a wallet. It requires a verified `walletReady` signal from a trusted origin.
-- **Response binding** — only responses matching a pending request ID are accepted. Forged responses are rejected.
+- **Response binding** — only responses matching a pending request ID are accepted.
 - **No retry on rejection** — user-rejected transactions do not trigger automatic retries.
-- **Configurable trusted origins** — use `setTrustedOrigins()` if your dApp runs inside a custom frame.
+- **Configurable trusted origins** — set `trustedParentOrigins` in the constructor config to restrict which origins are trusted as the parent iframe bridge (disables implicit localhost trust).
+- **RPC URL validation** — `http://` RPC endpoints are rejected on non-testnet networks, blocking a malicious bridge from injecting an insecure endpoint.
 
 ## Desktop & Mobile Support
 
@@ -169,11 +172,18 @@ DApp developers do not need to change any code. Just use the SDK as normal — i
 
 ### Cross-Origin Iframe Bridge (v2.4.4)
 
-Starting in v2.4.4, the SDK supports cross-origin iframe communication for localhost development. This allows DApps running on `localhost` or `127.0.0.1` during development to communicate with the wallet through an iframe bridge, without requiring the extension content script to be injected into the development server origin. Use `setTrustedOrigins()` to allowlist your local dev server if needed.
+Starting in v2.4.4, the SDK supports cross-origin iframe communication for localhost development. This allows DApps running on `localhost` or `127.0.0.1` during development to communicate with the wallet through an iframe bridge, without requiring the extension content script to be injected into the development server origin. For production frames, pass `trustedParentOrigins` in the constructor config to allowlist the exact origins you trust:
 
-## RFC-O-1 Provider Standard (v2.7.0)
+```typescript
+const wallet = new ZeroXIOWallet({
+  appName: 'My DApp',
+  trustedParentOrigins: ['https://desktop.0xio.xyz'],
+});
+```
 
-Starting in v2.7.0, the SDK includes an `OctraProviderAdapter` that enables any RFC-O-1 compliant wallet (not just 0xio) to work with the SDK. This allows third-party wallets that implement `window.octra` to be used as a drop-in transport.
+## RFC-O-1 Provider Standard (v2.7.1)
+
+The SDK includes an `OctraProviderAdapter` that enables any RFC-O-1 compliant wallet (not just 0xio) to work with the SDK. This allows third-party wallets that implement `window.octra` to be used as a drop-in transport.
 
 ### How It Works
 
@@ -623,6 +633,10 @@ console.log('Success:', result.success);
 - **Parameters:** `amount: number | string` (OCT amount to shield)
 - **Returns:** `Promise<TransactionResult>` with `txHash`, `success`, `finality`
 
+<Note>
+Amounts on `encryptBalance`, `decryptBalance`, `sendPrivateTransfer`, and `callContract` accept `string | number`. A numeric amount that can't be represented exactly in micro-OCT (6 decimals) throws `INVALID_AMOUNT` — pass a string (e.g. `"0.300000"`) for exact control.
+</Note>
+
 #### `decryptBalance(amount)`
 
 Moves funds from Private → Public balance (unshielding). Includes range proof generation (17-300s depending on engine).
@@ -898,7 +912,7 @@ try {
 | `EXTENSION_NOT_FOUND` | 0xio Wallet Extension not installed |
 | `NETWORK_ERROR` | RPC connection or blockchain issue |
 | `INVALID_ADDRESS` | Malformed or invalid Octra address |
-| `INVALID_AMOUNT` | Negative or improperly formatted amount |
+| `INVALID_AMOUNT` | Negative amount, or a number that can't be represented exactly in micro-OCT (6 decimals) — pass a string like `"0.300000"` for exact control |
 | `PERMISSION_DENIED` | Requested permission not granted |
 | `TRANSACTION_FAILED` | Transaction reverted or rejected |
 | `SIGNATURE_FAILED` | Message signing failed or invalid input |
@@ -1127,6 +1141,7 @@ import type {
   TransactionData,
   SignedTransaction,
   TransactionResult,
+  TransactionFinality, // 'pending' | 'confirmed' | 'rejected' | 'dropped'
   TransactionHistory,
   Transaction,
 
@@ -1218,6 +1233,9 @@ import {
   toMicroOCT,
   fromMicroOCT,
 
+  // Address derivation
+  deriveOctraAddress, // async: base64 Ed25519 pubkey → "oct…" address
+
   // Error utilities
   createErrorMessage,
   isErrorType,
@@ -1247,6 +1265,9 @@ const shortAddr = formatAddress('oct1abc...xyz'); // "oct1ab...xyz"
 const micro = toMicroOCT(1.5); // 1500000
 const oct = fromMicroOCT(1500000); // 1.5
 
+// Derive an Octra address from a base64 Ed25519 public key
+const addr = await deriveOctraAddress(publicKeyBase64); // "oct..."
+
 await delay(1000); // Wait 1 second
 ```
 
@@ -1261,7 +1282,7 @@ import {
   checkSDKCompatibility
 } from '@0xio/sdk';
 
-console.log('SDK Version:', SDK_VERSION); // "2.7.0"
+console.log('SDK Version:', SDK_VERSION); // "2.7.1"
 console.log('Min Extension (Mainnet):', MIN_EXTENSION_VERSION); // "2.0.1"
 console.log('Min Extension (Devnet):', MIN_EXTENSION_VERSION_DEVNET); // "2.2.1"
 console.log('Supported:', SUPPORTED_EXTENSION_VERSIONS); // "^2.0.1"

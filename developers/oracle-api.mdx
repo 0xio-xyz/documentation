@@ -35,6 +35,7 @@ Keep your API key secret. Never expose it in client-side code or public reposito
 | `GET /api/keys` | Signature |
 | `POST /api/keys` | Signature |
 | `GET /api/price/oct/details` | Yes |
+| `GET /api/price/twap` | Yes |
 | `GET /api/price/:symbol` | Yes |
 | `GET /api/prices` | Yes |
 | `GET /api/quote` | Yes |
@@ -113,15 +114,15 @@ curl -H "x-api-key: YOUR_KEY" \
 ```json
 {
   "symbol": "OCT",
-  "price": 1.25,
-  "source": "amm"
+  "price": 0.024816,
+  "source": "aggregated(coingecko+dexscreener)"
 }
 ```
 
 The `source` field indicates where the price came from:
-- `aggregated(coingecko+dexscreener)` — Multi-source median with anomaly detection
-- `pyth` — Pyth Network oracle feed (stablecoins, SOL, ETH)
-- `static` — Hardcoded value (stablecoins like USDC/USDT)
+- `aggregated(coingecko+dexscreener)` — Multi-source aggregation with anomaly detection (OCT / wOCT)
+- `pyth` — Pyth Network oracle feed (SOL, ETH, and other non-OCT symbols)
+- `static` — Hardcoded value (stablecoins USDC / USDT)
 
 ### Get All Prices
 
@@ -129,7 +130,7 @@ The `source` field indicates where the price came from:
 GET /api/prices
 ```
 
-Get current prices for all supported tokens (OCT, USDC, USDT, SOL, ETH).
+Get current prices for all supported tokens (OCT, WOCT, USDC, USDT, SOL, ETH).
 
 **Example:**
 ```bash
@@ -140,7 +141,8 @@ curl -H "x-api-key: YOUR_KEY" \
 **Response:**
 ```json
 {
-  "OCT": 1.25,
+  "OCT": 0.024816,
+  "WOCT": 0.024816,
   "USDC": 1.0,
   "USDT": 1.0,
   "SOL": 180.50,
@@ -178,6 +180,37 @@ curl -H "x-api-key: YOUR_KEY" \
     "dexscreener": 0.024832
   },
   "ethUsd": 1780.50,
+  "timestamp": 1745312400000
+}
+```
+
+### Get TWAP Prices
+
+```http
+GET /api/price/twap
+```
+
+Get 5-minute time-weighted average prices for OCT and ETH alongside the current spot, plus the OCT spot-vs-TWAP deviation.
+
+**Example:**
+```bash
+curl -H "x-api-key: YOUR_KEY" \
+  https://oracle.0xio.xyz/api/price/twap
+```
+
+**Response:**
+```json
+{
+  "oct": {
+    "twap_5m": 0.024790,
+    "spot": 0.024816,
+    "deviation_pct": 0.10
+  },
+  "eth": {
+    "twap_5m": 1779.20,
+    "spot": 1780.50
+  },
+  "window_seconds": 300,
   "timestamp": 1745312400000
 }
 ```
@@ -318,27 +351,32 @@ Update liquidity reserves. Used by the watcher service to sync on-chain balances
 GET /api/chart/history
 ```
 
-Get historical price data for the last 24 hours.
+Get historical price data over a configurable time range. Points are downsampled to fit the range (e.g. 30d → ~1 point per 2h).
 
 **Query Parameters:**
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `pair` | string | `OCT` | Token symbol |
+| `range` | string | `1d` | Time window: `1h`, `1d`, `7d` (`1w`), `30d` (`1m`), `1y` (`365d`) |
 
 **Example:**
 ```bash
 curl -H "x-api-key: YOUR_KEY" \
-  "https://oracle.0xio.xyz/api/chart/history?pair=OCT"
+  "https://oracle.0xio.xyz/api/chart/history?pair=OCT&range=30d"
 ```
 
 **Response:**
 ```json
 [
-  { "value": 1.24, "time": 1706270400000 },
-  { "value": 1.25, "time": 1706274000000 },
-  { "value": 1.26, "time": 1706277600000 }
+  { "value": 1.24, "time": 1706270400 },
+  { "value": 1.25, "time": 1706274000 },
+  { "value": 1.26, "time": 1706277600 }
 ]
 ```
+
+<Note>
+The `time` field on chart data points is a Unix timestamp in **seconds** (suitable for charting libraries like Lightweight Charts). Other endpoints (`/health`, `/api/price/oct/details`, `/api/reserves`) return timestamps in **milliseconds**.
+</Note>
 
 ---
 
@@ -452,10 +490,16 @@ x-api-key: KEY_TO_REVOKE
 
 | HTTP Status | Description |
 |-------------|-------------|
-| 400 | Bad Request - Invalid parameters |
-| 401 | Unauthorized - Invalid or missing API key |
-| 404 | Not Found - Token or resource not found |
+| 400 | Bad Request — invalid parameters or signature payload |
+| 401 | Unauthorized — invalid or missing API key / signature |
+| 403 | Forbidden — address not whitelisted for key creation |
+| 404 | Not Found — token or resource not found |
+| 429 | Too Many Requests — rate limited (response includes `retry_after` seconds) |
 | 500 | Internal Server Error |
+| 502 | Bad Gateway — upstream price source error |
+| 503 | Service Unavailable — oracle data not yet initialized |
+
+Error responses use the shape `{ "error": "message" }`, with a `retry_after` field added on `429`.
 
 ---
 

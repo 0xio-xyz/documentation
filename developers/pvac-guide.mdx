@@ -6,7 +6,13 @@ icon: 'lock'
 
 ## Overview
 
-`@0xio/pvac` provides standalone FHE (Fully Homomorphic Encryption) primitives for DApps that need to work with encrypted balances on Octra Network. It runs entirely client-side via WASM — no wallet extension dependency for cryptographic operations.
+`@0xio/pvac` (v1.0.2) provides standalone FHE (Fully Homomorphic Encryption) primitives for DApps that need to work with encrypted balances on Octra Network. It runs entirely client-side via WASM — no wallet extension dependency for cryptographic operations.
+
+The primitives are built on the **Ristretto255** group (curve25519-dalek): exponential-ElGamal ciphers, Bulletproofs-style range proofs, and Pedersen commitments.
+
+<Note>
+PVAC's confidentiality rests on the discrete-log hardness assumption (Ristretto255). It is **not** lattice-based and is **not** post-quantum / quantum-safe.
+</Note>
 
 Use `@0xio/pvac` for FHE crypto, and `@0xio/sdk` for wallet signing. They work together:
 
@@ -29,9 +35,12 @@ import { PvacContext, initPvac } from '@0xio/pvac';
 // 1. Initialize WASM module
 const wasm = await initPvac();
 
-// 2. Create context from wallet seed
+// 2. Create context from wallet seed (seed must be exactly 32 bytes)
 const seed = new Uint8Array(32); // derive from wallet key
 const ctx = await PvacContext.create(seed, wasm);
+
+// For parallel range proofs, opt into the rayon thread pool:
+// const ctx = await PvacContext.create(seed, wasm, { preWarm: true, threads: 8 });
 
 // 3. Encrypt an amount
 const cipher = ctx.encrypt(100_000_000n); // 100 OCT in microOCT
@@ -66,7 +75,7 @@ const commitment = ctx.pedersenCommit(100_000_000n, blinding);
 |---|---|---|
 | `makeBoundProof(cipher, value, blinding)` | Prove cipher encrypts specific value | ~100ms |
 | `makeRangeProof(cipher, value)` | Prove decrypted value ≥ 0 | 30-60s |
-| `makeRangeProofParallel(cipher, value)` | Parallel range proof (rayon) | 15-30s |
+| `makeRangeProofParallel(cipher, value)` | Parallel range proof (rayon) — requires `threads` in `create()` | 15-30s |
 | `pedersenCommit(value, blinding)` | Create Pedersen commitment | ~1ms |
 | `verifyRangeProof(cipher, proof)` | Verify a range proof | ~100ms |
 | `verifyBoundProof(cipher, proof, commitment)` | Verify a bound proof | ~50ms |
