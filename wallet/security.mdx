@@ -4,7 +4,19 @@ description: "Secure your 0xio Wallet with auto-lock timers, password rules, see
 icon: "lock"
 ---
 
-0xio provides multiple layers of security to protect your funds and privacy.
+0xio provides multiple layers of security to protect your funds and privacy. The protections below apply across the browser extension, desktop app, and mobile app, with a few platform-specific additions noted where relevant.
+
+## Biometric Unlock
+
+All three clients support biometric unlock with a password or PIN fallback:
+
+- **Extension:** WebAuthn passkey — unlock with your device biometrics (enable it under Security & Backup)
+- **Desktop:** Touch ID / Windows Hello — on desktop, biometrics are the **primary** prompt for sensitive actions, with your password as the fallback
+- **Mobile:** Face ID / Touch ID / fingerprint for transaction approval and unlock, with PIN fallback
+
+<Info>
+Biometrics gate access to the locally encrypted vault. They never replace your recovery phrase, which remains the only way to restore the wallet on a new device.
+</Info>
 
 ## Auto-Lock
 
@@ -54,7 +66,7 @@ Automatically lock your wallet after periods of inactivity.
 </Steps>
 
 <Info>
-**Important:** Changing your password does NOT require your Recovery Phrase. The password only protects local access to your encrypted vault.
+**Important:** Changing your password does NOT require your Recovery Phrase. The password only protects local access to your encrypted vault — it derives a key with PBKDF2 (900,000 iterations on the extension, 600,000 on desktop; mobile gates the vault behind a PIN at 100,000 iterations) that decrypts an AES-256-GCM vault.
 </Info>
 
 ### Password Requirements
@@ -119,7 +131,7 @@ Use your Recovery Phrase to access the same wallet on multiple devices:
 
 All transactions require explicit approval:
 
-- **Review:** Every transaction shows full details
+- **Review:** Every transaction shows full details (including contract method and parameters for contract calls)
 - **Confirm:** Password or biometric required
 - **No Auto-Sign:** Even for connected dApps
 - **Cancel Anytime:** Before signing completes
@@ -139,10 +151,13 @@ View and manage website connections:
 
 | Permission | Description |
 |-----------|-------------|
+| `read_address` | Access your wallet address |
 | `read_balance` | View your public balance |
-| `view_address` | Access your wallet address |
 | `send_transactions` | Request transaction signatures |
-| `view_private_balance` | Access encrypted balance (requires explicit consent) |
+| `sign_messages` | Request message signatures |
+| `contract_calls` | Request smart-contract calls |
+| `view_private_balance` | Access your encrypted balance (requires explicit consent) |
+| `private_transfers` | Initiate, list, and claim stealth transfers |
 
 <Tip>
 **Best Practice:** Regularly audit connected dApps and revoke unused connections.
@@ -150,22 +165,31 @@ View and manage website connections:
 
 ## Session Security
 
-### Active Sessions
+### Connected dApp Sessions
 
-Monitor active wallet sessions:
-
-- **Settings > Security > Active Sessions**
-- View device/browser information
-- Last activity timestamp
-- Terminate sessions remotely
+Each connected dApp holds a session scoped to the permissions you granted. Review and revoke them under **Connected Sites** (see [Connection Management](#connection-management)). Revoking a connection immediately ends that dApp's session.
 
 ### Secure Logout
 
-Always log out on shared devices:
+Always lock the wallet on shared devices:
 
-1. Click lock icon in toolbar
-2. Or **Settings > Lock Wallet**
-3. Requires password to unlock
+1. Click the lock icon in the header (extension/desktop)
+2. Or use **Settings > Lock Wallet**
+3. Unlock requires your password, PIN, or biometrics
+
+## Watch-Only and Balance Privacy
+
+- **Watch-only mode:** Import an address without its private key to monitor balances and history. Watch-only wallets cannot send, sign, or run privacy operations.
+- **Hide balances:** Toggle the eye control to mask balance amounts on screen — useful in public or shared settings.
+
+## Mobile-Specific Protections
+
+The mobile app adds device-level safeguards:
+
+- **Screenshot and screen-recording prevention** on sensitive screens
+- **Secure clipboard** handling for copied addresses and keys
+- **Jailbreak / root detection** with an on-screen warning when a compromised device is detected
+- **PIN lock** with auto-lock and rate limiting, backed by the device keychain/keystore
 
 ## Network Security
 

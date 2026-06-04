@@ -4,7 +4,7 @@ description: "Send public or private transfers of OCT and tokens from 0xio with 
 icon: "paper-plane"
 ---
 
-0xio supports multiple ways to send OCT and tokens, with options for both public and private transactions.
+0xio lets you send native OCT, OAT tokens, and private stealth transfers — covering both public and confidential transactions. To send a token instead of OCT, pick it from the token selector on the Send screen; the steps below otherwise apply to both.
 
 ## Standard Public Send
 
@@ -15,9 +15,9 @@ Send a transparent transaction visible on the blockchain.
     Click "Send" in the main navigation
   </Step>
   <Step title="Enter Recipient">
-    Enter the recipient's Octra address (starts with `oct1...`)
+    Enter the recipient's Octra address (starts with `oct`)
 
-    - Must be 47 characters
+    - 47 characters (`oct` + 44 Base58)
     - Validates automatically
     - Can paste or scan QR code
   </Step>
@@ -25,7 +25,7 @@ Send a transparent transaction visible on the blockchain.
     Specify the amount to send
 
     - Enter in OCT units
-    - Shows USD equivalent (if available)
+    - Shows fiat equivalent (if available)
     - Displays available balance
   </Step>
   <Step title="Select Source">
@@ -36,7 +36,7 @@ Send a transparent transaction visible on the blockchain.
 
     - Recipient address
     - Amount to send
-    - Network fee (10,000 OU or 30,000 OU if ≥1,000 OCT)
+    - Network fee (see below)
     - Total including fees
   </Step>
   <Step title="Confirm and Sign">
@@ -46,18 +46,17 @@ Send a transparent transaction visible on the blockchain.
 
 ### Transaction Details
 
-- **Speed:** 3-5 seconds
-- **Privacy:** Transaction is visible on blockchain
-- **Gas Cost:** 10,000 OU (standard)
-- **Gas Cost (High Value):** 30,000 OU (amounts ≥1,000 OCT)
+- **Speed:** Typically a few seconds, subject to network conditions
+- **Privacy:** Transaction is visible on the blockchain
+- **Network fee:** Quoted live from the node via `octra_recommendedFee` and shown before you confirm
 
 <Info>
-High value transactions (≥1,000 OCT) automatically use 30,000 OU for enhanced security and priority processing.
+Fees are denominated in **operational units (ou)** and displayed converted to OCT (1 OCT = 1,000,000 ou). The wallet fetches a Standard / High / Fast estimate from the node; you can override it with a custom ou value. There is no fixed fee tier — the node sets the recommended amount.
 </Info>
 
 ## Private Send
 
-Send an FHE-encrypted transaction where the amount remains confidential.
+Send a stealth transfer where the amount stays confidential. The wallet derives a one-time stealth address for the recipient via ECDH (x25519), encrypts the amount with PVAC-HFHE, and attaches a zero-knowledge range proof — all generated locally on your device.
 
 <Steps>
   <Step title="Open Send Tab">
@@ -77,7 +76,7 @@ Send an FHE-encrypted transaction where the amount remains confidential.
 
     - Recipient (visible)
     - Amount (will be encrypted)
-    - Network fee (higher for FHE operations)
+    - Network fee (higher than a plain transfer because of proof generation)
   </Step>
   <Step title="Confirm">
     Confirm and sign the transaction
@@ -86,81 +85,72 @@ Send an FHE-encrypted transaction where the amount remains confidential.
 
 ### How Private Transfers Work
 
-1. **Local Encryption:** Your device encrypts the transaction amount using FHE
-2. **Broadcast:** Encrypted payload is sent to the blockchain
-3. **Validation:** Smart contracts perform validation on encrypted data
-4. **Execution:** Transaction executes without revealing amount to validators
-5. **Notification:** Recipient receives notification to claim funds
+1. **Local Proof Generation:** Your device encrypts the amount (PVAC-HFHE) and builds a range proof. A full-screen progress overlay shows each step (verify → encrypt → range proof → submit).
+2. **Stealth Output:** A one-time stealth output is derived from the recipient's view key via ECDH so the recipient — and only the recipient — can detect it.
+3. **Broadcast:** The encrypted payload and proof are submitted to the network.
+4. **Validation:** Validators verify the proof on encrypted data without learning the amount.
+5. **Claim:** The recipient scans for incoming stealth outputs and claims them into their private balance.
 
 ### Transaction Details
 
-- **Speed:** 5-8 seconds
-- **Privacy:** Amount encrypted, only addresses visible
-- **Gas Cost:** Higher (varies, up to 30,000 OU for large amounts)
+- **Speed:** Slower than a public send because proofs are generated locally
+- **Privacy:** Amount is encrypted; the sender's address may be visible, the recipient is shielded behind a stealth output
+- **Network fee:** Quoted live from the node (proof-bearing transactions cost more ou than a plain transfer)
 
 <Warning>
-Private transfers may require the recipient to "claim" the transfer. They'll see a pending transfer notification in their wallet.
+Private transfers require the recipient to **claim** the stealth output before the funds appear in their private balance. See [Receiving Funds](/wallet/receiving) and [Privacy Operations](/wallet/privacy-operations).
 </Warning>
 
 ## Bulk Send
 
-Send to multiple recipients in a single transaction batch.
+Send to multiple recipients in one flow. Each recipient is submitted as its own transaction and tracked individually, so the batch reports per-recipient success and failure.
 
 <Steps>
-  <Step title="Select Bulk Mode">
-    Click "Bulk Send" tab
+  <Step title="Open Bulk / Batch Mode">
+    Switch the Send screen to bulk (the extension and mobile use a "Bulk" tab; desktop uses a "Batch" tab).
   </Step>
   <Step title="Add Recipients">
-    Add up to 5 addresses with individual amounts
+    Add addresses with individual amounts.
 
-    - Click "+ Add Recipient"
-    - Enter address and amount for each
-    - Remove entries with the trash icon
+    - **Extension and mobile:** add up to 5 recipients, each with its own address and amount; remove rows with the trash icon.
+    - **Desktop:** add rows individually or paste/import a CSV (`address,amount` per line). A live batch summary shows the running total, flags duplicate addresses, and warns when the total exceeds your available balance.
   </Step>
   <Step title="Choose Balance Type">
-    Select Public or Private balance source
+    Select the Public balance as the source.
   </Step>
   <Step title="Review Total">
-    Review:
-
-    - Total amount across all recipients
-    - Per-recipient breakdown
-    - Network fees (batch processing discount)
+    Review the total amount, the per-recipient breakdown, and the estimated fee.
   </Step>
-  <Step title="Confirm Batch">
-    Sign the batch transaction
+  <Step title="Confirm">
+    Confirm and sign. The wallet processes each transfer and reports how many succeeded.
   </Step>
 </Steps>
 
-### Benefits of Bulk Send
+### When to Use Bulk Send
 
-- **Cost Efficient:** Significantly reduced gas fees per transfer
-- **Time Saving:** One signature for multiple transfers
+- **Time Saving:** Queue many transfers from a single screen instead of one at a time
 - **Ideal For:**
   - Payroll and salary payments
   - Airdrops and token distributions
   - Multi-party settlements
   - Team payments
 
-<Tip>
-Bulk transfers can save up to 70% on gas fees compared to sending individual transactions.
-</Tip>
+<Note>
+Bulk send submits a separate transaction per recipient, so total fees scale with the number of transfers — there is no per-batch discount.
+</Note>
 
 ## Transaction Priority
 
 ### Custom Network Fees
 
-For advanced users, customize the **Operational Unit (OU)** fee to control transaction priority:
+You can customize the **operational unit (ou)** fee to control transaction priority:
 
-1. Click "Est. Network Fee" at the bottom of Send screen
-2. Choose priority level:
-   - **Standard:** 10,000 OU (default)
-   - **High:** 30,000 OU (faster during congestion)
-   - **Custom:** Set your own OU amount
-3. Higher OU = faster inclusion in blocks
+1. Tap the estimated network fee on the Send screen.
+2. Choose a priority level — the wallet pulls Standard, High, and Fast estimates from the node, or set a **Custom** ou amount.
+3. Higher ou = faster inclusion in blocks.
 
 <Info>
-During network congestion, higher OU values ensure your transaction is processed quickly.
+During network congestion, a higher ou value helps your transaction get processed sooner. The displayed presets are sourced live from the node, so exact values vary with network conditions.
 </Info>
 
 ## Transaction States
@@ -190,10 +180,9 @@ During network congestion, higher OU values ensure your transaction is processed
 
 Include a message with your transaction:
 
-1. Expand "Advanced Options"
-2. Enter memo text (up to 256 characters)
-3. **Note:** Memo is visible on blockchain for public sends
-4. For private sends, memo is also encrypted
+1. Open the memo field on the Send screen
+2. Enter memo text (up to 200 characters)
+3. **Note:** The memo is stored on-chain and visible for public sends
 
 **Use Cases:**
 - Payment references

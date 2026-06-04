@@ -4,7 +4,7 @@ description: "Move funds between public and private balances in 0xio using FHE e
 icon: "shield"
 ---
 
-The Privacy tab is your control center for Octra's Fully Homomorphic Encryption (FHE) capabilities, allowing you to move funds between public and private states.
+The Privacy screen is your control center for Octra's PVAC-HFHE (homomorphic encryption) capabilities, letting you move funds between public and private states. All encryption and proof generation runs locally on your device.
 
 ## Understanding Privacy Operations
 
@@ -37,8 +37,8 @@ The Privacy tab is your control center for Octra's Fully Homomorphic Encryption 
 ### How to Encrypt
 
 <Steps>
-  <Step title="Navigate to Privacy Tab">
-    Click "Encrypt/Decrypt" in main navigation
+  <Step title="Open the Privacy Screen">
+    Go to the Privacy screen (Encrypt / Decrypt / Claim) in your wallet
   </Step>
   <Step title="Select Encrypt">
     Choose the "Encrypt" option
@@ -47,13 +47,13 @@ The Privacy tab is your control center for Octra's Fully Homomorphic Encryption 
     Input the amount to shield from your Public Balance
   </Step>
   <Step title="Review Fee">
-    Check the gas fee estimate (10,000 OU standard)
+    Check the network fee estimate (quoted live from the node in ou)
   </Step>
   <Step title="Confirm">
-    Click "Encrypt" and sign with your password
+    Review the preview, click "Encrypt", and sign with your password
   </Step>
   <Step title="Wait for Confirmation">
-    Typically 5-8 seconds for blockchain confirmation
+    A proof-generation overlay shows progress; confirmation follows shortly after
   </Step>
 </Steps>
 
@@ -74,10 +74,7 @@ When you encrypt funds:
 
 ### Costs
 
-| Amount | Gas Fee | Processing Time |
-|--------|---------|----------------|
-| < 1,000 OCT | 10,000 OU | 5-8 seconds |
-| ≥ 1,000 OCT | 30,000 OU | 5-8 seconds |
+Encrypt fees are denominated in **operational units (ou)** and quoted live from the node via `octra_recommendedFee`. The Privacy screen shows Slow / Normal / Fast presets sourced from the node, and you can set a custom ou amount. Encrypt also generates a range proof locally, so it takes longer than a plain transfer.
 
 ## Decrypting Funds (Private → Public)
 
@@ -93,23 +90,23 @@ When you encrypt funds:
 ### How to Decrypt
 
 <Steps>
-  <Step title="Navigate to Privacy Tab">
-    Go to Encrypt/Decrypt section
+  <Step title="Open the Privacy Screen">
+    Go to the Privacy screen and select the Decrypt tab
   </Step>
   <Step title="Select Decrypt">
     Choose the "Decrypt" option
   </Step>
   <Step title="Enter Amount">
-    Specify amount to unshield from Private Balance
+    Specify the amount to unshield from your Private Balance (balance validation prevents over-decryption)
   </Step>
   <Step title="Review Fee">
-    Check gas fee estimate
+    Check the network fee estimate (in ou)
   </Step>
   <Step title="Confirm">
     Sign and broadcast the transaction
   </Step>
   <Step title="Confirmation">
-    Funds appear in Public Balance after confirmation
+    Funds appear in your Public Balance after confirmation
   </Step>
 </Steps>
 
@@ -119,14 +116,13 @@ Once funds are decrypted to your public balance, their movement becomes visible 
 
 ## Claiming Private Transfers
 
-When someone sends you a private (FHE-encrypted) transfer, you may need to claim it.
+When someone sends you a private (stealth) transfer, you claim it to move the funds into your private balance.
 
 ### Finding Pending Transfers
 
-1. Navigate to **Privacy Tab**
-2. Look for "Pending Transfers" section
-3. Click **"Scan for Pending"** to query blockchain
-4. Pending transfers appear in a list
+1. Open the **Privacy screen** and switch to the Claim tab
+2. Run the stealth scan to query the blockchain (live progress is shown while it scans outputs)
+3. Detected transfers appear in a list
 
 ### Claim Process
 
@@ -140,8 +136,8 @@ When someone sends you a private (FHE-encrypted) transfer, you may need to claim
   <Step title="Click Claim">
     Press "Claim" button next to the transfer
   </Step>
-  <Step title="Review Gas Fee">
-    Small fee required for decryption and state update
+  <Step title="Review Fee">
+    A network fee (in ou) covers decryption and the state update
   </Step>
   <Step title="Confirm Transaction">
     Sign the claim transaction
@@ -153,18 +149,13 @@ When someone sends you a private (FHE-encrypted) transfer, you may need to claim
 
 ### Claim Fees
 
-- **Typical:** 5,000-10,000 OU
+- **Denominated in ou** and quoted live from the node before you confirm
 - **Paid By:** Recipient (you)
-- **Reason:** Computational cost of FHE decryption
+- **Reason:** Computational cost of decryption and the on-chain state update
 
 ### Bulk Claiming
 
-If you have multiple pending transfers:
-
-1. Select all transfers to claim
-2. Click "Claim All"
-3. Single transaction processes all claims
-4. Save on gas fees
+If you have multiple pending transfers, use **Claim All** to process every detected transfer in one action. The wallet still settles each claim on-chain individually, so a fee applies per claim.
 
 ## Privacy Best Practices
 
@@ -222,12 +213,12 @@ View all privacy operations:
 
 ### "Insufficient Balance for Encryption"
 
-- Check you have enough **Public Balance** to cover both amount + gas
-- Minimum: Amount + 30,000 OU worth of OCT
+- Check you have enough **Public Balance** to cover the amount plus the network fee
+- The wallet validates that amount + fee fits your public balance before submitting
 
 ### "Claim Transaction Failed"
 
-- Ensure sufficient OCT for gas fees
+- Ensure sufficient OCT to cover the network fee
 - Try refreshing pending transfers list
 - Transfer may have been auto-claimed
 
@@ -235,9 +226,9 @@ View all privacy operations:
 
 - Network congestion can delay operations
 - Check transaction status in History
-- Wait up to 30 seconds during peak times
-- Consider increasing gas fee (OU)
+- Wait longer during peak times
+- Consider increasing the fee (ou)
 
 <Tip>
-For urgent privacy operations during network congestion, use the custom gas fee option to set a higher OU amount for priority processing.
+For urgent privacy operations during network congestion, use the custom fee option to set a higher ou amount for priority processing.
 </Tip>
