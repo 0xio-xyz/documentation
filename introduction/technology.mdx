@@ -33,12 +33,14 @@ Because Octra relies on FHE, data must be encrypted *before* it leaves your devi
 
 | Feature | Specification |
 | :--- | :--- |
-| **Signing Algorithm** | **Ed25519** (Twisted Edwards Curve) for high-speed, secure transaction signatures. |
-| **Vault Encryption** | **AES-GCM (256-bit)**. Your keys are encrypted at rest on your device. |
-| **Key Derivation** | **PBKDF2** with high iteration counts to prevent brute-force attacks on your password. |
-| **Price Feeds** | **0xio Oracle** — Multi-source aggregation (CoinGecko + DexScreener) with anomaly detection, median pricing, and persistent PostgreSQL history. |
+| **Recovery Phrase** | **BIP-39** 12-word mnemonic. The seed derives a master key via `HMAC-SHA512("Octra seed", seed)` (no BIP-44 path). |
+| **Signing Algorithm** | **Ed25519** (tweetnacl) for high-speed, secure transaction signatures. Your address is `SHA-256(public key)` encoded as base58 with an `oct` prefix. |
+| **Vault Encryption** | **AES-256-GCM**. Your keys are encrypted at rest on your device. |
+| **Key Derivation** | **PBKDF2-HMAC-SHA256** with high iteration counts: 900,000 (extension), 600,000 (desktop), and 100,000 for the mobile PIN. |
+| **Privacy Engine** | **PVAC** (curve25519-dalek / Ristretto255) — FHE encrypt/decrypt, Bulletproofs range proofs, Pedersen commitments, and stealth transfers via X25519 ECDH. |
+| **Price Feeds** | **0xio Oracle** — multi-source aggregation (CoinGecko + DexScreener) with anomaly detection, median pricing, and persistent PostgreSQL history. |
 | **Telemetry** | **Zero**. No tracking scripts, analytics, or IP logging are integrated into the wallet. |
 
 <Note>
-  0xio is an independent project built by community developers. It is not owned by the Octra Foundation, ensuring a decentralized separation of powers between the network and the toolset.
+  0xio is an independent project built by community developers. It is not owned by, nor formally affiliated with, Octra Labs, ensuring a separation between the network and the toolset.
 </Note>

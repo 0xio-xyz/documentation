@@ -63,34 +63,34 @@ The 0xio ecosystem spans multiple client platforms unified by a shared SDK layer
 ### Client Applications
 
 <CardGroup cols={4}>
-  <Card title="Extension v2.3.0" icon="puzzle-piece">
+  <Card title="Extension v2.4.3" icon="puzzle-piece">
     React + Vite + WASM PVAC
   </Card>
-  <Card title="Mobile v1.0.2" icon="mobile">
+  <Card title="Mobile v1.2.0" icon="mobile">
     React Native + Expo 54 + Native FFI
   </Card>
-  <Card title="Desktop v0.2.0" icon="desktop">
-    Tauri + Rust + Native PVAC
+  <Card title="Desktop v0.2.2" icon="desktop">
+    Tauri 2 + Rust + Native PVAC
   </Card>
   <Card title="DEX" icon="arrow-right-arrow-left">
-    React + Vite + CLMM + Bridge
+    React + Vite + CLMM + Cross-chain
   </Card>
 </CardGroup>
 
 ### Developer SDK
 
-<Card title="@0xio/sdk v2.4.2" icon="code" href="https://www.npmjs.com/package/@0xio/sdk">
-  TypeScript SDK on npm. Connects all client applications to the Octra Network. Cross-origin iframe bridge, security-hardened postMessage, full type definitions.
+<Card title="@0xio/sdk v2.7.1" icon="code" href="https://www.npmjs.com/package/@0xio/sdk">
+  TypeScript SDK on npm. Connects dApps to 0xio wallets and the Octra Network. Private MessageChannel transport, security-hardened postMessage, pluggable wallet adapters, full type definitions. Privacy primitives ship separately as `@0xio/pvac` (WASM).
 </Card>
 
 ### Infrastructure
 
 <CardGroup cols={3}>
   <Card title="RPC Proxy" icon="bolt">
-    Caching proxy that reduces history responses from 8.3MB to 7KB. 15-second cache per address. Rate-limited and API key-protected.
+    Caching proxy that compresses heavy history responses, with a 15-second per-address cache. Rate-limited and API key-protected.
   </Card>
   <Card title="Push Server" icon="bell">
-    Real-time transaction notifications with Ed25519 signature authentication, replay protection, and per-address rate limiting.
+    Real-time transaction notifications with signature authentication, replay protection, and per-address rate limiting.
   </Card>
   <Card title="Alpha Portal" icon="lock">
     Code-gated distribution at alpha.0xio.xyz. Wallet-based auth, Cloudflare R2 storage, signed download URLs.
@@ -105,9 +105,9 @@ The 0xio ecosystem spans multiple client platforms unified by a shared SDK layer
 
 | Layer | Components |
 |-------|-----------|
-| **Client Applications** | Browser Extension (React + Vite + WASM), Mobile App (React Native + Expo 54 + Native FFI), Desktop App (Tauri + Rust + Native PVAC), DEX (React + Vite, CLMM + Bridge) |
-| **Developer SDK** | @0xio/sdk v2.4.2 — TypeScript, npm, iframe bridge, postMessage security |
-| **Infrastructure** | RPC Proxy (caching, 1,200x response reduction), Push Server (Ed25519 authenticated notifications), Alpha Portal (code-gated distribution, R2 signed URLs) |
+| **Client Applications** | Browser Extension (React + Vite + WASM PVAC), Mobile App (React Native + Expo 54 + Native FFI), Desktop App (Tauri 2 + Rust + Native PVAC), DEX (React + Vite, CLMM + cross-chain swap) |
+| **Developer SDK** | @0xio/sdk v2.7.1 — TypeScript, npm, MessageChannel transport, postMessage security; @0xio/pvac v1.0.2 WASM privacy primitives |
+| **Infrastructure** | RPC Proxy (caching, history compression), Push Server (signature-authenticated notifications), Alpha Portal (code-gated distribution, R2 signed URLs) |
 | **Blockchain** | Octra Network — FHE encrypted balances, AML smart contracts, BridgeVault, wOCT (ERC-20), on-chain proof verification |
 
 ## The 0xio Ecosystem
@@ -126,10 +126,10 @@ The 0xio ecosystem spans multiple client platforms unified by a shared SDK layer
     TypeScript SDK for integrating dApps with 0xio and Octra's FHE capabilities.
   </Card>
   <Card title="0xio DEX" icon="arrow-right-arrow-left" href="/products/dex">
-    Privacy-preserving decentralized exchange for trading encrypted assets.
+    Cross-chain swap protocol and same-chain CLMM pools for the Octra Network.
   </Card>
-  <Card title="Atlas" icon="globe" href="/products/atlas">
-    High-performance blockchain visualization and analytics platform.
+  <Card title="0xio Bridge" icon="bridge" href="/products/bridge">
+    Trustless OCT to wOCT bridge between Octra and Ethereum, secured by a light client.
   </Card>
   <Card title="Telegram Bot" icon="paper-plane" href="/products/telegram-bot">
     Real-time wallet monitoring and notifications via Telegram.

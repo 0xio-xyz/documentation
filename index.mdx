@@ -48,7 +48,7 @@ While Octra provides the underlying Layer-1 blockchain and cryptographic infrast
   </Accordion>
 
   <Accordion title="Non-Custodial Security" icon="key">
-    All keys are generated and stored locally. 0xio cannot freeze, access, or recover user funds. You maintain complete sovereignty over your assets with industry-standard cryptography (Ed25519, AES-256-GCM, BIP39).
+    All keys are generated and stored locally. 0xio cannot freeze, access, or recover user funds. You maintain complete sovereignty over your assets with industry-standard cryptography (BIP-39 mnemonics, Ed25519 signing, AES-256-GCM vault encryption, PBKDF2).
   </Accordion>
 
   <Accordion title="Client-Side Encryption" icon="microchip">
@@ -68,9 +68,9 @@ While Octra provides the underlying Layer-1 blockchain and cryptographic infrast
     icon="chrome"
     href="/products/extensions"
   >
-    **Live**
+    **Live (v2.4.3)**
 
-    Non-custodial wallet for Chrome, Brave, Edge, and Opera. Version 2.3.0
+    Non-custodial wallet for Chrome, Brave, Edge, and Opera.
   </Card>
 
   <Card
@@ -78,9 +78,9 @@ While Octra provides the underlying Layer-1 blockchain and cryptographic infrast
     icon="desktop"
     href="/products/desktop"
   >
-    **Alpha (v0.1.0)**
+    **Live (v0.2.2)**
 
-    Native Tauri + Rust wallet with FHE computation engine for accelerated privacy operations
+    Native Tauri 2 + Rust wallet with native PVAC engine for accelerated privacy operations. Signed and notarized for macOS (Apple Silicon) and Windows.
   </Card>
 
   <Card
@@ -88,9 +88,9 @@ While Octra provides the underlying Layer-1 blockchain and cryptographic infrast
     icon="mobile"
     href="/products/mobile"
   >
-    **Alpha (v1.0.0)**
+    **Live (v1.2.0)**
 
-    Privacy on the go with biometric security and mobile-optimized features
+    Privacy on the go with biometric security, on iOS (TestFlight) and Android (Play).
   </Card>
 
   <Card
@@ -98,9 +98,9 @@ While Octra provides the underlying Layer-1 blockchain and cryptographic infrast
     icon="code"
     href="/developers/sdk-guide"
   >
-    **Live**
+    **Live (v2.7.1)**
 
-    TypeScript SDK for integrating dApps with 0xio and Octra's FHE capabilities
+    TypeScript SDK (`@0xio/sdk`) for integrating dApps with 0xio and Octra's FHE capabilities
   </Card>
 
   <Card
@@ -108,9 +108,19 @@ While Octra provides the underlying Layer-1 blockchain and cryptographic infrast
     icon="arrow-right-arrow-left"
     href="/products/dex"
   >
-    **Coming Soon**
+    **Live**
 
-    Privacy-preserving decentralized exchange for trading encrypted assets
+    Cross-chain swap protocol and same-chain CLMM pools for the Octra Network
+  </Card>
+
+  <Card
+    title="0xio Bridge"
+    icon="bridge"
+    href="/products/bridge"
+  >
+    **Live**
+
+    Trustless OCT to wOCT bridge between Octra and Ethereum, secured by a light client
   </Card>
 
   <Card
@@ -121,16 +131,6 @@ While Octra provides the underlying Layer-1 blockchain and cryptographic infrast
     **Live**
 
     Real-time wallet monitoring and notifications via Telegram
-  </Card>
-
-  <Card
-    title="Atlas"
-    icon="globe"
-    href="/products/atlas"
-  >
-    **Live (Beta)**
-
-    High-performance network visualization and analytics platform
   </Card>
 </CardGroup>
 

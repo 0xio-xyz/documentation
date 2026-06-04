@@ -6,18 +6,18 @@ This repository contains the source content and structure for the official **0xi
 
 The goal of this repository is to maintain the central knowledge base for the **0xio Ecosystem**. It serves as the single source of truth for:
 
-- **End Users:** Guides on using the Non-Custodial Wallet, Privacy Features, and Mobile App.
-- **Developers:** Technical documentation for the 0xio SDK and Octra Network integration.
-- **Community:** Information about the 0xio DEX, Telegram Bot, and security architecture.
+- **End Users:** Guides on using the non-custodial wallets (browser extension, desktop, mobile), privacy features, and NFT/token standards.
+- **Developers:** Technical documentation for the `@0xio/sdk` and Octra Network integration.
+- **Community:** Information about the 0xio DEX, Bridge, Telegram Bot, and security architecture.
 
 ## Repository Contents
 
 The documentation is written in MDX and organized into the following sections:
 
 - **Introduction:** Overview of 0xio and the Octra Network's FHE technology.
-- **Core Concepts:** Explanations of Public vs. Private balances and Cryptography.
-- **Wallet Guide:** Instructions for Installation, Sending, Receiving, and Privacy Operations.
-- **Products:** Detailed specs for the Mobile Wallet, DEX, and Telegram Bot.
+- **Core Concepts:** Explanations of public vs. private balances and cryptography.
+- **Wallet Guide:** Instructions for installation, sending, receiving, and privacy operations.
+- **Products:** Detailed specs for the browser extension, desktop and mobile wallets, DEX, Bridge, and Telegram Bot.
 - **Developers:** Integration guides for the `@0xio/sdk`.
 
 ## Quick Links
