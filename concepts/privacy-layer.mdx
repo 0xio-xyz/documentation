@@ -169,8 +169,7 @@ Octra's FHE is uniquely powerful because:
 - **Encrypted arithmetic**: `ct_add` and `ct_sub` operate directly on ciphertexts
 - **No custom circuits**: Unlike ZK, no per-operation circuit design needed
 - **Private swaps possible**: AMM logic can run on encrypted order data (future)
-- **Quantum resistant**: FHE is lattice-based, unlike ECDH or ZK-SNARKs
-- **Any amount**: No fixed denominations like Tornado Cash
+- **Any amount**: No fixed denominations like Tornado Cash, and ciphertexts support partial spends
 
 ## What Already Exists vs. What's Needed
 
@@ -285,7 +284,6 @@ Each withdrawal is a separate DEX swap at a different time to a different addres
 | End-to-end private | Yes (same chain) | Yes (same chain) | Partially | Yes | Octra hop only | **Yes (all chains)** |
 | Private swaps | No | Yes (v3) | No | No | Planned | **Planned (FHE AMM)** |
 | Compliance | None (sanctioned) | Relayer whitelist | None | Auditor program | Viewing keys | **Viewing keys + Privacy Pools** |
-| Quantum safe | No | No | No | No | Yes | **Yes (FHE is lattice-based)** |
 | Status | Sanctioned | Live | Live | Live | Phase 1 | **Phase 2-4** |
 
 ## Performance Estimates

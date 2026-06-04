@@ -22,29 +22,36 @@ icon: "key"
 
 ## Symmetric Encryption
 
-**AES-GCM (256-bit)** for local vault protection
+**AES-256-GCM** for local vault protection
 
-- Authenticated encryption mode
-- Protects your encrypted keys on device
-- Ensures data integrity and confidentiality
+- Authenticated encryption — guarantees both confidentiality and integrity
+- Protects your private keys at rest on the device
+- The vault key is derived from your password with **PBKDF2-HMAC-SHA256**
+
+The PBKDF2 iteration count is tuned per platform to balance security against device performance:
+
+| Platform | Vault KDF iterations |
+|----------|----------------------|
+| Extension | 900,000 |
+| Desktop | 600,000 |
+| Mobile (PIN) | 100,000 |
 
 ## Key Derivation
 
 ### Mnemonic Standard
 
-**BIP39** - 12 or 24-word recovery phrases
+**BIP-39** recovery phrases (English wordlist)
 
-- Standard: 12-word phrases (128-bit entropy)
-- Extended: 24-word phrases (256-bit entropy)
-- Dictionary: 2048 words from official BIP39 wordlist
+- 0xio generates **12-word** phrases (128-bit entropy)
+- Imports of longer phrases (e.g. 24-word, 256-bit) are also accepted
+- Dictionary: the 2048-word official BIP-39 English wordlist
 
 ### Seed Generation
 
 **PBKDF2-HMAC-SHA512** with 2048 iterations
 
-- Password-based key derivation function
-- Converts mnemonic to cryptographic seed
-- Salt: Configurable passphrase (optional)
+- Converts the mnemonic to a 64-byte cryptographic seed
+- Salt: the string `mnemonic` plus an optional passphrase (per BIP-39)
 
 ### Master Root Key Derivation
 
@@ -54,9 +61,10 @@ All 0xio platforms (extension, mobile, desktop) use the same canonical key deriv
 master_key = HMAC-SHA512("Octra seed", seed)[0:32]
 ```
 
+- **No HD path:** Octra uses the master root key directly — there is no BIP-44 derivation path
 - **Deterministic:** The same seed phrase always produces the same master key
-- **Cross-platform:** Importing the same seed phrase produces the same address on all 0xio products
-- **Secure:** HMAC-SHA512 provides cryptographic strength; only the first 32 bytes are used as the Ed25519 private key
+- **Cross-platform:** Importing the same seed phrase produces the same address on all 0xio products (extension, mobile, desktop)
+- **Secure:** HMAC-SHA512 provides cryptographic strength; the first 32 bytes become the Ed25519 seed (the next 32 bytes form the chain code)
 
 ## Address Format
 
@@ -64,30 +72,30 @@ master_key = HMAC-SHA512("Octra seed", seed)[0:32]
 
 <Steps>
   <Step title="Generate Ed25519 Public Key">
-    Derive public key from private key using Ed25519
+    Derive the 32-byte public key from the private key using Ed25519
   </Step>
   <Step title="Hash Public Key">
-    Compute SHA-256 hash of the public key
+    Compute the SHA-256 hash of the raw public key bytes
   </Step>
   <Step title="Base58 Encoding">
-    Encode the hash using Base58
+    Encode the 32-byte hash using Base58 (Bitcoin alphabet)
   </Step>
   <Step title="Add Prefix">
     Prefix with `oct` for Octra Network identification
   </Step>
 </Steps>
 
-**Result:** A 47-character string (e.g., `oct1abc123def456ghi789jkl012mno345pqr678stu901`)
+**Result:** A 47-character string (`oct` + 44 Base58 characters). During generation, 0xio "grinds" — regenerating any key whose encoded hash is shorter than 44 characters — so every address is exactly 47 characters.
 
 ## Security Architecture
 
 | Component | Implementation |
 |-----------|----------------|
-| **Private Key Storage** | AES-256-GCM encrypted in browser local storage |
+| **Private Key Storage** | AES-256-GCM encrypted vault on device |
 | **Session Management** | Auto-lock with configurable timeout |
-| **Password Protection** | PBKDF2 with user-defined password |
-| **Telemetry** | **Zero** - No tracking or analytics |
-| **Network Communication** | HTTPS only, certificate pinning recommended |
+| **Password Protection** | PBKDF2-HMAC-SHA256 with user-defined password |
+| **Telemetry** | **Zero** — no tracking or analytics |
+| **Network Communication** | HTTPS only |
 
 <Warning>
 **Privacy First:** 0xio implements zero telemetry. We never collect IP addresses, wallet addresses, or usage data.
@@ -95,25 +103,36 @@ master_key = HMAC-SHA512("Octra seed", seed)[0:32]
 
 ## Privacy Cryptography (PVAC)
 
-0xio implements PVAC (Privacy Via Additive Ciphers), a custom privacy system built on fully homomorphic encryption. All PVAC operations are performed locally on your device using **pvac-rs**, a purpose-built Rust cryptographic library.
+Octra's private balances are powered by **PVAC**, an additively-homomorphic encryption scheme. All PVAC cryptography runs locally on your device through **pvac-rs**, a purpose-built Rust library built on the `curve25519-dalek` Ristretto255 group.
 
 ### Core Operations
 
-1. **FHE Encrypt/Decrypt:** Additively homomorphic encryption of token amounts — encrypted values can be added on-chain without decryption
-2. **Range Proofs:** Zero-knowledge proofs (64-bit) proving an encrypted amount is non-negative and within bounds, without revealing the value
-3. **Pedersen Commitments:** Binding commitments to amounts using elliptic curve points, used for transaction integrity
-4. **Stealth Transfers:** ECDH key agreement generates one-time stealth addresses for unlinkable private sends
-5. **Zero Proofs:** Proof that a ciphertext encrypts zero, used during decrypt (withdrawal) operations
+1. **FHE Encrypt/Decrypt:** Additively-homomorphic encryption of token amounts — ciphertexts can be added and subtracted on-chain (`ct_add` / `ct_sub`) without ever decrypting
+2. **Range Proofs:** Bulletproofs-style zero-knowledge proofs (64-bit) that an encrypted amount is non-negative and within bounds, without revealing the value
+3. **Pedersen Commitments:** Binding commitments to amounts using Ristretto255 points, used for transaction integrity
+4. **Bound & Zero Proofs:** Prove a ciphertext encrypts zero (or a bounded value) — used when decrypting and when validating balance updates
+5. **Stealth Transfers:** An X25519 ECDH shared secret derives a per-output stealth tag and claim keys, so private sends are unlinkable and the recipient scans for outputs addressed to them
+
+### Stealth Transfer Detail
+
+A stealth transfer derives its routing and claim material entirely from an ECDH shared secret:
+
+- **Shared secret:** `SHA-256(X25519(sender_ephemeral_sk, recipient_view_pub))`
+- **Stealth tag:** first 16 bytes of `SHA-256(shared_secret ‖ "OCTRA_STEALTH_TAG_V1")` — the recipient scans on-chain outputs for a matching tag
+- **Amount:** encrypted to the recipient with AES-256-GCM keyed by the shared secret
+- **Claim keys:** further domain-separated SHA-256 derivations bind the claim to the recipient's address
 
 ### pvac-rs
 
 The **pvac-rs** library compiles to multiple targets to run natively on each platform:
 
-| Platform | Target | Performance |
-|----------|--------|-------------|
-| Extension | WebAssembly (rayon multithreading) | ~80s range proof |
-| Desktop | Native Rust binary | ~17s range proof |
-| iOS | Static library (aarch64) | ~59s range proof |
-| Android | Shared library (arm64, armv7, x86_64) | ~103s range proof |
+| Platform | Target |
+|----------|--------|
+| Extension | WebAssembly (with multithreading via `wasm-bindgen-rayon`) |
+| Desktop | Native Rust binary |
+| iOS | Static library (`aarch64`) |
+| Android | Shared library (`arm64`, `armv7`, `x86_64`) |
 
-**Key dependencies:** `curve25519-dalek` for elliptic curve arithmetic, `@noble/hashes` for PBKDF2/SHA-256/HMAC.
+Range-proof generation time varies widely by platform — from seconds on native desktop builds to over a minute on mobile.
+
+**Key dependencies:** `curve25519-dalek` (Ristretto255 group arithmetic and scalars) and `sha2` / `sha3` for hashing. The browser/mobile JavaScript layer separately uses `@noble/hashes` and `tweetnacl`.
