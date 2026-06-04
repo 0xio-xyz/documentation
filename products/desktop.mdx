@@ -7,7 +7,7 @@ icon: 'desktop'
 The **0xio Desktop** is a native desktop application built with [Tauri](https://tauri.app/) (Rust backend + React frontend). It serves two roles: a full-featured wallet for the Octra Network, and a **native computation engine** that accelerates FHE operations for the browser extension.
 
 <Note>
-  **Status: Alpha (v0.2.0)** — The desktop wallet is available for early access. Download the latest build from [alpha.0xio.xyz](https://alpha.0xio.xyz/). Available for macOS (Apple Silicon, signed and notarized by Apple) and Windows. Linux coming soon.
+  **Status: Alpha (v0.2.2)** — The desktop wallet is available for early access. Download the latest build from [alpha.0xio.xyz](https://alpha.0xio.xyz/). Available for macOS (Apple Silicon, signed and notarized by Apple) and Windows. Linux coming soon.
 </Note>
 
 ## Why Desktop?
@@ -33,6 +33,7 @@ The home screen displays your public and private (FHE-encrypted) balances, recen
 
 - **Standard transfers**: Public on-chain transactions with memo support
 - **Private transfers**: FHE-encrypted stealth transfers (recipient must have a registered PVAC public key)
+- **Bulk send**: Send to many recipients in one batch, with a pre-send summary plus duplicate-address and insufficient-balance guards and per-row stealth progress
 - **QR codes**: Generate and share receive addresses
 - **OU control**: Customize Operational Unit (gas) fees per transaction
 
@@ -172,7 +173,7 @@ The desktop app supports switching between Octra networks:
 | Mainnet | Yes | [lite.octrascan.io](https://lite.octrascan.io) |
 | Devnet | Yes | [devnet.octrascan.io](https://devnet.octrascan.io) |
 
-RPC endpoints are configured automatically by the app. An **RPC proxy toggle** is available in Settings for switching between direct and proxied RPC connections.
+RPC endpoints are configured automatically by the app (mainnet connects directly to `octra.network`). An **RPC proxy toggle** is available in Settings; the proxy is used **only on devnet** to offload heavy transaction-history fetching.
 
 Switch networks in **Settings**. Devnet is recommended for testing FHE operations and smart contract development.
 
@@ -180,8 +181,9 @@ Switch networks in **Settings**. Devnet is recommended for testing FHE operation
 
 ## Security
 
-- **Encrypted vault**: All private keys encrypted with AES-GCM at rest
+- **Encrypted vault**: All private keys encrypted with AES-256-GCM at rest
 - **PBKDF2 key derivation**: 600,000 iterations for password-to-key conversion
+- **Biometric unlock**: Touch ID (macOS) / Windows Hello, with a password fallback
 - **Auto-lock**: Configurable inactivity timeout
 - **Seed phrase backup**: Requires password re-entry to view
 - **Input validation**: Address format, amount bounds, and JSON parsing checks
@@ -202,13 +204,16 @@ The desktop app includes a built-in debug console for developers and advanced us
 
 ## Auto-Updater
 
-The desktop app checks for updates automatically via [alpha.0xio.xyz](https://alpha.0xio.xyz/) and prompts you to install new versions when available.
+The desktop app checks for updates automatically via [alpha.0xio.xyz](https://alpha.0xio.xyz/) and prompts you to install new versions when available. Update artifacts are **minisign-verified** against a bundled public key before installation.
 
 ---
 
-## Collapsible Sidebar
+## Navigation & Productivity
 
-The sidebar can be collapsed to maximize screen real estate when working with contracts or browsing dApps.
+- **Command palette**: A keyboard-driven launcher to jump between screens and actions.
+- **Sidebar wallet switcher**: Switch between your wallets directly from the sidebar.
+- **Collapsible sidebar**: Collapse the sidebar to maximize screen real estate when working with contracts or browsing dApps.
+- **Octra Circles browser**: Browse native `oct://` on-chain content via the Circle bridge.
 
 ---
 

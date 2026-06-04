@@ -54,9 +54,10 @@ Unlike intent-based bridges, the 0xio Bridge uses a **light client architecture*
 - **Multi-Wallet Support**: EIP-6963 detection for Rabby, MetaMask, Phantom, and other EVM wallets
 - **WalletConnect**: Scan QR code from the mobile app to bridge
 - **Auto-Reconnect**: Wallets persist across page refreshes
-- **Bridge History**: Full transaction history with claim actions and recovery
+- **Bridge History**: Full transaction history with claim actions and relayer-assisted recovery
 - **Network Dashboard**: Live chain stats at [bridge.0xio.xyz/octra](https://bridge.0xio.xyz/octra)
 - **Bridge Stats**: Volume, transactions, unique wallets at [bridge.0xio.xyz/stats](https://bridge.0xio.xyz/stats)
+- **Transactions Log**: On-chain mint/burn event feed at [bridge.0xio.xyz/transactions](https://bridge.0xio.xyz/transactions)
 
 ## Contract Addresses
 
@@ -73,7 +74,7 @@ Unlike intent-based bridges, the 0xio Bridge uses a **light client architecture*
 |-----------|-------|
 | Minimum lock | 1 OCT |
 | Rate | 1 OCT = 1 wOCT (always) |
-| Cooldown | 6 epochs per address between locks |
+| Cooldown | Per-address cooldown between locks (enforced on-chain) |
 | wOCT → OCT | Automatic unlock via relayer (~2 min) |
 
 ## Architecture
@@ -97,6 +98,7 @@ User (0xio Wallet + EVM Wallet)
 | Bridge UI | [bridge.0xio.xyz](https://bridge.0xio.xyz) | User interface |
 | Network Dashboard | [bridge.0xio.xyz/octra](https://bridge.0xio.xyz/octra) | Chain stats, privacy ops |
 | Bridge Stats | [bridge.0xio.xyz/stats](https://bridge.0xio.xyz/stats) | Volume, wallets, activity |
+| Transactions | [bridge.0xio.xyz/transactions](https://bridge.0xio.xyz/transactions) | On-chain mint/burn event log |
 | Oracle | oracle.0xio.xyz | Price feeds, bridge event tracking |
 
 ## Known Limitations

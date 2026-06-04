@@ -6,7 +6,7 @@ icon: 'bell'
 
 # 0xio bot User Guide
 
-Welcome to the official documentation for **0xio bot**, a Telegram bot designed to monitor your **Octra Network** addresses in real-time. Receive instant notifications for incoming and outgoing transactions, track your balances, and manage multiple wallets directly from Telegram.
+Welcome to the official documentation for **0xio bot**, a Telegram bot designed to monitor your **Octra Network** addresses in real-time. Receive instant notifications for incoming and outgoing transactions, track balances across mainnet and devnet, query live 0xio DEX pool data, and manage multiple wallets directly from Telegram.
 
 ## Getting Started
 
@@ -22,11 +22,13 @@ You will be greeted by the main menu, which gives you quick access to your walle
 
 ## Key Features
 
-* **Real-Time Monitoring**: Get notified instantly when you send or receive OCT coins.
+* **Real-Time Monitoring**: Get notified instantly when you send or receive OCT, including stealth payments, contract calls, and self-transfers (encrypt/decrypt/claim).
+* **Multi-Network**: Track addresses on **mainnet and devnet** at the same time, with per-network toggles.
 * **Multiple Wallets**: Track up to **5 different Octra addresses** simultaneously.
+* **DEX Integration**: Query live price, pool state, and swap quotes from the 0xio DEX WOCT/0XIO CLMM pool with `/price`, `/pool`, and `/quote`.
 * **Privacy Control**: Toggle balance visibility in notifications to keep your holdings private.
 * **Detailed Insights**: View transaction hashes, counterparty addresses, and direct links to the Octra Explorer.
-* **Address Validation**: Built-in checks ensure you only track valid Octra addresses.
+* **Address Validation**: Built-in checks ensure you only track valid Octra addresses, with auto-detection of addresses pasted in chat.
 
 ---
 
@@ -34,13 +36,16 @@ You will be greeted by the main menu, which gives you quick access to your walle
 
 Manage the bot efficiently using these commands:
 
-| Command     | Description                                              |
-| ----------- | -------------------------------------------------------- |
-| `/start`    | Open the main menu and initialize the bot.               |
-| `/wallets`  | View your tracked wallets, balances, and manage them.    |
-| `/add`      | Quickly add a new Octra address to your watchlist.       |
-| `/settings` | Configure notification preferences (e.g., Hide Balance). |
-| `/help`     | Display the help message and available commands.         |
+| Command              | Description                                                       |
+| -------------------- | ----------------------------------------------------------------- |
+| `/start`             | Open the main menu and initialize the bot.                        |
+| `/wallets`           | View your tracked wallets, balances, and manage them.             |
+| `/add`               | Quickly add a new Octra address to your watchlist.                |
+| `/settings`          | Configure notifications, networks, and balance visibility.        |
+| `/help`              | Display the help message and available commands.                  |
+| `/price`             | Current price of the 0xio DEX WOCT/0XIO pool (devnet).            |
+| `/pool`              | Pool state — active bin, reserves, and fees (devnet).             |
+| `/quote {amt} {tok}` | Get a swap quote, e.g. `/quote 100 WOCT` (devnet).                |
 
 ---
 
@@ -85,6 +90,24 @@ By default, the bot displays your updated wallet balance in every transaction no
 
 1. Send `/settings`.
 2. Click the **Hide Balance** or **Show Balance** button.
+
+### Network Selection
+
+The bot monitors **mainnet** and **devnet** simultaneously. Use `/settings` to enable or disable per-network notifications. Each transaction alert and explorer link is tagged with its network.
+
+---
+
+## DEX Queries
+
+The bot doubles as a companion for the [0xio DEX](https://dex.0xio.xyz). It reads the on-chain WOCT/0XIO concentrated-liquidity (CLMM) pool on devnet:
+
+* `/price` — current pool price.
+* `/pool` — active bin, reserves, and fee tier.
+* `/quote {amount} {token}` — a swap quote, e.g. `/quote 100 WOCT`.
+
+<Note>
+An optional AI transaction-analysis feature (DeepSeek via OpenRouter) can be unlocked with an activation code using `/ai {code}`.
+</Note>
 
 ---
 

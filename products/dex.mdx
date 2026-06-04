@@ -76,7 +76,7 @@ The **commit-then-fill** pattern ensures the solver never sends OCT before the e
 
 ## Security
 
-The protocol has been through **4 independent security audit passes** with all critical findings resolved.
+The protocol is built around a layered defense model: at no point can the solver underpay or the user lose locked funds.
 
 ### 5-Layer Defense
 
@@ -85,7 +85,7 @@ The protocol has been through **4 independent security audit passes** with all c
 | **Solver Bond** | 20K OCT staked as collateral, slashed on fraud |
 | **On-Chain Rate Commitment** | `min_receive` prevents solver from underpaying |
 | **Oracle Verification** | Independent fill verification before attestation |
-| **Challenge Window** | Dispute period before settlement (10 epochs on devnet) |
+| **Challenge Window** | Dispute period after attestation, before the solver can settle |
 | **Stale Fill Refund** | User reclaims funds if oracle doesn't attest within timeout |
 
 ### Key Security Properties
@@ -183,6 +183,10 @@ Response includes: rate, receive amount, fee, liquidity availability, intent has
 
 List recent swaps with status tracking.
 
+### GET /api/chains
+
+Supported chains/tokens plus the live contract addresses (SwapVault, EthEscrow) and solver/treasury wallets. The DEX frontend reads contract addresses from this endpoint at runtime.
+
 ### GET /api/health
 
 Solver status: RPC connectivity, bond amount, liquidity on both chains.
@@ -193,11 +197,11 @@ Proxied oracle price feed (no API key needed from frontend).
 
 ## Refund Mechanisms
 
-| Scenario | Mechanism | Timeout |
-|----------|-----------|---------|
-| Solver never fills | User calls `refund()` after expiry | 4 hours |
-| Solver fills but oracle never attests | User calls `refundStaleFill()` | 30 min (ETH) / 500 epochs (Octra) |
-| Emergency | Owner calls `emergencyRefund()` | Immediate (unfilled only) |
+| Scenario | Mechanism |
+|----------|-----------|
+| Solver never fills | User calls `refund()` once the lock expiry passes |
+| Solver fills but oracle never attests | User calls `refundStaleFill()` after the stale-fill window |
+| Emergency | Owner calls `emergencyRefund()` — immediate, unfilled swaps only |
 
 ## Related Repos
 
