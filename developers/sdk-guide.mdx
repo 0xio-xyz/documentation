@@ -27,7 +27,7 @@ pnpm add @0xio/sdk
 </CodeGroup>
 
 **Package Details:**
-- **Version:** 2.7.1
+- **Version:** 2.7.0
 - **Min Extension (Mainnet):** v2.0.1+
 - **Min Extension (Devnet):** v2.2.1+ (contract calls, privacy features)
 - **RFC-O-1 support:** Extension v2.4.3+ (for the `window.octra` provider and `octra#initialized` event)
@@ -181,7 +181,7 @@ const wallet = new ZeroXIOWallet({
 });
 ```
 
-## RFC-O-1 Provider Standard (v2.7.1)
+## RFC-O-1 Provider Standard (v2.7.0)
 
 The SDK includes an `OctraProviderAdapter` that enables any RFC-O-1 compliant wallet (not just 0xio) to work with the SDK. This allows third-party wallets that implement `window.octra` to be used as a drop-in transport.
 
@@ -1282,7 +1282,7 @@ import {
   checkSDKCompatibility
 } from '@0xio/sdk';
 
-console.log('SDK Version:', SDK_VERSION); // "2.7.1"
+console.log('SDK Version:', SDK_VERSION); // "2.7.0"
 console.log('Min Extension (Mainnet):', MIN_EXTENSION_VERSION); // "2.0.1"
 console.log('Min Extension (Devnet):', MIN_EXTENSION_VERSION_DEVNET); // "2.2.1"
 console.log('Supported:', SUPPORTED_EXTENSION_VERSIONS); // "^2.0.1"
