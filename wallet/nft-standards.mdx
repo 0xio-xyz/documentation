@@ -61,9 +61,9 @@ Token IDs are sequential starting from 0.
 
 ---
 
-## Biont Standard (Single-Contract NFT)
+## Geodesics Standard (Single-Contract NFT)
 
-Bionts are autonomous, single-contract NFTs created by [Euint Labs](https://biont.network), where each biont is its own deployed smart contract. Total supply is always 1, and the token ID is always 0. The `token_uri()` function returns full SVG markup directly from contract state — fully on-chain, no IPFS or external servers.
+Geodesics are autonomous, single-contract NFTs created by [Euint Labs](https://biont.network), where each geodesic is its own deployed smart contract. Total supply is always 1, and the token ID is always 0. The `token_uri()` function returns full SVG markup directly from contract state — fully on-chain, no IPFS or external servers.
 
 ### View Functions
 
@@ -75,7 +75,7 @@ Bionts are autonomous, single-contract NFTs created by [Euint Labs](https://bion
 | `token_uri()` | `→ string` | Raw SVG markup (on-chain generative art) |
 | `biont_owner()` | `→ address` | Current owner |
 | `balance_of(addr)` | `address → int` | Returns 1 if owner, 0 otherwise |
-| `is_alive()` | `→ bool` | Whether the biont is alive |
+| `is_alive()` | `→ bool` | Whether the geodesic is alive |
 | `defense_level()` | `→ int` | Current defense stat |
 
 ### State-Changing Functions
@@ -83,12 +83,12 @@ Bionts are autonomous, single-contract NFTs created by [Euint Labs](https://bion
 | Method | Signature | Description |
 |--------|-----------|-------------|
 | `transfer_to(new_owner)` | `address → bool` | Transfer ownership (no token_id needed) |
-| `wander()` | `→ bool` | Move the biont |
-| `hunt()` | `→ bool` | Hunt another biont |
+| `wander()` | `→ bool` | Move the geodesic |
+| `hunt()` | `→ bool` | Hunt another geodesic |
 
 ### On-Chain SVG
 
-Unlike SNS-1 which uses IPFS for metadata, Bionts return full SVG markup from `token_uri()`. The SVG is generated from live contract state — name, wander count, defense stats, and alive/dead status all render dynamically.
+Unlike SNS-1 which uses IPFS for metadata, Geodesics return full SVG markup from `token_uri()`. The SVG is generated from live contract state — name, wander count, defense stats, and alive/dead status all render dynamically.
 
 0xio Wallet detects raw SVG responses (strings starting with `<svg`) and renders them inline via base64 data URIs.
 
@@ -102,7 +102,7 @@ Unlike SNS-1 which uses IPFS for metadata, Bionts return full SVG markup from `t
 
 1. **Fetch ABI** via `octra_contractAbi` — determines which methods the contract exposes
 2. **Name detection**: tries `collection_name()` (SNS-1), `name()`, `biont_name()` in priority order
-3. **Transfer method**: detects `transfer(to, token_id)` (SNS-1) or `transfer_to(address)` (Biont) from ABI
+3. **Transfer method**: detects `transfer(to, token_id)` (SNS-1) or `transfer_to(address)` (Geodesics) from ABI
 4. **Image rendering**: if `token_uri()` returns `<svg...`, renders inline; if it returns `ipfs://...`, fetches metadata JSON and resolves the image URL
 
 When the ABI is unavailable (returns 0 methods), the wallet defaults to SNS-1 behavior (`transfer(to, token_id)` and IPFS metadata).
@@ -112,9 +112,9 @@ When the ABI is unavailable (returns 0 methods), the wallet defaults to SNS-1 be
 | Feature | Extension | Mobile | Desktop |
 |---------|-----------|--------|---------|
 | SNS-1 display | Yes | Yes | Yes |
-| Biont SVG rendering | Yes | Yes | Yes |
+| Geodesics SVG rendering | Yes | Yes | Yes |
 | SNS-1 transfer | Yes | Yes | Yes |
-| Biont transfer_to | Yes | Yes | Yes |
+| Geodesics transfer_to | Yes | Yes | Yes |
 | IPFS image loading | Yes (blob proxy) | Yes | Yes |
 | On-chain SVG | Yes (base64 data URI) | Yes | Yes |
 | ABI-based detection | Yes | Yes (`octra_contractAbi`) | Yes (`octra_contractAbi`) |
