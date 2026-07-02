@@ -7,7 +7,7 @@ icon: 'desktop'
 The **0xio Desktop** is a native desktop application built with [Tauri](https://tauri.app/) (Rust backend + React frontend). It serves two roles: a full-featured wallet for the Octra Network, and a **native computation engine** that accelerates FHE operations for the browser extension.
 
 <Note>
-  **Status: Alpha (v0.2.2)** — The desktop wallet is available for early access. Download the latest build from [alpha.0xio.xyz](https://alpha.0xio.xyz/). Available for macOS (Apple Silicon, signed and notarized by Apple) and Windows. Linux coming soon.
+  **Status: Alpha (v0.3.0)** — The desktop wallet is available for early access. Download the latest build from [alpha.0xio.xyz](https://alpha.0xio.xyz/). Available for macOS (Apple Silicon, signed and notarized by Apple) and Windows. Linux coming soon.
 </Note>
 
 ## Why Desktop?
@@ -56,6 +56,25 @@ Full encrypt/decrypt/claim support, same as the extension:
 ### Multi-Wallet Support
 
 Create or import multiple wallets using 12/24-word seed phrases. All wallets use the same master root key derivation (`HMAC-SHA512("Octra seed", seed)[0:32]`) as the extension and mobile app, so importing the same seed phrase produces the same address across all 0xio platforms.
+
+---
+
+## NFTs & Marketplace
+
+### NFT Gallery
+
+A full-width grid of your NFT collections with search, filters, and adjustable grid densities. Click any NFT to open a split-view detail page with metadata, ownership, and contract information alongside the artwork.
+
+### Living NFTs
+
+Native support for **Geodesics** by Euint Labs — self-rendering on-chain programs. The detail view executes the NFT's on-chain rendering logic and displays it live, so the artwork reflects current contract state rather than a static image.
+
+### Xpectrum Marketplace
+
+List and manage your NFTs on the Xpectrum marketplace directly from the wallet:
+
+- **List for sale**: Two-signature listing flow with on-chain verification
+- **Cancel listing**: Delist an NFT at any time
 
 ---
 
@@ -170,7 +189,7 @@ The desktop app supports switching between Octra networks:
 
 | Network | Privacy (FHE) | Explorer |
 |---------|:---:|---|
-| Mainnet | Yes | [lite.octrascan.io](https://lite.octrascan.io) |
+| Mainnet | Yes | [octrascan.io](https://octrascan.io) |
 | Devnet | Yes | [devnet.octrascan.io](https://devnet.octrascan.io) |
 
 RPC endpoints are configured automatically by the app (mainnet connects directly to `octra.network`). An **RPC proxy toggle** is available in Settings; the proxy is used **only on devnet** to offload heavy transaction-history fetching.
