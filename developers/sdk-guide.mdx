@@ -504,6 +504,10 @@ const signature = await wallet.signMessage(apiKeyMessage);
   - `USER_REJECTED` - If user rejects the signature request
   - `WALLET_LOCKED` - If wallet is locked
 
+<Note>
+**The 0xio Signed Message standard.** The wallet never signs the raw message. It signs a framed payload — `"Octra Signed Message:\n" + utf8ByteLength(message) + "\n" + message` — as an Ed25519 detached signature over the UTF-8 bytes of that string. This guarantees a signed message can never collide with a transaction pre-image (which is canonical JSON beginning with `{`). Verify with `verifyMessage` below, or reconstruct the bytes with `getSignedMessageBytes` and use any Ed25519 library.
+</Note>
+
 **Use Cases:**
 - **Authentication**: Prove wallet ownership for login/API access
 - **Attestation**: Sign data for on-chain verification
@@ -525,6 +529,40 @@ const signature = await wallet.signAuthMessage('MyDApp', 'abc123');
 
 - **Parameters:** `service: string` (service name), `nonce: string` (unique challenge)
 - **Returns:** `Promise<string>` - Base64-encoded Ed25519 signature
+
+To verify an auth signature, reconstruct the signed string with `buildAuthMessage(service, nonce, origin)` and pass it to `verifyMessage`.
+
+#### `verifyMessage(message, signature, publicKey)`
+
+Verifies a 0xio message signature using the Web Crypto Ed25519 primitive (zero runtime dependencies). Available on Node 18+, Chrome 137+, Safari 17+, and Firefox 129+.
+
+```typescript
+import { verifyMessage } from '@0xio/sdk';
+
+const publicKey = await wallet.getPublicKey(); // base64
+const valid = await verifyMessage('Hello, 0xio!', signature, publicKey);
+```
+
+- **Parameters:** `message: string`, `signature: string` (base64), `publicKey: string` (base64)
+- **Returns:** `Promise<boolean>`
+
+#### `getSignedMessageBytes(message)`
+
+Returns the exact bytes the wallet signs, so you can verify with any Ed25519 library instead of Web Crypto (for example server-side, or on an older runtime).
+
+```typescript
+import { getSignedMessageBytes } from '@0xio/sdk';
+import nacl from 'tweetnacl';
+
+const ok = nacl.sign.detached.verify(
+  getSignedMessageBytes(message),
+  base64ToBytes(signature),
+  base64ToBytes(publicKey),
+);
+```
+
+- **Parameters:** `message: string`
+- **Returns:** `Uint8Array`
 
 ### Smart Contract Methods
 
