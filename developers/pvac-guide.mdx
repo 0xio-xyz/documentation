@@ -6,7 +6,7 @@ icon: 'lock'
 
 ## Overview
 
-`@0xio/pvac` (v1.0.2) provides standalone FHE (Fully Homomorphic Encryption) primitives for DApps that need to work with encrypted balances on Octra Network. It runs entirely client-side via WASM — no wallet extension dependency for cryptographic operations.
+`@0xio/pvac` (v1.0.2) provides standalone FHE (Fully Homomorphic Encryption) primitives for DApps that need to work with encrypted balances on Octra Network. It runs entirely client-side via WASM: no wallet extension dependency for cryptographic operations.
 
 The primitives are built on the **Ristretto255** group (curve25519-dalek): exponential-ElGamal ciphers, Bulletproofs-style range proofs, and Pedersen commitments.
 
@@ -60,7 +60,7 @@ const commitment = ctx.pedersenCommit(100_000_000n, blinding);
 | `encrypt(value)` | Encrypt an amount (bigint) |
 | `encryptSeeded(value, seed)` | Encrypt with deterministic seed |
 | `encryptZero()` | Encrypt zero (for account initialization) |
-| `decrypt(cipher)` | Decrypt a cipher → bigint |
+| `decrypt(cipher)` | Decrypt a cipher to bigint |
 
 ### Cipher Arithmetic
 
@@ -75,7 +75,7 @@ const commitment = ctx.pedersenCommit(100_000_000n, blinding);
 |---|---|---|
 | `makeBoundProof(cipher, value, blinding)` | Prove cipher encrypts specific value | ~100ms |
 | `makeRangeProof(cipher, value)` | Prove decrypted value ≥ 0 | 30-60s |
-| `makeRangeProofParallel(cipher, value)` | Parallel range proof (rayon) — requires `threads` in `create()` | 15-30s |
+| `makeRangeProofParallel(cipher, value)` | Parallel range proof (rayon): requires `threads` in `create()` | 15-30s |
 | `pedersenCommit(value, blinding)` | Create Pedersen commitment | ~1ms |
 | `verifyRangeProof(cipher, proof)` | Verify a range proof | ~100ms |
 | `verifyBoundProof(cipher, proof, commitment)` | Verify a bound proof | ~50ms |
@@ -142,7 +142,7 @@ This is mathematically identical to `fhe_sub_const`. Both produce `enc(balance -
 
 When your DApp calls `wallet.callContract()`, the 0xio extension shows an approval popup:
 
-- **Amount** = native OCT sent to the contract. Set `amount: 0` if none.
+- **Amount** = native value sent to the contract. `amount` is raw micro-OCT (1 OCT = 1000000) and is passed to the wallet as is; `amountOct` takes OCT and is converted by the SDK. Set `amount: 0` if none.
 - **Fee** = OU (operational units / gas). Shown separately below the amount.
 
 If you see a non-zero amount and expect 0, check your `amount` parameter.

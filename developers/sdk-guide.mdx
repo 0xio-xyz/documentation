@@ -4,7 +4,7 @@ description: "Integrate the 0xio Wallet SDK to connect dApps across the browser 
 icon: "code"
 ---
 
-The **0xio Wallet SDK** enables seamless integration between your decentralized application and the 0xio Wallet across all platforms — Extension, Desktop (iframe), and Mobile (WebView) — with full support for Octra's FHE privacy features.
+The **0xio Wallet SDK** enables seamless integration between your decentralized application and the 0xio Wallet across all platforms: Extension, Desktop (iframe), and Mobile (WebView): with full support for Octra's FHE privacy features.
 
 ## Installation
 
@@ -27,9 +27,11 @@ pnpm add @0xio/sdk
 </CodeGroup>
 
 **Package Details:**
-- **Version:** 2.7.0
+- **Version:** 2.8.0
 - **Min Extension (Mainnet):** v2.0.1+
 - **Min Extension (Devnet):** v2.2.1+ (contract calls, privacy features)
+- **Private transfers and claims:** Extension v2.4.0+
+- **Private primitives and framed message signing:** Extension v2.5.5+
 - **RFC-O-1 support:** Extension v2.4.3+ (for the `window.octra` provider and `octra#initialized` event)
 - **Browser:** Chrome 111+ required for the extension transport (uses `crypto` + structured-clone messaging)
 - **License:** MIT
@@ -94,7 +96,7 @@ module.exports = {
 
 ## Quick Start
 
-The fastest way to get started — `createZeroXIOWallet` handles initialization and optional auto-connect:
+The fastest way to get started: `createZeroXIOWallet` handles initialization and optional auto-connect:
 
 ```typescript
 import { createZeroXIOWallet } from '@0xio/sdk';
@@ -121,32 +123,70 @@ const wallet = new ZeroXIOWallet({
   appDescription: 'An encrypted DeFi protocol on Octra',
 });
 
-// Initialize — detects 0xio extension or any RFC-O-1 wallet
+// Initialize: detects 0xio extension or any RFC-O-1 wallet
 const isAvailable = await wallet.initialize();
 if (!isAvailable) {
   console.log("No compatible wallet detected.");
   return;
 }
 
-// Connect — user approves in wallet popup
+// Connect: the user approves in the wallet popup
 const result = await wallet.connect({
-  requestPermissions: ['read_balance', 'send_transactions', 'sign_messages']
+  permissions: ['accounts', 'public_transactions']
 });
 console.log('Connected to:', result.address);
 console.log('Network:', result.networkInfo.name);
 ```
 
+## Amounts and Units
+
+The wallet and the RFC-O-1 provider count in raw micro-OCT: one OCT is 1000000 units. The SDK never rescales a raw field, so what a dapp sends today keeps working. Where you would rather write OCT, use the OCT field and the SDK converts it with exact decimal arithmetic.
+
+| Method | Raw field (sent unchanged) | OCT field (converted by the SDK) |
+|--------|----------------------------|----------------------------------|
+| `sendTransaction`, `signTransaction` | `amount` | `amountOct` |
+| `callContract` | `amount` | `amountOct` |
+| `sendPrivateTransfer` | `amountRaw` | `amount` |
+| `getBalance` | | returns OCT |
+| `getTransactionHistory` | rows carry raw micro-OCT, as the node returns them | |
+
+Pass one field or the other, never both. A number that cannot be written in six decimals (such as `0.1 + 0.2`) is rejected with `INVALID_AMOUNT`; pass a string instead.
+
+```typescript
+await wallet.sendTransaction({ to, amountOct: '10.5' });   // 10.5 OCT
+await wallet.sendTransaction({ to, amount: '10500000' });  // the same, in raw units
+```
+
+## Permissions
+
+Ask for what the dapp uses. The wallet enforces these scope names; the private ones show a warning in the connection dialog.
+
+| Scope | Grants |
+|-------|--------|
+| `accounts` | address, balance, public key |
+| `public_transactions` | sends and message signing |
+| `contract_calls` | state-changing contract calls |
+| `contract_views` | read-only contract calls |
+| `private_balance_read` | private balance, decrypting values, pending transfers |
+| `private_proofs` | encrypting values, zero and range proofs |
+| `private_transfers` | sending private transfers |
+| `private_claims` | claiming private transfers |
+
+The older SDK names (`read_balance`, `send_transactions`, `sign_messages`, `view_private_balance`, `stealth_claim` and the rest) still work. The SDK translates them when it connects, and the names you asked for come back in the granted list as aliases, so a check like `permissions.includes('read_balance')` keeps working. `WALLET_PERMISSIONS`, `LEGACY_PERMISSION_MAP`, `toWalletPermissions` and `withLegacyAliases` are exported.
+
+The wallet refuses anything that signs, submits or changes state until the page has connected (`NOT_CONNECTED`), and opens its unlock screen at most once a minute for a page that is not connected (`WALLET_LOCKED`).
+
 ## Security (v2.7.x)
 
 The SDK includes several security hardening measures:
 
-- **Origin-validated messaging** — `postMessage` communication validates origins against a strict trusted set. No wildcard origins.
-- **Session-nonce binding** — every bridge response must carry the session nonce issued at connect time. Same-origin impersonation and forged responses are rejected.
-- **No auto-trust for iframes** — the SDK does not assume an iframe parent is a wallet. It requires a verified `walletReady` signal from a trusted origin.
-- **Response binding** — only responses matching a pending request ID are accepted.
-- **No retry on rejection** — user-rejected transactions do not trigger automatic retries.
-- **Configurable trusted origins** — set `trustedParentOrigins` in the constructor config to restrict which origins are trusted as the parent iframe bridge (disables implicit localhost trust).
-- **RPC URL validation** — `http://` RPC endpoints are rejected on non-testnet networks, blocking a malicious bridge from injecting an insecure endpoint.
+- **Origin-validated messaging**: `postMessage` communication validates origins against a strict trusted set. No wildcard origins.
+- **Session-nonce binding**: every bridge response must carry the session nonce issued at connect time. Same-origin impersonation and forged responses are rejected.
+- **No auto-trust for iframes**: the SDK does not assume an iframe parent is a wallet. It requires a verified `walletReady` signal from a trusted origin.
+- **Response binding**: only responses matching a pending request ID are accepted.
+- **No retry on rejection**: user-rejected transactions do not trigger automatic retries.
+- **Configurable trusted origins**: set `trustedParentOrigins` in the constructor config to restrict which origins are trusted as the parent iframe bridge (disables implicit localhost trust).
+- **RPC URL validation**: `http://` RPC endpoints are rejected on non-testnet networks, blocking a malicious bridge from injecting an insecure endpoint.
 
 ## Desktop & Mobile Support
 
@@ -167,7 +207,7 @@ The SDK automatically detects the wallet environment and uses the appropriate tr
 - **walletReady via postMessage**: Extension detection recognizes `walletReady` events sent via `postMessage` from parent frames.
 
 <Tip>
-DApp developers do not need to change any code. Just use the SDK as normal — it auto-detects the environment and selects the correct transport.
+DApp developers do not need to change any code. Just use the SDK as normal: it auto-detects the environment and selects the correct transport.
 </Tip>
 
 ### Cross-Origin Iframe Bridge (v2.4.4)
@@ -198,7 +238,7 @@ If the 0xio extension is installed, it takes priority. If not, any RFC-O-1 compl
 
 ### Using a Third-Party Wallet
 
-No code changes needed — the SDK auto-detects:
+No code changes are needed. The SDK auto-detects:
 
 ```typescript
 import { ZeroXIOWallet } from '@0xio/sdk';
@@ -228,7 +268,7 @@ if (OctraProviderAdapter.detect()) {
 |------|---------|---------------|
 | 4001 | User rejected | `USER_REJECTED` |
 | 4100 | Unauthorized | `PERMISSION_DENIED` |
-| 4200 | Unsupported method | `NETWORK_ERROR` |
+| 4200 | Unsupported method | `UNKNOWN_ERROR` |
 | 4900 | Disconnected | `CONNECTION_REFUSED` |
 | 4901 | Network unavailable | `NETWORK_ERROR` |
 
@@ -270,11 +310,10 @@ Requests connection to the extension. User must approve in popup.
 
 ```typescript
 const result = await wallet.connect({
-  requestPermissions: [
-    'read_balance',        // View public OCT balance
-    'send_transactions',   // Request transaction signatures
-    'sign_messages',       // Sign arbitrary messages
-    'view_private_balance' // Access FHE balance (optional)
+  permissions: [
+    'accounts',             // address, balance, public key
+    'public_transactions',  // sends and message signing
+    'private_balance_read'  // private balance (optional, shows a warning)
   ]
 });
 
@@ -343,9 +382,19 @@ const address = wallet.getAddress();
 
 - **Returns:** `string | null`
 
+#### `getPublicKey()`
+
+The connected account's Ed25519 public key, base64. Served from the session when the wallet reported it at connect, otherwise asked from the wallet. Use it with `verifyMessage`.
+
+```typescript
+const publicKey = await wallet.getPublicKey();
+```
+
+- **Returns:** `Promise<string>`
+
 #### `switchNetwork(networkId)`
 
-Silently switch the extension's active network. No popup, no user confirmation — works like Rabby's `wallet_switchEthereumChain`.
+Switch the extension's active network from a connected dapp. No popup, no user confirmation, like Rabby's `wallet_switchEthereumChain`. The page must be connected first.
 
 ```typescript
 // Detect wrong network
@@ -356,9 +405,9 @@ if (networkId !== 'devnet') {
 }
 ```
 
-- **Params:** `networkId: string` — `'mainnet'` or `'devnet'`
+- **Params:** `networkId: string`, `'mainnet'` or `'devnet'`
 - **Returns:** `Promise<{ network: string; switched: boolean }>`
-- **Requires:** Extension v2.3.6+
+- **Requires:** Extension v2.3.6+, and a connected page
 
 #### `getNetworkId()`
 
@@ -408,25 +457,35 @@ Executes a standard public transfer.
 ```typescript
 const result = await wallet.sendTransaction({
   to: 'oct1qv...',
-  amount: 10.5,              // Amount in OCT (number)
+  amountOct: '10.5',              // 10.5 OCT, converted exactly by the SDK
   message: 'Payment for services' // Optional
 });
 
-console.log('Transaction Hash:', result.txHash);
-console.log('Success:', result.success);
+console.log('Transaction Hash:', result.hash);
+console.log('Accepted:', result.accepted);
 ```
 
 - **Parameters:**
   ```typescript
   interface TransactionData {
-    to: string;             // Recipient address
-    amount: number;         // Amount in OCT
-    message?: string;       // Optional transaction memo
-    feeLevel?: 1 | 3;       // 1 = standard, 3 = priority
-    isPrivate?: boolean;    // Use private transfer
+    to: string;                   // Recipient address
+    amount?: string | number;     // Raw micro-OCT, sent to the wallet as is
+    amountOct?: string | number;  // Amount in OCT, converted by the SDK. One of the two.
+    message?: string;             // Optional transaction memo
+    feeLevel?: 1 | 3;             // 1 = standard, 3 = priority
+    isPrivate?: boolean;          // Use private transfer
   }
   ```
-- **Returns:** `Promise<TransactionResult>` with txHash, success, message, explorerUrl
+- **Returns:** `Promise<TransactionResult>` with `hash`, `accepted`, `status` (and the older `txHash`, `success`)
+
+#### `signTransaction(txData)` and `submitTransaction(signedTx)`
+
+Sign without broadcasting, then broadcast later. `signTransaction` takes the same `TransactionData` and opens the same approval; `submitTransaction` sends the signed object to the network. The wallet only relays transactions signed by the connected address.
+
+```typescript
+const { signedTx } = await wallet.signTransaction({ to: 'oct1qv...', amountOct: '1' });
+const result = await wallet.submitTransaction(signedTx);
+```
 
 #### `sendPrivateTransfer(txData)`
 
@@ -435,26 +494,26 @@ Executes an FHE-encrypted stealth transfer. The extension handles PVAC ciphertex
 ```typescript
 const result = await wallet.sendPrivateTransfer({
   to: 'oct1x...',
-  amount: 20,
-  message: 'Encrypted Payroll'
+  amount: 20  // OCT
 });
-console.log('TX Hash:', result.txHash);
+console.log('TX Hash:', result.hash);
 ```
 
 <Note>
-**Requires Extension v2.4.0+.** The extension generates FHE range proofs (64 circuits) which takes 17-300s depending on the execution engine (Desktop native → WASM rayon → WASM sequential).
+**Requires Extension v2.4.0+.** After the approval the wallet generates FHE proofs, which takes from 17 seconds to a few minutes depending on the engine (Desktop native, then WASM with threads, then single-threaded WASM). The SDK waits up to 10 minutes for this call. The wallet checks the private balance first and refuses, with the reason, when it cannot be spent yet (over the layer cap or held for migration).
 </Note>
 
 - **Parameters:**
   ```typescript
   interface PrivateTransferData {
-    to: string;        // Recipient address
-    amount: number;    // Amount (encrypted client-side)
-    message?: string;  // Optional memo (also encrypted)
+    to: string;           // Recipient address
+    amount: number;       // Amount in OCT
+    amountRaw?: string;   // Exact amount in raw micro-OCT; when set, this is what the wallet uses
+    message?: string;     // Not carried by the wallet; private transfers have no memo on-chain
   }
   ```
-- **Returns:** `Promise<TransactionResult>` with txHash and success
-- **Note:** Amount encrypted on your device before transmission
+- **Returns:** `Promise<TransactionResult>` with `hash` and `accepted`
+- **Note:** The amount is encrypted on your device before transmission
 
 #### `getTransactionHistory(page, limit)`
 
@@ -464,7 +523,7 @@ Gets transaction history.
 const history = await wallet.getTransactionHistory(1, 20);
 
 history.transactions.forEach(tx => {
-  console.log(`${tx.from} → ${tx.to}: ${tx.amount} OCT`);
+  console.log(`${tx.from} to ${tx.to}: ${Number(tx.amount) / 1_000_000} OCT`); // rows carry raw micro-OCT
 });
 
 console.log('Total:', history.totalCount);
@@ -505,7 +564,7 @@ const signature = await wallet.signMessage(apiKeyMessage);
   - `WALLET_LOCKED` - If wallet is locked
 
 <Note>
-**The 0xio Signed Message standard.** The wallet never signs the raw message. It signs a framed payload — `"Octra Signed Message:\n" + utf8ByteLength(message) + "\n" + message` — as an Ed25519 detached signature over the UTF-8 bytes of that string. This guarantees a signed message can never collide with a transaction pre-image (which is canonical JSON beginning with `{`). Verify with `verifyMessage` below, or reconstruct the bytes with `getSignedMessageBytes` and use any Ed25519 library.
+**The 0xio Signed Message standard.** The wallet never signs the raw message. It signs a framed payload, `"Octra Signed Message:\n" + utf8ByteLength(message) + "\n" + message`, as an Ed25519 detached signature over the UTF-8 bytes of that string. This guarantees a signed message can never collide with a transaction pre-image (which is canonical JSON beginning with `{`). Verify with `verifyMessage` below, or reconstruct the bytes with `getSignedMessageBytes` and use any Ed25519 library.
 </Note>
 
 **Use Cases:**
@@ -576,8 +635,8 @@ import { ContractCallData } from '@0xio/sdk';
 const result = await wallet.callContract({
   contract: 'oct26LiaGUz78Jnby2TWEHcmboKHyupnu1NX1G3Evz28YHm',
   method: 'swap',
-  params: [100000, true, 90000],  // Flat primitives, NOT array-wrapped
-  amount: '0',     // Native OCT to send (optional, default '0')
+  params: [100000, true, 90000],  // Flat primitives, not array-wrapped
+  amountOct: '0',  // Value to attach in OCT (optional, default none); or amount in raw micro-OCT
   ou: '10000',     // Operational units (optional, default '10000')
 });
 
@@ -592,20 +651,21 @@ console.log('Success:', result.success);
   interface ContractCallData {
     contract: string;           // Contract address (oct-prefixed, 47 chars)
     method: string;             // AML method name
-    params: ContractParams;     // Method arguments — flat primitives
-    amount?: string | number;   // Native OCT to send (default '0')
+    params: ContractParams;     // Method arguments, flat primitives
+    amount?: string | number;   // Value to attach in raw micro-OCT, sent as is (default '0')
+    amountOct?: string | number; // Value to attach in OCT, converted by the SDK. One of the two.
     ou?: string | number;       // Operational units (default '10000')
   }
   ```
 - **Returns:** `Promise<TransactionResult>` with `txHash`, `success`, `finality`
 
 <Warning>
-AML contract calls use **flat arguments**: `params: [arg1, arg2]` — NOT `params: [[arg1, arg2]]`. The extension handles nonce, signing, and broadcasting automatically.
+AML contract calls use **flat arguments**: `params: [arg1, arg2]`, not `params: [[arg1, arg2]]`. The extension handles nonce, signing, and broadcasting automatically.
 </Warning>
 
 #### `contractCallView(data)`
 
-Read-only contract query. Does **not** require wallet unlock, signing, or user approval. Only requires `initialize()` (not `connect()`).
+Read-only contract query. Does **not** require wallet unlock, signing, or user approval. Only requires `initialize()` (not `connect()`). For a page that is not connected the wallet leaves the caller empty unless you pass `caller`.
 
 ```typescript
 // Query contract state
@@ -631,11 +691,11 @@ console.log('Reserves:', reserves);
   interface ContractViewCallData {
     contract: string;           // Contract address (oct-prefixed, 47 chars)
     method: string;             // View method name
-    params: ContractParams;     // Method arguments — flat primitives
+    params: ContractParams;     // Method arguments, flat primitives
     caller?: string;            // Optional caller address
   }
   ```
-- **Returns:** `Promise<any>` — The raw result from the contract method
+- **Returns:** `Promise<any>`, the raw result from the contract method
 
 #### `getContractStorage(contract, key)`
 
@@ -654,13 +714,38 @@ console.log(missing); // null
 ```
 
 - **Parameters:** `contract: string` (contract address), `key: string` (storage key)
-- **Returns:** `Promise<string | null>` — The storage value, or `null` if not found
+- **Returns:** `Promise<string | null>`, the storage value, or `null` if not found
+
+#### `sendContractTransactionSequence(data)`
+
+Several contract calls under one approval, submitted in order with consecutive nonces. The approval window lists every step with its contract, attached value and fee.
+
+```typescript
+const result = await wallet.sendContractTransactionSequence({
+  transactions: [
+    { contract: 'oct26Lia...', method: 'approve', params: [poolAddress, 1000000] },
+    { contract: 'oct26Lia...', method: 'swap', params: [1000000, true, 900000] },
+  ],
+});
+```
+
+- **Returns:** `Promise<unknown>` with `results[]`, one hash per step
+
+#### `request(method, params)` and `rpcCall(method, params)`
+
+`request` sends any wallet method through the bridge, for primitives that have no typed helper yet. `rpcCall` reaches the wallet's read-only node RPC allow-list (`octra_balance`, `octra_transaction`, `contract_call` and similar); writes are refused with `METHOD_NOT_ALLOWED`.
+
+```typescript
+const account = await wallet.rpcCall('octra_balance', [wallet.getAddress()]);
+```
 
 ### Privacy Operations
 
 #### `encryptBalance(amount)`
 
-Moves funds from Public → Private balance (shielding). The extension generates the FHE cipher, bound proof, and submits the transaction.
+Not served by the 0xio extension: the wallet answers `NOT_AVAILABLE`, and users encrypt from the extension's Privacy screen. Kept for wallets that may implement it.
+
+Moves funds from Public to Private balance (shielding). The extension generates the FHE cipher, bound proof, and submits the transaction.
 
 ```typescript
 const result = await wallet.encryptBalance(5.0);
@@ -672,12 +757,14 @@ console.log('Success:', result.success);
 - **Returns:** `Promise<TransactionResult>` with `txHash`, `success`, `finality`
 
 <Note>
-Amounts on `encryptBalance`, `decryptBalance`, `sendPrivateTransfer`, and `callContract` accept `string | number`. A numeric amount that can't be represented exactly in micro-OCT (6 decimals) throws `INVALID_AMOUNT` — pass a string (e.g. `"0.300000"`) for exact control.
+Amounts on `encryptBalance`, `decryptBalance`, `sendPrivateTransfer`, and `callContract` accept `string | number`. A numeric amount that can't be represented exactly in micro-OCT (6 decimals) throws `INVALID_AMOUNT`; pass a string (e.g. `"0.300000"`) for exact control.
 </Note>
 
 #### `decryptBalance(amount)`
 
-Moves funds from Private → Public balance (unshielding). Includes range proof generation (17-300s depending on engine).
+Not served by the 0xio extension (see `encryptBalance`).
+
+Moves funds from Private to Public balance (unshielding). Includes range proof generation (17-300s depending on engine).
 
 ```typescript
 const result = await wallet.decryptBalance(10.0);
@@ -689,7 +776,7 @@ console.log('Success:', result.success);
 - **Returns:** `Promise<TransactionResult>` with `txHash`, `success`, `finality`
 
 <Note>
-Decrypt operations involve 64-circuit range proof generation. The SDK uses a 180s timeout for these calls.
+Approvals wait up to 3 minutes; `sendPrivateTransfer` waits up to 10 minutes because proof generation follows the approval.
 </Note>
 
 #### `getPrivateBalanceInfo()`
@@ -712,24 +799,47 @@ Gets pending incoming private transfers.
 const pending = await wallet.getPendingPrivateTransfers();
 
 pending.forEach(transfer => {
-  console.log(`From: ${transfer.from}`);
-  console.log(`Can claim: ${transfer.canClaim}`);
+  console.log(`Output ${transfer.id}: ${Number(transfer.amount) / 1_000_000} OCT`);
 });
 ```
 
-- **Returns:** `Promise<PendingPrivateTransfer[]>`
+- **Returns:** `Promise<PendingPrivateTransfer[]>`. The 0xio extension fills `id` and a raw micro-OCT `amount`; the other fields depend on the wallet.
+- **Requires:** `private_balance_read`
 
 #### `claimPrivateTransfer(transferId)`
 
-Claims a pending private transfer.
+Claims a pending private transfer. The wallet opens an approval window showing the fee; a claim is a signed, fee-paying transaction.
 
 ```typescript
 const result = await wallet.claimPrivateTransfer('transfer_123');
-console.log('Claimed! TX:', result.txHash);
+console.log('Claimed! TX:', result.hash);
 ```
 
 - **Parameters:** `transferId: string`
 - **Returns:** `Promise<TransactionResult>`
+- **Requires:** `private_claims` (or `private_transfers`)
+
+### Private Primitives (2.8.0)
+
+Building blocks for private contracts. Keys never leave the wallet: the dapp receives ciphertexts, proofs and hashes. None of these opens a popup except `registerPrivateViewKey`; proofs take from seconds to a couple of minutes, and the SDK waits up to 3 minutes.
+
+| Method | Scope | Returns |
+|--------|-------|---------|
+| `getPrivateCapabilities()` | none | what the wallet supports, to render the right UI or fail closed |
+| `encryptValue({ value_raw })` | `private_proofs` | `{ cipher, commitment, encoding }` |
+| `decryptValue({ cipher })` | `private_balance_read` | `{ value_raw, display, decimals }` |
+| `makeZeroProof({ cipher, value_raw })` | `private_proofs` | `{ proof, commitment, blinding, encoding }` |
+| `makeRangeProof({ cipher, value_raw })` | `private_proofs` | `{ proof, encoding }` |
+| `getPrivateBalance()` | `private_balance_read` | `{ address, private_oct_raw, private_oct, tokens }` |
+| `registerPrivateViewKey({ address })` | `private_transfers` | registration status; opens an approval |
+
+```typescript
+const caps = await wallet.getPrivateCapabilities();
+if (caps.supports.encrypt_value) {
+  const { cipher } = await wallet.encryptValue({ value_raw: '1000000' }); // 1 OCT
+  const { proof, commitment, blinding } = await wallet.makeZeroProof({ cipher, value_raw: '1000000' });
+}
+```
 
 ### Network Methods
 
@@ -833,6 +943,16 @@ wallet.on('transactionConfirmed', (event) => {
 });
 ```
 
+### Transaction Failed
+
+The wallet could not broadcast a queued transaction.
+
+```typescript
+wallet.on('transactionFailed', (event) => {
+  console.log('TX ID:', event.data.txId, 'reason:', event.data.error);
+});
+```
+
 ### Extension Lock Events
 
 ```typescript
@@ -879,11 +999,15 @@ import {
 try {
   await wallet.sendTransaction({
     to: 'oct1...',
-    amount: 100
+    amountOct: '100'
   });
 } catch (error) {
   if (error instanceof ZeroXIOWalletError) {
     switch (error.code) {
+      case ErrorCode.NOT_CONNECTED:
+        console.log('Connect first');
+        break;
+
       case ErrorCode.USER_REJECTED:
         console.log('User cancelled the transaction');
         showNotification('Transaction cancelled');
@@ -950,7 +1074,7 @@ try {
 | `EXTENSION_NOT_FOUND` | 0xio Wallet Extension not installed |
 | `NETWORK_ERROR` | RPC connection or blockchain issue |
 | `INVALID_ADDRESS` | Malformed or invalid Octra address |
-| `INVALID_AMOUNT` | Negative amount, or a number that can't be represented exactly in micro-OCT (6 decimals) — pass a string like `"0.300000"` for exact control |
+| `INVALID_AMOUNT` | Negative amount, both amount fields given, or a number that can't be represented exactly in micro-OCT (6 decimals); pass a string like `"0.300000"` for exact control |
 | `PERMISSION_DENIED` | Requested permission not granted |
 | `TRANSACTION_FAILED` | Transaction reverted or rejected |
 | `SIGNATURE_FAILED` | Message signing failed or invalid input |
@@ -964,6 +1088,15 @@ try {
 | `DUPLICATE_TRANSACTION` | Duplicate transaction detected |
 | `NONCE_TOO_FAR` | Transaction nonce too far ahead |
 | `INTERNAL_ERROR` | Internal server error |
+| `NOT_CONNECTED` | The page has not connected; call `connect()` first |
+| `INVALID_PARAMS` | The wallet rejected the request parameters |
+| `METHOD_NOT_ALLOWED` | `rpcCall` with a method outside the read-only allow-list |
+| `NOT_AVAILABLE` | Not served by the wallet over the bridge (`encryptBalance`, `decryptBalance`) |
+| `PRIVATE_PROOF_FAILED` | A private primitive failed inside the wallet |
+| `PRIVATE_TRANSFER_FAILED` | The private transfer was refused or failed |
+| `CONTRACT_CALL_FAILED` | The contract call failed |
+| `SIGN_FAILED` | Transaction signing failed |
+| `RECIPIENT_NOT_REGISTERED` | The recipient has no private view key on-chain |
 | `UNKNOWN_ERROR` | Unexpected error occurred |
 
 ## Framework Integration
@@ -1069,7 +1202,7 @@ export function useWallet() {
     if (!wallet) throw new Error("Wallet SDK not initialized");
     try {
       const result = await wallet.connect({
-        requestPermissions: ['read_balance', 'send_transactions', 'sign_messages']
+        permissions: ['accounts', 'public_transactions']
       });
       setAddress(result.address);
       setBalance(result.balance);
@@ -1137,7 +1270,7 @@ export function useWallet() {
   const connect = async () => {
     try {
       const result = await wallet.connect({
-        requestPermissions: ['read_balance', 'send_transactions', 'sign_messages']
+        permissions: ['accounts', 'public_transactions']
       });
       address.value = result.address;
       balance.value = result.balance;
@@ -1217,11 +1350,12 @@ interface Balance {
 }
 
 interface TransactionData {
-  to: string;              // Recipient address
-  amount: number;          // Amount in OCT
-  message?: string;        // Optional memo
-  feeLevel?: 1 | 3;        // 1 = standard, 3 = priority
-  isPrivate?: boolean;     // Use private transfer
+  to: string;                   // Recipient address
+  amount?: string | number;     // Raw micro-OCT, sent to the wallet as is
+  amountOct?: string | number;  // Amount in OCT, converted by the SDK. One of the two.
+  message?: string;             // Optional memo
+  feeLevel?: 1 | 3;             // 1 = standard, 3 = priority
+  isPrivate?: boolean;          // Use private transfer
 }
 
 interface NetworkInfo {
@@ -1240,12 +1374,13 @@ interface NetworkInfo {
 type ContractParams = ReadonlyArray<string | number | boolean>;
 
 type Permission =
-  | 'read_address'
-  | 'read_balance'
-  | 'send_transactions'
-  | 'sign_messages'
-  | 'view_private_balance'
-  | 'private_transfers';
+  // Wallet scope names
+  | 'accounts' | 'public_transactions' | 'contract_calls' | 'contract_views'
+  | 'private_balance_read' | 'private_proofs' | 'private_transfers' | 'private_claims'
+  // Older names, translated at connect
+  | 'read_address' | 'read_balance' | 'read_public_key' | 'send_transactions' | 'sign_messages'
+  | 'view_private_balance' | 'view_encrypted_balance' | 'encrypt_balance' | 'decrypt_balance'
+  | 'stealth_scan' | 'stealth_claim';
 ```
 
 ## Utility Functions
@@ -1270,9 +1405,14 @@ import {
   // Conversion
   toMicroOCT,
   fromMicroOCT,
+  octToMicro,        // exact string conversion, at most 6 decimals
+
+  // Permissions
+  toWalletPermissions,
+  withLegacyAliases,
 
   // Address derivation
-  deriveOctraAddress, // async: base64 Ed25519 pubkey → "oct…" address
+  deriveOctraAddress, // async: base64 Ed25519 pubkey to an "oct..." address
 
   // Error utilities
   createErrorMessage,
@@ -1300,7 +1440,8 @@ if (isValidAddress('oct1...')) {
 const formatted = formatOCT(123.456789, 2); // "123.46"
 const shortAddr = formatAddress('oct1abc...xyz'); // "oct1ab...xyz"
 
-const micro = toMicroOCT(1.5); // 1500000
+const micro = toMicroOCT(1.5); // "1500000"
+const exact = octToMicro('10.5'); // "10500000"
 const oct = fromMicroOCT(1500000); // 1.5
 
 // Derive an Octra address from a base64 Ed25519 public key
@@ -1320,7 +1461,7 @@ import {
   checkSDKCompatibility
 } from '@0xio/sdk';
 
-console.log('SDK Version:', SDK_VERSION); // "2.7.0"
+console.log('SDK Version:', SDK_VERSION); // "2.8.0"
 console.log('Min Extension (Mainnet):', MIN_EXTENSION_VERSION); // "2.0.1"
 console.log('Min Extension (Devnet):', MIN_EXTENSION_VERSION_DEVNET); // "2.2.1"
 console.log('Supported:', SUPPORTED_EXTENSION_VERSIONS); // "^2.0.1"
@@ -1352,7 +1493,7 @@ if (!compatible) {
 ### Message Signing
 - Always include timestamps or nonces to prevent replay attacks
 - Display the full message to users before signing
-- Use `sign_messages` permission for authentication flows
+- Use the `public_transactions` scope for authentication flows
 - Verify signatures server-side using Ed25519
 - Never sign messages that look like transaction data
 
