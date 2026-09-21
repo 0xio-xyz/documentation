@@ -24,9 +24,10 @@ icon: "key"
 
 **AES-256-GCM** for local vault protection
 
-- Authenticated encryption — guarantees both confidentiality and integrity
+- Authenticated encryption: guarantees both confidentiality and integrity
 - Protects your private keys at rest on the device
 - The vault key is derived from your password with **PBKDF2-HMAC-SHA256**
+- In the extension the vault is sealed under a random vault key, which is stored only wrapped by the key derived from your password. While unlocked, the session holds that vault key, never your password, and changing the password re-wraps the vault key without touching the vault
 
 The PBKDF2 iteration count is tuned per platform to balance security against device performance:
 

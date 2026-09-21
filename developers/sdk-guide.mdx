@@ -863,7 +863,7 @@ The SDK extends `EventEmitter` for real-time state updates.
 
 ### Account Changed
 
-User switched wallets in the extension.
+Your site was moved to another wallet. A connection belongs to the wallet it was approved for: when the user switches wallets, 0xio asks whether to move connected sites to the new one, and only a site that is moved receives this event. A site that is not moved stays on its wallet, and while another wallet is active its wallet requests are refused with `NOT_CONNECTED` and `getConnectionStatus` reports it as not connected. It works again as soon as the user switches back or connects it again.
 
 ```typescript
 wallet.on('accountChanged', (event) => {
