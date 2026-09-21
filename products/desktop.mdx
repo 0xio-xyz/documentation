@@ -85,7 +85,7 @@ The desktop app runs a **local WebSocket server** on `ws://127.0.0.1:19345` that
 ### How It Works
 
 1. The extension detects the desktop app on the local machine
-2. Extension sends the wallet seed (encrypted, loopback-only) to initialize the PVAC context
+2. The extension sends the PVAC master seed, a one-way hash of the wallet key, and the desktop derives the same PVAC keys from it. The key that signs transactions never leaves the extension
 3. For heavy FHE operations, the extension delegates computation to the desktop app
 4. Desktop computes using native Rust with all CPU cores, returns the result
 5. Extension uses the result as if it computed locally
@@ -101,11 +101,12 @@ The desktop app runs a **local WebSocket server** on `ws://127.0.0.1:19345` that
 
 ### Security
 
-- **Loopback only**: The WebSocket server binds to `127.0.0.1` — no remote connections accepted
+- **Loopback only**: The WebSocket server binds to `127.0.0.1`, so no remote connections are accepted
 - **Connection limit**: Maximum 8 concurrent connections
-- **Message size cap**: 16MB per message (range proofs can be 1–3MB)
+- **Message size cap**: 16MB per message (range proofs can be 1 to 3MB)
 - **Idle timeout**: 300 seconds
-- **Memory safety**: Seed bytes are zeroized after use
+- **No signing key**: The desktop can build proofs and read the private balance, but it cannot sign, because it never receives the wallet key (extension 2.5.6 and later)
+- **Memory safety**: The master seed is zeroized after use on both sides
 
 ### Status Indicators
 
