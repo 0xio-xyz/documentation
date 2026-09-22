@@ -11,7 +11,7 @@ icon: 'mobile'
   - **Android**: Available via open testing on Google Play
 </Note>
 
-The **0xio Mobile App** brings the power of the Octra Network to your pocket. Built with React Native 0.81 and Expo SDK 54, it offers the same high-grade encryption as the extension — including native pvac-rs FHE — but optimized for touch interfaces and mobile security.
+The **0xio Mobile App** brings the power of the Octra Network to your pocket. Built with React Native 0.86 and Expo SDK 57, it offers the same high-grade encryption as the extension, including native pvac-rs FHE, optimized for touch interfaces and mobile security.
 
 ## Mobile-Exclusive Features
 
@@ -34,19 +34,31 @@ Import and browse NFT collections, view owned tokens, and manage your NFT portfo
 Save and label frequently used addresses for quick access when sending transactions.
 
 ### Multi-Wallet Support
-Create or import multiple wallets and switch between them seamlessly. All wallets use the same master root key derivation as the extension and desktop.
+Create or import multiple wallets and switch between them seamlessly. All wallets use the same master root key derivation as the extension and desktop. From the wallet list you can also add another account from a recovery phrase already on the phone, or watch an address you don't hold the keys for.
+
+### Wallet Pictures
+Every wallet has its own picture, drawn from its address: the 0xio braces around a composition of circles, in muted colours. It appears on the home screen, in the wallet list, in the address picker and on the Receive screen. The same address always draws the same picture, and the browser extension draws it identically, so a wallet looks the same on your phone and in your browser and the wrong one stands out before you read its address.
+
+### Readable History
+Token and NFT transfers show what actually moved. An NFT reads as **Received NFT** with its number and collection (for example `#5 GDSC`), a token transfer shows its amount and symbol, and a transfer you sent names the person you sent it to rather than the token contract.
+
+### Whitelisted Addresses
+When sending to an address you trust, tick **Whitelist this address**. Later sends to a whitelisted address skip the PIN or biometric check; you still see and confirm the review. Whitelisting is itself authenticated, and you can remove an address from the whitelist in the Address Book.
+
+### Your Own Node
+Add a network in **Settings > Network > Add a network** by giving it a name and the node's RPC address. The app asks the node to answer as an Octra node before saving it, and you choose whether it supports private balances.
 
 ### Stealth Transfers
 Send private FHE-encrypted transfers where the amount is hidden from everyone except the recipient.
 
 ### Bulk Send
-Send to up to 5 recipients in a single batch, saving time on multi-party payments.
+Send to up to 5 recipients from your public balance in a single batch. Private (FHE) bulk sends are available in [0xio Desktop](/products/desktop).
 
-### RPC Proxy for Fast History
-Transaction history is fetched through an RPC proxy that compresses responses from ~8MB to ~7KB, enabling fast loading even on slow connections.
+### Optional RPC Proxy
+By default, balances and history come straight from the Octra node. Turn on the **RPC proxy** in **Settings > Advanced** to route mainnet and devnet requests through the 0xio proxy, which compresses history responses for slow connections. The proxy is never used silently as a fallback, and a network you add yourself never uses it.
 
-### Dual-Network History
-View a merged transaction history from both mainnet and devnet in a single timeline, with clear network indicators for each entry.
+### Network-Aware History
+History shows the network you are on. With the RPC proxy on, it also shows the other built-in network in the same timeline, with each entry marked.
 
 ### Infinite Scroll Pagination
 Transaction history loads progressively as you scroll, with no manual "load more" buttons.
@@ -89,15 +101,19 @@ Just like the extension, you have full control over your visibility:
 
 ### Creating a Wallet
 1.  Download the app from [alpha.0xio.xyz](https://alpha.0xio.xyz/).
-2.  Tap **"Create New Wallet"**.
-3.  **Backup your Recovery Phrase:** You will be shown a 12-word seed phrase. Write this down offline.
-4.  **Enable Biometrics:** secure your vault with FaceID/Fingerprint.
+2.  Tap **Create a wallet**.
+3.  **Write down your recovery phrase:** you are shown 12 words once. Write them down, in order, offline.
+4.  **Confirm your backup:** pick the right word for three positions, to prove your written copy works.
+5.  **Set a PIN and biometrics** to protect the wallet on this phone.
 
 ### Importing
-Already have the Browser Extension?
-1.  Tap **"Import Wallet"**.
-2.  Enter your **12-word seed phrase** from the extension.
-3.  Your public and private balances will sync automatically.
+Already have the Browser Extension or another 0xio wallet?
+1.  Tap **Import a wallet**.
+2.  Choose **Recovery phrase** (12 or 24 words) or **Private key**, then type, paste or scan it.
+3.  Check the address shown under **This imports**, then tap **Import**. Your public and private balances sync automatically.
+
+### Watching an Address
+Tap **Watch an address** and paste or scan any `oct...` address to follow its balance and history. A watched wallet holds no keys, so it can never send.
 
 ---
 
@@ -109,6 +125,7 @@ The mobile app supports multiple Octra networks:
 |---------|:---:|---|
 | Mainnet | Yes | [octrascan.io](https://octrascan.io) |
 | Devnet | Yes | [devnet.octrascan.io](https://devnet.octrascan.io) |
+| Your own node | If you say it runs the FHE stack | The explorer you set, if any |
 
 Switch networks in **Settings > Network**. Devnet is recommended for testing FHE features such as encrypted balances, private transfers, and the encrypt/decrypt flow.
 

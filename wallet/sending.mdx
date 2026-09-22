@@ -4,7 +4,7 @@ description: "Send public or private transfers of OCT and tokens from 0xio with 
 icon: "paper-plane"
 ---
 
-0xio lets you send native OCT, OAT tokens, and private stealth transfers — covering both public and confidential transactions. To send a token instead of OCT, pick it from the token selector on the Send screen; the steps below otherwise apply to both.
+0xio lets you send native OCT, OAT tokens, and private stealth transfers, covering both public and confidential transactions. To send a token instead of OCT, pick it from the token selector on the Send screen; the steps below otherwise apply to both.
 
 ## Standard Public Send
 
@@ -51,12 +51,12 @@ Send a transparent transaction visible on the blockchain.
 - **Network fee:** Quoted live from the node via `octra_recommendedFee` and shown before you confirm
 
 <Info>
-Fees are denominated in **operational units (ou)** and displayed converted to OCT (1 OCT = 1,000,000 ou). The wallet fetches a Standard / High / Fast estimate from the node; you can override it with a custom ou value. There is no fixed fee tier — the node sets the recommended amount.
+Fees are denominated in **operational units (ou)** and displayed converted to OCT (1 OCT = 1,000,000 ou). The wallet fetches a Standard / High / Fast estimate from the node; you can override it with a custom ou value. There is no fixed fee tier; the node sets the recommended amount.
 </Info>
 
 ## Private Send
 
-Send a stealth transfer where the amount stays confidential. The wallet derives a one-time stealth address for the recipient via ECDH (x25519), encrypts the amount with PVAC-HFHE, and attaches a zero-knowledge range proof — all generated locally on your device.
+Send a stealth transfer where the amount stays confidential. The wallet derives a one-time stealth address for the recipient via ECDH (x25519), encrypts the amount with PVAC-HFHE, and attaches a zero-knowledge range proof, all generated locally on your device.
 
 <Steps>
   <Step title="Open Send Tab">
@@ -86,7 +86,7 @@ Send a stealth transfer where the amount stays confidential. The wallet derives 
 ### How Private Transfers Work
 
 1. **Local Proof Generation:** Your device encrypts the amount (PVAC-HFHE) and builds a range proof. A full-screen progress overlay shows each step (verify → encrypt → range proof → submit).
-2. **Stealth Output:** A one-time stealth output is derived from the recipient's view key via ECDH so the recipient — and only the recipient — can detect it.
+2. **Stealth Output:** A one-time stealth output is derived from the recipient's view key via ECDH so the recipient, and only the recipient, can detect it.
 3. **Broadcast:** The encrypted payload and proof are submitted to the network.
 4. **Validation:** Validators verify the proof on encrypted data without learning the amount.
 5. **Claim:** The recipient scans for incoming stealth outputs and claims them into their private balance.
@@ -116,7 +116,7 @@ Send to multiple recipients in one flow. Each recipient is submitted as its own 
     - **Desktop:** add rows individually or paste/import a CSV (`address,amount` per line). A live batch summary shows the running total, flags duplicate addresses, and warns when the total exceeds your available balance.
   </Step>
   <Step title="Choose Balance Type">
-    Select the Public balance as the source.
+    Select the Public balance as the source. Private (FHE) bulk sends are available only in [0xio Desktop](/products/desktop); the extension and mobile app send privately to one recipient at a time.
   </Step>
   <Step title="Review Total">
     Review the total amount, the per-recipient breakdown, and the estimated fee.
@@ -136,8 +136,21 @@ Send to multiple recipients in one flow. Each recipient is submitted as its own 
   - Team payments
 
 <Note>
-Bulk send submits a separate transaction per recipient, so total fees scale with the number of transfers — there is no per-batch discount.
+Bulk send submits a separate transaction per recipient, so total fees scale with the number of transfers; there is no per-batch discount.
 </Note>
+
+## Whitelisted Addresses (Mobile)
+
+On the mobile app, you can mark an address you trust as whitelisted, either by ticking **Whitelist this address** on the Send screen or from the Address Book.
+
+- Whitelisting an address requires your PIN or biometrics.
+- Later sends to a whitelisted address skip the PIN or biometric check. You still see and confirm the review of every send.
+- The whitelist is checked at the moment you confirm, so changing the recipient after it was checked cannot slip past it.
+- Remove an address from the whitelist in the Address Book at any time.
+
+<Warning>
+Anyone holding your unlocked phone could send to a whitelisted address without your PIN. Whitelist only addresses you control or fully trust, and keep auto-lock on.
+</Warning>
 
 ## Transaction Priority
 
@@ -146,7 +159,7 @@ Bulk send submits a separate transaction per recipient, so total fees scale with
 You can customize the **operational unit (ou)** fee to control transaction priority:
 
 1. Tap the estimated network fee on the Send screen.
-2. Choose a priority level — the wallet pulls Standard, High, and Fast estimates from the node, or set a **Custom** ou amount.
+2. Choose a priority level. The wallet pulls Standard, High, and Fast estimates from the node, or you can set a **Custom** ou amount.
 3. Higher ou = faster inclusion in blocks.
 
 <Info>
