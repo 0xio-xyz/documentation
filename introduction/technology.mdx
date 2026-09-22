@@ -12,9 +12,9 @@ To fully utilize 0xio, it helps to understand the unique architecture of the net
 
 ### Key Concepts
 
-* **Fully Homomorphic Encryption (FHE):** Traditional encryption requires you to decrypt data to process it (exposing it to potential leaks). FHE allows the network to perform calculations on *encrypted* data without ever decrypting it. The result remains encrypted, and only you—the key holder—can decrypt the final state.
+* **Fully Homomorphic Encryption (FHE):** Traditional encryption requires you to decrypt data to process it (exposing it to potential leaks). FHE allows the network to perform calculations on *encrypted* data without ever decrypting it. The result remains encrypted, and only you (the key holder) can decrypt the final state.
 * **Compute-Coupled Validation:** Instead of solving arbitrary hash puzzles (like Bitcoin's Proof-of-Work), Octra validators utilize their computing power to process actual FHE tasks. They are rewarded for executing useful encrypted computations that advance the network state.
-* **Isolated Execution Environments (Circles):** Octra allows developers to run "Circles"—independent execution environments that function similarly to private servers on the blockchain, isolating state for performance and privacy.
+* **Isolated Execution Environments (Circles):** Octra allows developers to run "Circles": independent execution environments that function similarly to private servers on the blockchain, isolating state for performance and privacy.
 
 ## How 0xio Fits In
 
@@ -37,8 +37,8 @@ Because Octra relies on FHE, data must be encrypted *before* it leaves your devi
 | **Signing Algorithm** | **Ed25519** (tweetnacl) for high-speed, secure transaction signatures. Your address is `SHA-256(public key)` encoded as base58 with an `oct` prefix. |
 | **Vault Encryption** | **AES-256-GCM**. Your keys are encrypted at rest on your device. |
 | **Key Derivation** | **PBKDF2-HMAC-SHA256** with high iteration counts: 900,000 (extension), 600,000 (desktop), and 100,000 for the mobile PIN. |
-| **Privacy Engine** | **PVAC** (curve25519-dalek / Ristretto255) — FHE encrypt/decrypt, Bulletproofs range proofs, Pedersen commitments, and stealth transfers via X25519 ECDH. |
-| **Price Feeds** | **0xio Oracle** — multi-source aggregation (CoinGecko + DexScreener) with anomaly detection, median pricing, and persistent PostgreSQL history. |
+| **Privacy Engine** | **PVAC** (curve25519-dalek / Ristretto255) for FHE encrypt/decrypt, Bulletproofs range proofs, Pedersen commitments, and stealth transfers via X25519 ECDH. |
+| **Price Feeds** | **0xio Oracle**: multi-source aggregation (CoinGecko + DexScreener) with anomaly detection, median pricing, and persistent PostgreSQL history. |
 | **Telemetry** | **Zero**. No tracking scripts, analytics, or IP logging are integrated into the wallet. |
 
 <Note>

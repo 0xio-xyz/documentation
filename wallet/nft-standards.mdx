@@ -63,7 +63,7 @@ Token IDs are sequential starting from 0.
 
 ## Geodesics Standard (Single-Contract NFT)
 
-Geodesics are autonomous, single-contract NFTs created by [Euint Labs](https://biont.network), where each geodesic is its own deployed smart contract. Total supply is always 1, and the token ID is always 0. The `token_uri()` function returns full SVG markup directly from contract state — fully on-chain, no IPFS or external servers.
+Geodesics are autonomous, single-contract NFTs created by [Euint Labs](https://biont.network), where each geodesic is its own deployed smart contract. Total supply is always 1, and the token ID is always 0. The `token_uri()` function returns full SVG markup directly from contract state. It is fully on-chain, with no IPFS or external servers.
 
 ### View Functions
 
@@ -88,7 +88,7 @@ Geodesics are autonomous, single-contract NFTs created by [Euint Labs](https://b
 
 ### On-Chain SVG
 
-Unlike SNS-1 which uses IPFS for metadata, Geodesics return full SVG markup from `token_uri()`. The SVG is generated from live contract state — name, wander count, defense stats, and alive/dead status all render dynamically.
+Unlike SNS-1 which uses IPFS for metadata, Geodesics return full SVG markup from `token_uri()`. The SVG is generated from live contract state: name, wander count, defense stats, and alive/dead status all render dynamically.
 
 0xio Wallet detects raw SVG responses (strings starting with `<svg`) and renders them inline via base64 data URIs.
 
@@ -100,7 +100,7 @@ Unlike SNS-1 which uses IPFS for metadata, Geodesics return full SVG markup from
 
 ## How 0xio Wallet Detects the Standard
 
-1. **Fetch ABI** via `octra_contractAbi` — determines which methods the contract exposes
+1. **Fetch ABI** via `octra_contractAbi` to determine which methods the contract exposes
 2. **Name detection**: tries `collection_name()` (SNS-1), `name()`, `biont_name()` in priority order
 3. **Transfer method**: detects `transfer(to, token_id)` (SNS-1) or `transfer_to(address)` (Geodesics) from ABI
 4. **Image rendering**: if `token_uri()` returns `<svg...`, renders inline; if it returns `ipfs://...`, fetches metadata JSON and resolves the image URL

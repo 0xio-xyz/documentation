@@ -1,6 +1,6 @@
 ---
 title: "Cross-Chain Privacy Layer"
-description: "How 0xio uses Octra as a privacy backend for ETH, SOL, and any chain — swap to OCT, encrypt via FHE, transfer privately, swap back."
+description: "How 0xio uses Octra as a privacy backend for ETH, SOL, and any chain: swap to OCT, encrypt via FHE, transfer privately, swap back."
 icon: "Shield-halved"
 ---
 
@@ -13,7 +13,7 @@ icon: "Shield-halved"
 
 **Use Octra as a privacy middleware layer for any blockchain.** Users swap ETH, SOL, or USDC into OCT via the 0xio DEX, encrypt the OCT balance using Octra's FHE, transfer privately, then the recipient decrypts and swaps back to any token on any chain.
 
-OCT is the **privacy denomination** — all assets flow through it. No new wrapped tokens needed.
+OCT is the **privacy denomination**: all assets flow through it. No new wrapped tokens needed.
 
 ```
 ETH User → DEX swap to OCT → encrypt → private transfer → decrypt → DEX swap to ETH/SOL/USDC
@@ -25,10 +25,10 @@ ETH User → DEX swap to OCT → encrypt → private transfer → decrypt → DE
 Stealth addresses (ECDH). Every payment goes to a one-time address that only the recipient can link to their identity. Simple but **amounts are still visible** on-chain.
 
 ### Umbra on Solana
-Full privacy via Arcium MPC — encrypted balances, mixer pool with ZK proofs, relayer network. Privacy on **both** the source and destination chain. End-to-end encryption.
+Full privacy via Arcium MPC: encrypted balances, mixer pool with ZK proofs, relayer network. Privacy on **both** the source and destination chain. End-to-end encryption.
 
 ### 0xio Privacy Layer
-FHE-encrypted transfers on Octra as a **middle hop**. Privacy exists only on the Octra layer — the deposit and withdrawal on ETH/SOL are public.
+FHE-encrypted transfers on Octra as a **middle hop**. Privacy exists only on the Octra layer; the deposit and withdrawal on ETH/SOL are public.
 
 | Aspect | Umbra (ETH) | Umbra (SOL) | 0xio (octra) |
 |--------|------------|-------------|-------------|
@@ -43,7 +43,7 @@ FHE-encrypted transfers on Octra as a **middle hop**. Privacy exists only on the
 
 ### Mode 1: Basic (Octra-Only Privacy)
 
-The simplest version — uses only the existing 0xio DEX + Octra FHE. Deposits and withdrawals are public, but the transfer itself is private.
+The simplest version uses only the existing 0xio DEX + Octra FHE. Deposits and withdrawals are public, but the transfer itself is private.
 
 ```
 [PUBLIC]  User swaps 1 ETH → OCT via DEX         ← visible on Etherscan
@@ -79,12 +79,12 @@ Uses mature, live privacy tech on **every chain** in the pipeline. Each hop is s
 
 | Hop | Chain | Technology | Status | What it hides |
 |-----|-------|-----------|--------|--------------|
-| **Deposit** | Ethereum | RAILGUN v3 shielded pool | Live ($4.5B volume) | Sender identity — deposit goes through RAILGUN's anonymity set |
+| **Deposit** | Ethereum | RAILGUN v3 shielded pool | Live ($4.5B volume) | Sender identity (deposit goes through RAILGUN's anonymity set) |
 | **Deposit alt** | Ethereum | 0xbow Privacy Pools | Live (Vitalik-backed) | Sender + compliance proof (prove funds aren't sanctioned) |
-| **Transfer** | Octra | FHE (PVAC) | Live | Sender, receiver, amount — all encrypted |
-| **Withdraw** | Ethereum | ERC-5564 stealth addresses (Umbra v2) | Live (77K+ addrs) | Recipient identity — one-time unlinkable address |
-| **Withdraw** | Solana | Umbra Privacy SDK (Arcium MPC) | Live since March 2026 | Sender, recipient, amount — fully shielded |
-| **Gas** | All | Relayer network | Planned | Funding pattern — gas deducted from balance, not paid separately |
+| **Transfer** | Octra | FHE (PVAC) | Live | Sender, receiver, amount (all encrypted) |
+| **Withdraw** | Ethereum | ERC-5564 stealth addresses (Umbra v2) | Live (77K+ addrs) | Recipient identity (one-time unlinkable address) |
+| **Withdraw** | Solana | Umbra Privacy SDK (Arcium MPC) | Live since March 2026 | Sender, recipient, amount (fully shielded) |
+| **Gas** | All | Relayer network | Planned | Funding pattern (gas deducted from balance, not paid separately) |
 
 ### How Each Technology Works
 
@@ -95,7 +95,7 @@ Uses mature, live privacy tech on **every chain** in the pipeline. Each hop is s
     SDK: `@railgun-community/wallet` (npm, TypeScript, browser + mobile compatible)
   </Accordion>
 
-  <Accordion title="0xbow Privacy Pools (ETH Deposits — Compliance)">
+  <Accordion title="0xbow Privacy Pools (ETH Deposits with Compliance)">
     Privacy Pools (backed by Vitalik, live since March 2025) add compliance to privacy. Users can prove their withdrawal belongs to a "clean" association set without revealing their full history. This lets regulated users use privacy features while proving they're not laundering funds.
 
     Useful for institutional users who need privacy + compliance simultaneously.
@@ -108,7 +108,7 @@ Uses mature, live privacy tech on **every chain** in the pipeline. Each hop is s
   </Accordion>
 
   <Accordion title="Umbra Privacy SDK (Solana Withdrawals)">
-    Umbra on Solana (powered by Arcium MPC, public launch March 2026) provides full privacy — sender, recipient, AND amount are shielded. The TypeScript SDK handles all crypto internally. The solver deposits withdrawal funds into Umbra's shielded pool, transfers to the recipient, who withdraws whenever they want.
+    Umbra on Solana (powered by Arcium MPC, public launch March 2026) provides full privacy: sender, recipient, AND amount are shielded. The TypeScript SDK handles all crypto internally. The solver deposits withdrawal funds into Umbra's shielded pool, transfers to the recipient, who withdraws whenever they want.
 
     SDK: Umbra Privacy TypeScript SDK (mainnet + devnet, browser + Node.js)
   </Accordion>
@@ -126,18 +126,18 @@ Beyond the core tech stack, these mechanisms strengthen anonymity:
 User deposits 1 ETH → receives encrypted OCT → withdraws as 0.3 ETH + 0.4 SOL + 0.25 USDC at different times to different addresses on different chains. Each withdrawal goes to a fresh stealth address. The FHE encrypted balance supports partial withdrawals naturally.
 
 ### 2. Batched Withdrawals
-The solver batches multiple users' withdrawals into single transactions. Instead of "Address B withdrew 1 ETH," it's "The solver sent 47 ETH to 30 addresses" — individual amounts are obscured in the batch.
+The solver batches multiple users' withdrawals into single transactions. Instead of "Address B withdrew 1 ETH," it's "The solver sent 47 ETH to 30 addresses." Individual amounts are obscured in the batch.
 
 ### 3. Time Delay (Anonymity Set Growth)
 The longer users hold encrypted OCT, the larger the anonymity set. If 100 users deposited today and 100 withdrew tomorrow, no observer can link specific deposits to withdrawals. The encrypted OCT balance acts as a privacy buffer.
 
 ### 4. Relayer Network (No Gas Linkage)
-The relayer submits withdrawal transactions on behalf of the user. The gas cost is **deducted from the encrypted OCT balance itself** — the user never pays gas from the recipient address. This means the recipient address has zero prior on-chain activity, breaking the funding-pattern fingerprint.
+The relayer submits withdrawal transactions on behalf of the user. The gas cost is **deducted from the encrypted OCT balance itself**; the user never pays gas from the recipient address. This means the recipient address has zero prior on-chain activity, breaking the funding-pattern fingerprint.
 
 Example: User withdraws 200 OCT as ETH. Relayer fee is ~5 OCT. User receives 195 OCT worth of ETH. The relayer is compensated from the withdrawal amount, not from a separate gas payment.
 
 ### 5. Volume
-Privacy strength scales with usage. More users holding encrypted OCT on Octra → harder to correlate any single deposit to a withdrawal. Unlike mixer pools (Tornado Cash), there is no shared pool — each user has their own encrypted balance on their own Octra address. The anonymity comes from the volume of encrypted balances existing on-chain simultaneously.
+Privacy strength scales with usage. More users holding encrypted OCT on Octra → harder to correlate any single deposit to a withdrawal. Unlike mixer pools (Tornado Cash), there is no shared pool: each user has their own encrypted balance on their own Octra address. The anonymity comes from the volume of encrypted balances existing on-chain simultaneously.
 
 ## Why OCT as the Privacy Denomination
 
@@ -149,12 +149,12 @@ Instead of creating octaWETH, octaWSOL, octaUSDC (separate wrapped tokens on Oct
 | **OCT as denomination** | Single asset = more encrypted balances on-chain, uses existing DEX, simpler infrastructure | Price exposure during hold period, extra swap fees |
 
 We chose OCT because:
-- **Larger anonymity set** — all privacy users hold encrypted OCT on Octra (more encrypted balances = harder to correlate)
-- **Existing infrastructure** — DEX swap (live), encrypted OCT balances (live), private transfers (live)
-- **No new contracts** — no octaWETH mint/burn, no per-asset bridge extensions
-- **OCT utility** — every privacy transfer drives OCT demand
+- **Larger anonymity set**: all privacy users hold encrypted OCT on Octra (more encrypted balances = harder to correlate)
+- **Existing infrastructure**: DEX swap (live), encrypted OCT balances (live), private transfers (live)
+- **No new contracts**: no octaWETH mint/burn, no per-asset bridge extensions
+- **OCT utility**: every privacy transfer drives OCT demand
 
-The trade-off is price exposure — if OCT price drops while the user holds encrypted OCT, they lose value. For short hold times (minutes to hours), this is negligible. For longer holds, users accept the risk for privacy.
+The trade-off is price exposure: if OCT price drops while the user holds encrypted OCT, they lose value. For short hold times (minutes to hours), this is negligible. For longer holds, users accept the risk for privacy.
 
 ## Why FHE Instead of ZK or MPC
 
@@ -206,7 +206,7 @@ A single feature in the 0xio wallet/extension:
   <Step title="Recipient holds encrypted OCT">
     Recipient sees encrypted balance in their 0xio wallet. Can hold as long as they want.
   </Step>
-  <Step title="Recipient cashes out — all at once or in pieces">
+  <Step title="Recipient cashes out, all at once or in pieces">
     When ready, withdraw any portion to any address on any chain. Hold the rest.
   </Step>
 </Steps>
@@ -231,16 +231,16 @@ The recipient's encrypted OCT balance works like a private bank account. They ca
 │  Remaining:     ████████ OCT (encrypted)    │
 │                                             │
 │  Recent withdrawals:                        │
-│    • 200 OCT → 0xA1b2... (ETH) — 2h ago     │
-│    • 150 OCT → 7xKp3... (SOL) — yesterday   │
-│    • 300 OCT → 0xC4d5... (USDC) — 3d ago    │
+│    • 200 OCT → 0xA1b2... (ETH), 2h ago      │
+│    • 150 OCT → 7xKp3... (SOL), yesterday    │
+│    • 300 OCT → 0xC4d5... (USDC), 3d ago     │
 └─────────────────────────────────────────────┘
 ```
 
-Each withdrawal is a separate DEX swap at a different time to a different address — this is the **core privacy mechanism**. An observer sees unrelated transactions on different chains with different amounts and timing. The link between them is hidden inside Octra's FHE layer.
+Each withdrawal is a separate DEX swap at a different time to a different address. This is the **core privacy mechanism**. An observer sees unrelated transactions on different chains with different amounts and timing. The link between them is hidden inside Octra's FHE layer.
 
 <Tip>
-**Maximum privacy**: Withdraw in small, irregular amounts over days/weeks to fresh addresses on different chains. The encrypted balance on Octra acts as a privacy buffer — the longer you hold and the more you split withdrawals, the harder correlation becomes.
+**Maximum privacy**: Withdraw in small, irregular amounts over days/weeks to fresh addresses on different chains. The encrypted balance on Octra acts as a privacy buffer: the longer you hold and the more you split withdrawals, the harder correlation becomes.
 </Tip>
 
 ## Development Phases
@@ -250,13 +250,13 @@ Each withdrawal is a separate DEX swap at a different time to a different addres
 - Auto-chain: DEX swap → encrypt → transfer
 - Partial withdrawals to any chain/address
 - Relayer fee deducted from encrypted balance
-- Uses existing DEX + PVAC infrastructure — **no new integrations**
+- Uses existing DEX + PVAC infrastructure, with **no new integrations**
 
 ### Phase 2: ETH-Side Privacy
 - Integrate **RAILGUN SDK** (`@railgun-community/wallet`) for shielded deposits
 - User shields ETH → unshields to bridge → breaks sender link
 - Integrate **ERC-5564 stealth addresses** for withdrawals via Umbra v2
-- Solver sends to one-time stealth address — recipient unlinked
+- Solver sends to one-time stealth address (recipient unlinked)
 - EIP-7702 delegation to solve stealth address gas problem
 
 ### Phase 3: SOL-Side Privacy
@@ -302,7 +302,7 @@ Each withdrawal is a separate DEX swap at a different time to a different addres
 
 <AccordionGroup>
   <Accordion title="Is this like Tornado Cash?">
-    Similar concept (privacy via intermediary), different implementation. Tornado Cash used fixed-denomination mixer pools on a single chain with no compliance features — and was sanctioned. 0xio uses FHE for any-amount transfers across multiple chains, with viewing key disclosure for compliance. The privacy model is also different: Tornado hid deposits in a pool, while 0xio uses homomorphic encryption on the Octra chain.
+    Similar concept (privacy via intermediary), different implementation. Tornado Cash used fixed-denomination mixer pools on a single chain with no compliance features, and was sanctioned. 0xio uses FHE for any-amount transfers across multiple chains, with viewing key disclosure for compliance. The privacy model is also different: Tornado hid deposits in a pool, while 0xio uses homomorphic encryption on the Octra chain.
   </Accordion>
 
   <Accordion title="Can someone trace my deposit to my withdrawal?">
@@ -310,7 +310,7 @@ Each withdrawal is a separate DEX swap at a different time to a different addres
   </Accordion>
 
   <Accordion title="Why not full end-to-end encryption like Umbra on Solana?">
-    Umbra on Solana built a full MPC privacy infrastructure on a single chain. We're cross-chain — we don't control the source/destination chains (Ethereum, Solana). Their deposits and withdrawals are inherently public. Our FHE privacy lives on Octra as a middle layer. Full end-to-end would require privacy infrastructure on every supported chain, which defeats the purpose of using Octra as a unified backend.
+    Umbra on Solana built a full MPC privacy infrastructure on a single chain. We're cross-chain: we don't control the source/destination chains (Ethereum, Solana). Their deposits and withdrawals are inherently public. Our FHE privacy lives on Octra as a middle layer. Full end-to-end would require privacy infrastructure on every supported chain, which defeats the purpose of using Octra as a unified backend.
   </Accordion>
 
   <Accordion title="What about price risk while holding OCT?">
@@ -318,6 +318,6 @@ Each withdrawal is a separate DEX swap at a different time to a different addres
   </Accordion>
 
   <Accordion title="Is this legal?">
-    Privacy is legal. Money laundering is not. The 0xio privacy layer includes selective disclosure (viewing keys shared with auditors) and relayer compliance, following models established by Railgun and Umbra. Users can prove transaction history to authorized parties without making it public. The design prioritizes regulatory compatibility — unlike Tornado Cash, which had no compliance mechanism.
+    Privacy is legal. Money laundering is not. The 0xio privacy layer includes selective disclosure (viewing keys shared with auditors) and relayer compliance, following models established by Railgun and Umbra. Users can prove transaction history to authorized parties without making it public. Unlike Tornado Cash, which had no compliance mechanism, the design prioritizes regulatory compatibility.
   </Accordion>
 </AccordionGroup>

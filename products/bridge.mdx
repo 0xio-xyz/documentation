@@ -1,6 +1,6 @@
 ---
 title: '0xio Bridge'
-description: 'Bridge OCT between Octra and Ethereum — lock OCT to mint wOCT, burn wOCT to unlock OCT.'
+description: 'Bridge OCT between Octra and Ethereum: lock OCT to mint wOCT, burn wOCT to unlock OCT.'
 icon: 'bridge'
 ---
 
@@ -13,7 +13,7 @@ icon: 'bridge'
 
 The **0xio Bridge** connects the **Octra Network** with **Ethereum**, enabling bidirectional transfers between native OCT and wrapped OCT (wOCT, an ERC-20 token on Ethereum).
 
-Unlike intent-based bridges, the 0xio Bridge uses a **light client architecture** — an Octra Light Client contract on Ethereum verifies Merkle proofs of Octra transactions, providing trustless verification without relying on external oracles.
+Unlike intent-based bridges, the 0xio Bridge uses a **light client architecture**: an Octra Light Client contract on Ethereum verifies Merkle proofs of Octra transactions, providing trustless verification without relying on external oracles.
 
 ## How It Works
 
@@ -50,7 +50,7 @@ Unlike intent-based bridges, the 0xio Bridge uses a **light client architecture*
 
 ## Features
 
-- **Trustless Verification**: Octra Light Client on Ethereum verifies Merkle proofs — no trusted oracle
+- **Trustless Verification**: Octra Light Client on Ethereum verifies Merkle proofs, with no trusted oracle
 - **Multi-Wallet Support**: EIP-6963 detection for Rabby, MetaMask, Phantom, and other EVM wallets
 - **WalletConnect**: Scan QR code from the mobile app to bridge
 - **Auto-Reconnect**: Wallets persist across page refreshes
@@ -104,7 +104,7 @@ User (0xio Wallet + EVM Wallet)
 ## Known Limitations
 
 - **Epoch Sync Delay**: The ETH light client epoch updater may fall behind chain production. This causes Merkle proofs to be temporarily unverifiable until the sync catches up.
-- **Pruned Epochs**: Old epoch roots are pruned from the light client contract. Bridge transactions referencing pruned epochs cannot be claimed — users should claim promptly.
+- **Pruned Epochs**: Old epoch roots are pruned from the light client contract. Bridge transactions referencing pruned epochs cannot be claimed, so users should claim promptly.
 
 ## Security
 

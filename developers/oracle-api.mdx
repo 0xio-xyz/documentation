@@ -120,9 +120,9 @@ curl -H "x-api-key: YOUR_KEY" \
 ```
 
 The `source` field indicates where the price came from:
-- `aggregated(coingecko+dexscreener)` — Multi-source aggregation with anomaly detection (OCT / wOCT)
-- `pyth` — Pyth Network oracle feed (SOL, ETH, and other non-OCT symbols)
-- `static` — Hardcoded value (stablecoins USDC / USDT)
+- `aggregated(coingecko+dexscreener)`: Multi-source aggregation with anomaly detection (OCT / wOCT)
+- `pyth`: Pyth Network oracle feed (SOL, ETH, and other non-OCT symbols)
+- `static`: Hardcoded value (stablecoins USDC / USDT)
 
 ### Get All Prices
 
@@ -490,14 +490,14 @@ x-api-key: KEY_TO_REVOKE
 
 | HTTP Status | Description |
 |-------------|-------------|
-| 400 | Bad Request — invalid parameters or signature payload |
-| 401 | Unauthorized — invalid or missing API key / signature |
-| 403 | Forbidden — address not whitelisted for key creation |
-| 404 | Not Found — token or resource not found |
-| 429 | Too Many Requests — rate limited (response includes `retry_after` seconds) |
+| 400 | Bad Request: invalid parameters or signature payload |
+| 401 | Unauthorized: invalid or missing API key / signature |
+| 403 | Forbidden: address not whitelisted for key creation |
+| 404 | Not Found: token or resource not found |
+| 429 | Too Many Requests: rate limited (response includes `retry_after` seconds) |
 | 500 | Internal Server Error |
-| 502 | Bad Gateway — upstream price source error |
-| 503 | Service Unavailable — oracle data not yet initialized |
+| 502 | Bad Gateway: upstream price source error |
+| 503 | Service Unavailable: oracle data not yet initialized |
 
 Error responses use the shape `{ "error": "message" }`, with a `retry_after` field added on `429`.
 

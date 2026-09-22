@@ -1,6 +1,6 @@
 ---
 title: "0xio DEX"
-description: "Cross-chain swap protocol for Octra Network — swap OCT and ETH with on-chain settlement and solver-based fills."
+description: "Cross-chain swap protocol for Octra Network: swap OCT and ETH with on-chain settlement and solver-based fills."
 icon: "arrow-right-arrow-left"
 ---
 
@@ -11,7 +11,7 @@ icon: "arrow-right-arrow-left"
 
 ## Overview
 
-**0xio DEX** is a **cross-chain swap protocol** that enables users to swap native tokens across chains — starting with **OCT ↔ ETH** between Octra and Ethereum Sepolia. The protocol uses a **solver-based architecture** with on-chain escrow and oracle verification.
+**0xio DEX** is a **cross-chain swap protocol** that enables users to swap native tokens across chains, starting with **OCT ↔ ETH** between Octra and Ethereum Sepolia. The protocol uses a **solver-based architecture** with on-chain escrow and oracle verification.
 
 ## How It Works
 
@@ -22,7 +22,7 @@ icon: "arrow-right-arrow-left"
     Connect your 0xio wallet (Octra) and MetaMask (Sepolia)
   </Step>
   <Step title="Get Quote">
-    Enter the OCT amount — the solver provides a real-time quote with TWAP pricing
+    Enter the OCT amount and the solver provides a real-time quote with TWAP pricing
   </Step>
   <Step title="Lock OCT">
     OCT is locked in the SwapVault contract on Octra with a minimum receive commitment
@@ -66,7 +66,7 @@ The **commit-then-fill** pattern ensures the solver never sends OCT before the e
 
 - **Cross-Chain Swaps**: OCT ↔ ETH between Octra and Ethereum Sepolia
 - **TWAP Pricing**: 5-minute time-weighted average prices from CoinGecko + DexScreener
-- **On-Chain Rate Protection**: `min_receive` committed at lock time — solver can't underpay
+- **On-Chain Rate Protection**: `min_receive` committed at lock time, so the solver can't underpay
 - **Slippage Control**: Configurable slippage tolerance (0.5%, 1%, 2%, custom)
 - **Liquidity Display**: Real-time solver balance shown before swap
 - **Network Detection**: Auto-prompts MetaMask to switch to Sepolia
@@ -90,7 +90,7 @@ The protocol is built around a layered defense model: at no point can the solver
 
 ### Key Security Properties
 
-- **Commit-then-fill**: Solver calls `fill()` on escrow BEFORE sending destination tokens — zero solver risk
+- **Commit-then-fill**: Solver calls `fill()` on escrow BEFORE sending destination tokens (zero solver risk)
 - **Fee snapshot**: Fee rate locked at swap time, can't be changed retroactively
 - **Reentrancy guard**: All ETH transfer functions protected
 - **Emergency refund**: Owner can refund unfilled swaps (blocked after fill)
@@ -201,7 +201,7 @@ Proxied oracle price feed (no API key needed from frontend).
 |----------|-----------|
 | Solver never fills | User calls `refund()` once the lock expiry passes |
 | Solver fills but oracle never attests | User calls `refundStaleFill()` after the stale-fill window |
-| Emergency | Owner calls `emergencyRefund()` — immediate, unfilled swaps only |
+| Emergency | Owner calls `emergencyRefund()` (immediate, unfilled swaps only) |
 
 ## Related Repos
 
@@ -224,13 +224,13 @@ Proxied oracle price feed (no API key needed from frontend).
 - Limit orders
 - Advanced routing (multi-hop, split orders)
 
-### Long Term — Cross-Chain Privacy Layer
+### Long Term: Cross-Chain Privacy Layer
 - **Accept wETH/wSOL on their native chains, encrypt via Octra's FHE, transfer privately, withdraw anywhere**
-- Octra becomes a privacy middleware — users put in wETH, get out wETH, with full amount privacy in between
+- Octra becomes a privacy middleware: users put in wETH, get out wETH, with full amount privacy in between
 - FHE-powered private swaps (AMM operating on encrypted data)
 - Relayer network for gasless, unlinkable withdrawals
 - Compliance via selective disclosure (viewing keys)
 
-<Card title="Cross-Chain Privacy Layer — Full Design" icon="shield-halved" href="/concepts/privacy-layer">
+<Card title="Cross-Chain Privacy Layer: Full Design" icon="shield-halved" href="/concepts/privacy-layer">
   Deep dive into how 0xio uses Octra's FHE as a privacy backend for any blockchain. Architecture, phases, and comparison with Umbra, Railgun, and Aztec.
 </Card>
