@@ -54,6 +54,7 @@ Unlike intent-based bridges, the 0xio Bridge uses a **light client architecture*
 - **Multi-Wallet Support**: EIP-6963 detection for Rabby, MetaMask, Phantom, and other EVM wallets
 - **WalletConnect**: Scan QR code from the mobile app to bridge
 - **Auto-Reconnect**: Wallets persist across page refreshes
+- **Any chain to OCT**: Pay with any token on the EVM chains Relay supports; Relay swaps it into wOCT and burns it to your Octra address in one fill
 - **Bridge History**: Full transaction history with claim actions and relayer-assisted recovery
 - **Network Dashboard**: Live chain stats at [bridge.0xio.xyz/octra](https://bridge.0xio.xyz/octra)
 - **Bridge Stats**: Volume, transactions, unique wallets at [bridge.0xio.xyz/stats](https://bridge.0xio.xyz/stats)
@@ -76,6 +77,13 @@ Unlike intent-based bridges, the 0xio Bridge uses a **light client architecture*
 | Rate | 1 OCT = 1 wOCT (always) |
 | Cooldown | Per-address cooldown between locks (enforced on-chain) |
 | wOCT → OCT | Automatic unlock via relayer (~2 min) |
+
+## Fees
+
+| Route | 0xio fee |
+|-------|----------|
+| OCT ↔ wOCT | None (network gas only) |
+| Any chain → OCT | 0.25%, collected by Relay and shown in Fees and gas before you confirm |
 
 ## Architecture
 
