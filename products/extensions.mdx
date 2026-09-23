@@ -13,22 +13,31 @@ The **0xio Browser Extension** (v2.5.5) is your primary gateway to the Octra Net
 ## Getting Started
 
 ### Installation & Setup
-Once installed, you have three ways to set up your vault:
+Once installed, accept the Terms of Service and Privacy Policy, then pick one of three ways in:
 
 <CardGroup cols="3">
   <Card title="Create New" icon="plus">
-    Generates a fresh 12-word seed phrase and a new Octra address (`oct...`).
+    Shows a fresh 12-word recovery phrase behind **Show words**. Write it down, then pick three of its words back to prove the copy works.
   </Card>
   <Card title="Import Wallet" icon="file-import">
-    Restore an existing wallet using a **Private Key** or **Seed Phrase**.
+    Paste a **recovery phrase** or a **private key** into one field; the extension tells which it is, checks it as you type and shows the wallet it opens. **Type it word by word** switches to a 12 or 24 cell grid.
   </Card>
   <Card title="Watch Mode" icon="eye">
-    Track any public address without needing a private key (View Only).
+    Track any public address without a private key (view only). The address is checked as you type and its balance is shown before you add it.
   </Card>
 </CardGroup>
 
+Every way in ends on **Protect this wallet**: name the wallet and set a password of at least 8 characters. The password is required; it encrypts your keys on this device and unlocks the extension. On Chromium browsers a **passkey** (Touch ID, Windows Hello or a security key) can unlock it instead of typing the password.
+
+### Adding more wallets
+In the wallet list, **Add wallet** offers the same flows without the password step (the extension is already unlocked):
+
+* **Create wallet:** a new recovery phrase, backed up and checked.
+* **Add account:** another address from one of your wallets' recovery phrase. The next free account number is picked and its address shown before anything is added; **Use another account number** picks a different one. Restoring that wallet's phrase brings these accounts back too.
+* **Import wallet** and **Watch an address**, as above.
+
 <Note>
-  **Security Tip:** During setup, you can set a **Master Password**. This encrypts your keys on your device. If you skip this, your wallet relies solely on device-level security.
+  **Back up again if asked:** wallets created with first-run Create between May 18 and September 23, 2026 were shown a recovery phrase that does not restore them. Those wallets show a **Back up your recovery phrase again** card on the dashboard; it opens the wallet's real phrase in Settings.
 </Note>
 
 ---
@@ -37,7 +46,8 @@ Once installed, you have three ways to set up your vault:
 
 The main screen gives you a snapshot of your financial privacy.
 
-* **Wallet picture:** Each wallet has its own picture drawn from its address (the 0xio braces around a composition of circles), shown in the header, the wallet list, site connections, approvals, Send, the address book and Receive. The 0xio mobile app draws the same picture for the same wallet.
+* **Wallet picture:** Each wallet has its own picture drawn from its address (the 0xio braces around a composition of circles), shown in the header, the wallet list, site connections, approvals, Send, the address book and Receive. The 0xio mobile app draws the same picture for the same wallet. Click it in the header to open the wallet list.
+* **Quick actions:** **Send** and **Receive** as two buttons, with **Privacy**, **Bridge** and **History** in a row beneath them, the same arrangement as the 0xio mobile app.
 
 * **Public Balance:** Your visible `OCT` balance, usable for standard transactions and gas fees.
 * **Private Balance:** Your FHE-encrypted balance. These funds are visible only to you and are used for shielded transfers.
@@ -99,7 +109,7 @@ The extension automatically discovers tokens associated with your address and di
 
 ### Custom Token Import
 
-Import any fungible token by entering its contract address. The extension validates the contract on-chain (checking `name`, `symbol`, and `decimals`) and tracks your balance via `balance_of`. Imported tokens appear alongside the default token list and can be managed in **Settings > Imported Tokens**.
+Import any fungible token by entering its contract address. The extension validates the contract on-chain (checking `name`, `symbol`, and `decimals`) and tracks your balance via `balance_of`. Imported tokens appear alongside the default token list and can be managed in **Settings > Tokens**.
 
 ### NFT Gallery
 
@@ -143,12 +153,16 @@ The extension is available in **5 languages**, making it accessible to a global 
 
 ## Settings & Management
 
-* **Security & Backup:** Manage seed phrase backup and security settings.
-* **Address Book:** Save frequently used addresses. You can verify them locally to avoid phishing.
-* **Connected DApps:** View and revoke permissions for websites you have connected to.
-* **Imported Tokens:** View and manage custom tokens imported by contract address.
-* **Lock Wallet:** Immediately locks the extension, requiring your password to re-enter.
-* **Network Switching:** Switch between Mainnet and Devnet from the settings page.
+Settings opens on your wallet (click it for the wallet list), then six places, each showing its current state in one line so most answers need no extra click:
+
+* **Security:** password, passkey unlock and when the extension locks itself; resetting the extension lives at the bottom.
+* **Backup:** the recovery phrase and private key of the active wallet. It shows **Back up again** when a wallet needs a fresh backup.
+* **Connections:** connected sites (view and revoke what they can do) and the address book.
+* **Appearance:** theme (Dim, Day or Octra) and language.
+* **Network:** Mainnet, Devnet or a network you added, its node, the optional RPC proxy and the private-balance cache.
+* **Tokens:** custom tokens imported by contract address.
+
+**Lock wallet** sits at the bottom and locks the extension until you enter your password again.
 
 ---
 
