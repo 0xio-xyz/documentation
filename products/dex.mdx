@@ -67,12 +67,13 @@ The **commit-then-fill** pattern ensures the solver never sends OCT before the e
 - **Cross-Chain Swaps**: OCT ↔ ETH between Octra and Ethereum Sepolia
 - **TWAP Pricing**: 5-minute time-weighted average prices from CoinGecko + DexScreener
 - **On-Chain Rate Protection**: `min_receive` committed at lock time, so the solver can't underpay
-- **Slippage Control**: Configurable slippage tolerance (0.5%, 1%, 2%, custom)
+- **Slippage Control**: Configurable slippage tolerance (0.1%, 0.5%, 1%, or a custom value up to 5%)
 - **Liquidity Display**: Real-time solver balance shown before swap
 - **Network Detection**: Auto-prompts MetaMask to switch to Sepolia
-- **Swap History**: Live-updating transaction list with on-chain state at [dex.0xio.xyz/history](https://dex.0xio.xyz/history)
+- **Live swap tracking**: Every swap shows three steps (sent from your wallet, on the way, arrived) with a timer, survives a page reload, and offers a one-click refund when a swap can't be filled
+- **Activity**: Live-updating transaction list with on-chain state at [dex.0xio.xyz/history](https://dex.0xio.xyz/history)
 - **DEX Stats**: Volume, fees, solver status at [dex.0xio.xyz/stats](https://dex.0xio.xyz/stats)
-- **Price Chart**: Live OCT/USD sparkline on the swap page
+- **Price Chart**: Live OCT/USD chart next to the swap card (a compact price strip on phones)
 
 ## Security
 
@@ -153,7 +154,7 @@ lock() → fill() → send OCT → updateFill() → attest() → settle()
 |-----------|-------|
 | Swap fee | 0.5% (50 bps) |
 | Fee destination | Protocol treasury (per-chain) |
-| Minimum swap (OCT→ETH) | 1 OCT |
+| Minimum swap (OCT→ETH) | 10 OCT (the vault's minimum fee makes smaller locks fail) |
 | Minimum swap (ETH→OCT) | 0.001 ETH |
 | Maximum swap | 10,000 OCT / 10 ETH |
 
@@ -162,7 +163,7 @@ lock() → fill() → send OCT → updateFill() → attest() → settle()
 | Service | URL | Role |
 |---------|-----|------|
 | DEX Frontend | [dex.0xio.xyz](https://dex.0xio.xyz) | Swap interface |
-| Swap History | [dex.0xio.xyz/history](https://dex.0xio.xyz/history) | Transaction list + on-chain state |
+| Activity | [dex.0xio.xyz/history](https://dex.0xio.xyz/history) | Transaction list + on-chain state |
 | DEX Stats | [dex.0xio.xyz/stats](https://dex.0xio.xyz/stats) | Volume, fees, solver status |
 | Solver API | solver.0xio.xyz | Quote, swap tracking, health |
 | Oracle | oracle.0xio.xyz | TWAP prices, fill verification |
@@ -179,13 +180,17 @@ GET https://solver.0xio.xyz/api/quote?from=OCT&to=ETH&amount=100
 
 Response includes: rate, receive amount, fee, liquidity availability, intent hash.
 
+### GET /api/swap/:id
+
+One swap by id: the quote `intent_hash` for OCT→ETH, or `escrow_` plus the lowercase keccak256 of the intent hash for ETH→OCT. Returns 404 when the solver has not seen it yet.
+
 ### GET /api/swaps
 
-List recent swaps with status tracking.
+List recent swaps with status tracking. `?address=` filters by source or destination address (case-insensitive).
 
 ### GET /api/chains
 
-Supported chains/tokens plus the live contract addresses (SwapVault, EthEscrow) and solver/treasury wallets. The DEX frontend reads contract addresses from this endpoint at runtime.
+Supported chains/tokens, the live contract addresses (SwapVault, EthEscrow), solver wallets and the lock limits (`min_lock_oct`, `min_lock_eth`). The DEX frontend locks only into its pinned contracts and pauses swaps if this endpoint reports different ones.
 
 ### GET /api/health
 
@@ -199,8 +204,8 @@ Proxied oracle price feed (no API key needed from frontend).
 
 | Scenario | Mechanism |
 |----------|-----------|
-| Solver never fills | User calls `refund()` once the lock expiry passes |
-| Solver fills but oracle never attests | User calls `refundStaleFill()` after the stale-fill window |
+| Solver never fills | User taps Refund on the swap card or the Activity page once the lock expiry passes (`refund()`) |
+| Solver fills but oracle never attests | Same Refund button after the stale-fill window (`refundStaleFill()` / `refund_stale_fill`) |
 | Emergency | Owner calls `emergencyRefund()` (immediate, unfilled swaps only) |
 
 ## Related Repos
