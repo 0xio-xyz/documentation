@@ -38,7 +38,7 @@ icon: "arrow-right-arrow-left"
   </Step>
 </Steps>
 
-### ETH → OCT (Commit-Then-Fill)
+### ETH → OCT
 
 <Steps>
   <Step title="Connect Wallets">
@@ -47,19 +47,19 @@ icon: "arrow-right-arrow-left"
   <Step title="Lock ETH">
     ETH is locked in the EthEscrow contract on Sepolia
   </Step>
-  <Step title="Solver Commits">
-    The solver calls `fill()` on the escrow to reserve the order (no OCT sent yet)
-  </Step>
   <Step title="Solver Sends OCT">
-    Only after `fill()` confirms on Ethereum, the solver sends OCT on Octra
+    The solver detects the lock and sends OCT to your Octra address
+  </Step>
+  <Step title="Solver Records the Fill">
+    The solver calls `fill()` on the escrow with the Octra transaction hash
   </Step>
   <Step title="Oracle Attests + Settlement">
-    Oracle verifies, solver settles, receives the locked ETH
+    The oracle verifies the OCT payout and `attest()` is recorded; after the challenge window the solver settles and receives the locked ETH
   </Step>
 </Steps>
 
 <Info>
-The **commit-then-fill** pattern ensures the solver never sends OCT before the escrow commitment is confirmed on Ethereum. This eliminates the risk of the solver losing funds if the fill transaction fails.
+You are paid first: the solver sends OCT before it claims anything on Ethereum. If the solver never pays, the ETH stays in the escrow and you refund it after the lock expiry. The timing risk sits with the solver: a lock that expires before `fill()` is recorded can no longer be claimed.
 </Info>
 
 ## Features
@@ -91,11 +91,12 @@ The protocol is built around a layered defense model: at no point can the solver
 
 ### Key Security Properties
 
-- **Commit-then-fill**: Solver calls `fill()` on escrow BEFORE sending destination tokens (zero solver risk)
+- **Pay first, claim later**: The solver delivers the destination tokens before it records `fill()`, and claims the locked funds only after the oracle attests and the challenge window passes
+- **Idempotent payouts**: Every solver transaction is stored before broadcast and retried with the same bytes, so a crash or timeout never pays twice; an unclear payout stops for manual review instead of being resent
 - **Fee snapshot**: Fee rate locked at swap time, can't be changed retroactively
 - **Reentrancy guard**: All ETH transfer functions protected
 - **Emergency refund**: Owner can refund unfilled swaps (blocked after fill)
-- **Reconciliation**: Solver auto-reconciles DB vs on-chain state every 5 minutes
+- **Reconciliation**: The solver periodically reconciles its database with on-chain state and only ever moves a swap forward
 
 ## Contract Addresses (Devnet)
 
@@ -138,13 +139,12 @@ lock() → fill() → attest() → [challenge window] → settle()
 ### Swap Lifecycle (ETH → OCT)
 
 ```
-lock() → fill() → send OCT → updateFill() → attest() → settle()
-  │        │         │            │              │           │
-  │        │         │            │              │           └── Solver gets ETH
-  │        │         │            │              └── Oracle verifies
-  │        │         │            └── Post real Octra tx hash
-  │        │         └── Safe: fill is confirmed on Ethereum
-  │        └── Solver commits on escrow (no OCT sent yet)
+lock() → send OCT → fill() → attest() → [challenge window] → settle()
+  │         │          │         │                                │
+  │         │          │         │                                └── Solver gets ETH
+  │         │          │         └── Oracle verifies the OCT payout
+  │         │          └── Solver records the Octra tx hash on the escrow
+  │         └── Solver pays OCT to the user first
   └── User locks ETH in EthEscrowV2
 ```
 
