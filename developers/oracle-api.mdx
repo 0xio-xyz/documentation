@@ -19,7 +19,7 @@ Most API endpoints require an API key. Get your key from the [Developer Portal](
 Include the key in the `x-api-key` header:
 
 ```http
-x-api-key: 0xio-abc123def456-oracle
+x-api-key: 0xio-5f96c109e9e7aa34-oracle
 ```
 
 <Warning>
@@ -32,8 +32,10 @@ Keep your API key secret. Never expose it in client-side code or public reposito
 |----------|---------------|
 | `GET /health` | No |
 | `GET /api/health` | No |
+| `GET /api/metrics` | No |
 | `GET /api/keys` | Signature |
 | `POST /api/keys` | Signature |
+| `DELETE /api/keys/:id` | Signature |
 | `GET /api/price/oct/details` | Yes |
 | `GET /api/price/twap` | Yes |
 | `GET /api/price/:symbol` | Yes |
@@ -41,9 +43,11 @@ Keep your API key secret. Never expose it in client-side code or public reposito
 | `GET /api/quote` | Yes |
 | `GET /api/reserves` | Yes |
 | `GET /api/chart/history` | Yes |
-| `POST /api/simulate-trade` | Yes |
-| `POST /api/liquidity` | Yes |
-| `DELETE /api/keys` | Yes |
+| `POST /api/simulate-trade` | Admin key |
+| `POST /api/liquidity` | Admin key |
+| `DELETE /api/keys` | The key being revoked |
+
+Quotas are per key, per calendar month (UTC), and reset on the 1st. "Admin key" routes are for the operator's own services: any other key gets `403`.
 
 ---
 
@@ -281,13 +285,13 @@ curl -H "x-api-key: YOUR_KEY" \
 }
 ```
 
-### Simulate Trade
+### Simulate Trade (Admin)
 
 ```http
 POST /api/simulate-trade
 ```
 
-Simulate a trade execution against the AMM. Updates internal reserves for quote accuracy.
+Simulate a trade execution against the AMM. Updates internal reserves for quote accuracy. Requires the operator's admin key; developer keys get `403`.
 
 **Request Body:**
 ```json
@@ -316,7 +320,7 @@ Simulate a trade execution against the AMM. Updates internal reserves for quote 
 POST /api/liquidity
 ```
 
-Update liquidity reserves. Used by the watcher service to sync on-chain balances.
+Update liquidity reserves. Used by the watcher service to sync on-chain balances. Requires the operator's admin key; developer keys get `403`.
 
 **Request Body:**
 ```json
@@ -407,9 +411,13 @@ curl "https://oracle.0xio.xyz/api/keys?owner=oct1...&timestamp=170...&signature=
 ```json
 [
   {
-    "key_masked": "0xio-abc...cle",
+    "id": 42,
+    "key_masked": "0xio-5f96c109e9e7...",
     "label": "Production App",
-    "created_at": "2025-01-15 10:30:00"
+    "created_at": "2025-01-15 10:30:00",
+    "monthly_quota": 10000,
+    "usage": 1834,
+    "scopes": ["read:price", "read:quote"]
   }
 ]
 ```
@@ -426,7 +434,9 @@ Generate a new API key. Requires wallet signature for verification. Keys follow 
 ```json
 {
   "owner": "oct1abc...",
+  "public_key": "base64_encoded_public_key",
   "label": "My App Production",
+  "scopes": ["read:price", "read:quote"],
   "signature": "base64_encoded_signature",
   "timestamp": 1706270400
 }
@@ -438,6 +448,7 @@ Generate a new API key. Requires wallet signature for verification. Keys follow 
 | `owner` | string | Yes | Your wallet address (oct1...) |
 | `public_key` | string | Yes | The Ed25519 public key in HEX or Base64 |
 | `label` | string | No | Descriptive label for the key |
+| `scopes` | string[] | No | Limit the key to these scopes; empty or missing means all |
 | `signature` | string | Yes | Base64-encoded ed25519 signature |
 | `timestamp` | number | Yes | Unix timestamp (must be within 5 minutes) |
 
@@ -452,7 +463,8 @@ Example: `0xio-api-key:oct1abc123...:1706270400`
 ```json
 {
   "status": "created",
-  "key": "0xio-a1b2c3d4e5f6g7h8-oracle"
+  "id": 42,
+  "key": "0xio-5f96c109e9e7aa34-oracle"
 }
 ```
 
@@ -464,7 +476,30 @@ Store your API key securely! It will only be shown once.
 Use the [Developer Portal](https://devs.0xio.xyz) to create keys easily - it handles wallet signing automatically.
 </Tip>
 
-### Revoke Key
+### Revoke Key by ID
+
+```http
+DELETE /api/keys/:id?owner=...&public_key=...&signature=...&timestamp=...
+```
+
+Revoke one of your keys by the `id` from create or list. Signed by the owner wallet, so a lost or over-quota key can still be revoked.
+
+**Signature Message Format:**
+```
+0xio-revoke:{owner}:{id}:{timestamp}
+```
+
+**Response:**
+```json
+{
+  "status": "revoked",
+  "id": 42
+}
+```
+
+Returns `404` when the id does not exist or belongs to another wallet.
+
+### Revoke Key with the Key Itself
 
 ```http
 DELETE /api/keys
@@ -492,7 +527,7 @@ x-api-key: KEY_TO_REVOKE
 |-------------|-------------|
 | 400 | Bad Request: invalid parameters or signature payload |
 | 401 | Unauthorized: invalid or missing API key / signature |
-| 403 | Forbidden: address not whitelisted for key creation |
+| 403 | Forbidden: address not whitelisted for key creation, a scope the key lacks, or an admin-only route |
 | 404 | Not Found: token or resource not found |
 | 429 | Too Many Requests: rate limited (response includes `retry_after` seconds) |
 | 500 | Internal Server Error |
