@@ -174,7 +174,7 @@ Ask for what the dapp uses. The wallet enforces these scope names; the private o
 
 The older SDK names (`read_balance`, `send_transactions`, `sign_messages`, `view_private_balance`, `stealth_claim` and the rest) still work. The SDK translates them when it connects, and the names you asked for come back in the granted list as aliases, so a check like `permissions.includes('read_balance')` keeps working. `WALLET_PERMISSIONS`, `LEGACY_PERMISSION_MAP`, `toWalletPermissions` and `withLegacyAliases` are exported.
 
-The wallet refuses anything that signs, submits or changes state until the page has connected (`NOT_CONNECTED`), and opens its unlock screen at most once a minute for a page that is not connected (`WALLET_LOCKED`).
+The wallet refuses anything that signs, submits or changes state until the page has connected (`NOT_CONNECTED`), and opens its unlock screen at most once a minute for a page that is not connected (`WALLET_LOCKED`). While the wallet is locked, `getBalance` and the private balance reads also return `WALLET_LOCKED` (extension 3.0.0 and newer).
 
 ## Security (v2.7.x)
 
@@ -220,6 +220,36 @@ const wallet = new ZeroXIOWallet({
   trustedParentOrigins: ['https://desktop.0xio.xyz'],
 });
 ```
+
+### In the 0xio Mobile App
+
+The app's built-in browser injects the same providers (`window.wallet0xio` and `window.octra`) and answers the SDK over its WebView bridge, so the calls below work unchanged. What the user sees for each request:
+
+| Request | What the app shows | How it is confirmed |
+|---------|--------------------|---------------------|
+| `connect()` | Your site's listed name and host (never the page title), the wallet with **Change**, what the site can see (address and balance), what it can ask (signatures the user reviews), any private permissions you asked for, and that it can never move funds on its own | **Slide to connect** |
+| `signMessage()` | The whole message in a scrolling box and "Signing moves no funds and costs no fee." | **Slide to sign** |
+| `sendTransaction()`, `callContract()`, sequences | A receipt: the action, amount with USD, recipient, numbered steps for a sequence, fee, network and wallet, plus the memo | **Slide to approve** |
+| `signTransaction()` | Titled "Sign a transaction", with a warning that the site can send what is signed. It is never broadcast by the wallet | **Slide to approve** |
+| `submitTransaction()` | The same approval as a send; accepted only when signed by the connected wallet | **Slide to approve** |
+| `switchNetwork()` | A confirm sheet; only mainnet and devnet, and only for a connected site | Switch network or Cancel |
+
+- **One request at a time.** A second request while one is open is refused; wait for the first to settle.
+- **Biometrics or PIN after the slide.** With the user's **Ask for PIN before signing** setting on (the default), Face ID or the PIN follows the slide. Allow for a few seconds of user time on every call.
+- **Bound to a wallet and network.** A request is held to the wallet and network it was reviewed under. If the user switches either before it is signed, nothing is signed or sent and your call rejects. Listen for `accountChanged` and `networkChanged` and re-read state.
+- **Connections lapse.** A connection is held per wallet and network and expires after 24 hours; call `connect()` again when `isConnected()` is false.
+- **Raw RPC cannot submit.** Pass-through RPC methods that submit or send are refused; use `sendTransaction`, `callContract` or `submitTransaction` so the user sees an approval.
+- **Lookalike warning.** If your host is spelt close to an app listed in the 0xio directory, or uses another alphabet, the user sees a warning before your site can connect, sign, send or switch network, and your request rejects if they close it. Serve your dApp from its listed host to avoid it.
+
+### WalletConnect (0xio Mobile)
+
+A dApp on another device can reach the mobile wallet through WalletConnect v2 (v1 links are refused). The user scans your code from the scan icon on Home, or pastes the connection link.
+
+- **Connect:** the sheet shows your site, the wallet and the network, each with **Change**, and warns when you asked for a different network than the one chosen. The user confirms with **Slide to connect**. Watch-only wallets cannot connect.
+- **Session scope:** the session is bound to the wallet and network chosen at connect. Choosing them does not switch the app; if the app is on another wallet or network later, requests fail and the user is asked to switch back or reconnect.
+- **Methods:** `octra_sendTransaction`, `octra_contractCall` and `octra_signMessage` open the same sheets as the in-app browser, with the same slide; `octra_getAddress` and `octra_getBalance` are answered without a prompt.
+- **Timing:** connect requests that arrive after the user leaves the WalletConnect screen are refused. Requests from a session already connected are answered anywhere in the app once it is unlocked.
+- **Disconnect:** the user can end a session from the WalletConnect screen or from Connected sites; it is removed for that wallet and network.
 
 ## RFC-O-1 Provider Standard (v2.7.0)
 
@@ -735,6 +765,22 @@ const result = await wallet.sendContractTransactionSequence({
 
 - **Returns:** `Promise<unknown>` with `results[]`, one hash per step
 
+#### `deployContract(data)`
+
+Deploys a compiled Octra contract from the connected wallet. Needs extension 3.0.0 or later. The review shows the code size, the contract address the node predicts, the constructor params, the network and the fee; the wallet cannot be switched in that review, because the address depends on the deployer.
+
+```typescript
+const { txHash, contractAddress } = await wallet.deployContract({
+  bytecode: compiled.deploy_payload, // base64 from octra_compileAml with program=true
+  params: ['0xio Token', 'OXT', 1000000], // optional constructor params (JSON)
+});
+```
+
+- **Parameters:** `bytecode: string` (strict base64, at most 512 KB decoded), `params?: string | unknown[]` (valid JSON, at most 64 KB), `ou?: string` (a whole number from 1 to 50,000,000)
+- **Fee:** without `ou` the wallet uses the node's recommended deploy fee, never below 200,000 OU plus 1,000 OU per KiB of code
+- **Returns:** `Promise<{ txHash, contractAddress, success }>`
+- **Errors:** `DEPLOY_CHANGED` when another transaction moved the nonce after the review and the address would differ (nothing is sent); `DEPLOY_FAILED` when the node refuses it
+
 #### `request(method, params)` and `rpcCall(method, params)`
 
 `request` sends any wallet method through the bridge, for primitives that have no typed helper yet. `rpcCall` reaches the wallet's read-only node RPC allow-list (`octra_balance`, `octra_transaction`, `contract_call` and similar); writes are refused with `METHOD_NOT_ALLOWED`.
@@ -1079,6 +1125,8 @@ try {
 | `NETWORK_ERROR` | RPC connection or blockchain issue |
 | `INVALID_ADDRESS` | Malformed or invalid Octra address |
 | `INVALID_AMOUNT` | Negative amount, both amount fields given, or a number that can't be represented exactly in micro-OCT (6 decimals); pass a string like `"0.300000"` for exact control |
+| `DEPLOY_CHANGED` | The deployer's nonce moved after the review, so the contract address would differ; nothing was sent |
+| `DEPLOY_FAILED` | The node refused the deploy |
 | `PERMISSION_DENIED` | Requested permission not granted |
 | `TRANSACTION_FAILED` | Transaction reverted or rejected |
 | `SIGNATURE_FAILED` | Message signing failed or invalid input |
