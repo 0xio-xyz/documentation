@@ -27,7 +27,8 @@ pnpm add @0xio/sdk
 </CodeGroup>
 
 **Package Details:**
-- **Version:** 2.9.0
+- **Version:** 2.10.0
+- **Watch-only signal (`canSign`, `WATCH_ONLY`):** Extension v3.0.3+
 - **Contract deployment (`deployContract`):** Extension v3.0.0+
 - **Min Extension (Mainnet):** v2.0.1+
 - **Min Extension (Devnet):** v2.2.1+ (contract calls, privacy features)
@@ -298,7 +299,7 @@ if (OctraProviderAdapter.detect()) {
 | Code | Meaning | SDK Error Code |
 |------|---------|---------------|
 | 4001 | User rejected | `USER_REJECTED` |
-| 4100 | Unauthorized | `PERMISSION_DENIED` |
+| 4100 | Unauthorized | `PERMISSION_DENIED`, or `WATCH_ONLY` when the error `data.code` is `WATCH_ONLY` |
 | 4200 | Unsupported method | `UNKNOWN_ERROR` |
 | 4900 | Disconnected | `CONNECTION_REFUSED` |
 | 4901 | Network unavailable | `NETWORK_ERROR` |
@@ -463,6 +464,22 @@ const publicKey = await wallet.getPublicKey();
 ```
 
 - **Returns:** `Promise<string>`
+- **Errors:** `WATCH_ONLY` for a watch-only wallet (it has no key)
+
+#### `canSign()`
+
+Whether the connected wallet can sign (v2.10.0). A watch-only wallet connects and reads balances and history, but holds no key.
+
+```typescript
+const canSign = wallet.canSign(); // true, false or undefined
+```
+
+- **Returns:** `boolean | undefined`
+  - `true`: the wallet signs.
+  - `false`: watch-only. Every signing call fails with `WATCH_ONLY`.
+  - `undefined`: not connected, or an extension older than v3.0.3 that does not report it.
+
+The same value is `canSign` on `ConnectionInfo`, on the `connect` event and on `accountChanged`, so it follows a wallet switch. See [Watch-only wallets](#watch-only-wallets).
 
 #### `switchNetwork(networkId)`
 
@@ -1157,10 +1174,40 @@ try {
 }
 ```
 
+### Watch-only wallets
+
+A watch-only wallet can connect, so a dapp should show a read-only state instead of buttons that will fail.
+
+- `canSign` is `false`: show the read-only state. `sendTransaction`, `signMessage`, `signAuthMessage`, `signTransaction`, `callContract`, `deployContract`, `sendContractTransactionSequence`, `sendPrivateTransfer`, `claimPrivateTransfer`, the private primitives and `getPublicKey` reject with `WATCH_ONLY`.
+- `canSign` is `undefined`: the extension is older than v3.0.3. Treat a missing `publicKey` as a hint of watch-only; those versions refuse signing with `PERMISSION_DENIED`.
+
+```typescript
+import { ZeroXIOWallet, ZeroXIOWalletError, ErrorCode } from '@0xio/sdk';
+
+function showSignState(canSign: boolean | undefined) {
+  const readOnly = canSign === false || (canSign === undefined && !wallet.getConnectionInfo().publicKey);
+  sendButton.disabled = readOnly;
+  readOnlyNote.hidden = !readOnly; // "This wallet is watch-only. Switch wallets in 0xio to send."
+}
+
+await wallet.connect();
+showSignState(wallet.canSign());
+wallet.on('accountChanged', (event) => showSignState(event.data.canSign));
+
+try {
+  await wallet.sendTransaction({ to: recipient, amountOct: '1' });
+} catch (error) {
+  if (error instanceof ZeroXIOWalletError && error.code === ErrorCode.WATCH_ONLY) {
+    showSignState(false);
+  }
+}
+```
+
 ### Error Codes
 
 | Error Code | Description |
 |-----------|-------------|
+| `WATCH_ONLY` | The wallet is watch-only and cannot sign (v2.10.0, extension v3.0.3+) |
 | `USER_REJECTED` | User declined transaction or connection |
 | `INSUFFICIENT_BALANCE` | Not enough funds for transaction + gas |
 | `EXTENSION_NOT_FOUND` | 0xio Wallet Extension not installed |
@@ -1555,10 +1602,10 @@ import {
   checkSDKCompatibility
 } from '@0xio/sdk';
 
-console.log('SDK Version:', SDK_VERSION); // "2.9.0"
+console.log('SDK Version:', SDK_VERSION); // "2.10.0"
 console.log('Min Extension (Mainnet):', MIN_EXTENSION_VERSION); // "2.0.1"
 console.log('Min Extension (Devnet):', MIN_EXTENSION_VERSION_DEVNET); // "2.2.1"
-console.log('Supported:', SUPPORTED_EXTENSION_VERSIONS); // "^2.0.1"
+console.log('Supported:', SUPPORTED_EXTENSION_VERSIONS); // ">=2.0.1"
 
 // Check browser compatibility
 const { compatible, issues, recommendations } = checkSDKCompatibility();
@@ -1576,6 +1623,7 @@ if (!compatible) {
 - Provide clear install prompts if extension not found
 - Request minimum necessary permissions
 - Use `getConnectionStatus()` to restore existing connections
+- Check `canSign()` after connecting and on `accountChanged`; show a read-only state for a watch-only wallet
 
 ### Transactions
 - Validate addresses with `isValidAddress()` before sending
