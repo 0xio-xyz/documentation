@@ -4,7 +4,7 @@ description: "Learn how Octra works with HFHE encryption, how 0xio signs and enc
 icon: "microchip"
 ---
 
-To fully utilize 0xio, it helps to understand the unique architecture of the network it powers: **Octra**.
+0xio is built on **Octra**, so it helps to know how Octra works.
 
 ## What is Octra?
 
@@ -38,8 +38,9 @@ Because Octra relies on FHE, data must be encrypted *before* it leaves your devi
 | **Vault Encryption** | **AES-256-GCM**. Your keys are encrypted at rest on your device. |
 | **Key Derivation** | **PBKDF2-HMAC-SHA256** with high iteration counts: 900,000 (extension), 600,000 (desktop), and 100,000 for the mobile PIN. |
 | **Privacy Engine** | **PVAC** (curve25519-dalek / Ristretto255) for FHE encrypt/decrypt, Bulletproofs range proofs, Pedersen commitments, and stealth transfers via X25519 ECDH. |
-| **Price Feeds** | **0xio Oracle**: multi-source aggregation (CoinGecko + DexScreener) with anomaly detection, median pricing, and persistent PostgreSQL history. |
-| **Telemetry** | **Zero**. No tracking scripts, analytics, or IP logging are integrated into the wallet. |
+| **EVM Keys** | The extension derives the EVM key from the same phrase at `m/44'/60'/0'/0/i` (secp256k1) for one signature at a time. |
+| **Price Feeds** | **0xio Oracle**: the live wOCT/ETH Uniswap v4 pool price in USD, cross-checked against CoinGecko and DexScreener, with anomaly detection and PostgreSQL history. EVM token prices in the extension come from DefiLlama. |
+| **Telemetry** | No analytics, advertising or tracking scripts. The extension has no crash reporting; the desktop and mobile apps send crash reports without keys, phrases or PINs. See the [Privacy Policy](https://0xio.xyz/privacy). |
 
 <Note>
   0xio is an independent project built by community developers. It is not owned by, nor formally affiliated with, Octra Labs, ensuring a separation between the network and the toolset.

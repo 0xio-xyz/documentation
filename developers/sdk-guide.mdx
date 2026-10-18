@@ -1,10 +1,10 @@
 ---
 title: "SDK Integration Guide"
-description: "Integrate the 0xio Wallet SDK to connect dApps across the browser extension, desktop, and mobile apps with full FHE privacy support."
+description: "Integrate the 0xio Wallet SDK to connect dApps to the browser extension, desktop and mobile apps with FHE privacy support, plus the extension's EVM provider."
 icon: "code"
 ---
 
-The **0xio Wallet SDK** enables seamless integration between your decentralized application and the 0xio Wallet across all platforms: Extension, Desktop (iframe), and Mobile (WebView): with full support for Octra's FHE privacy features.
+The **0xio Wallet SDK** connects your dApp to the 0xio Wallet on every platform (the browser extension, the desktop app's built-in browser and the mobile app's built-in browser), with support for Octra's FHE privacy features. For EVM sites, see [EVM Provider](#evm-provider).
 
 ## Installation
 
@@ -27,7 +27,8 @@ pnpm add @0xio/sdk
 </CodeGroup>
 
 **Package Details:**
-- **Version:** 2.8.1
+- **Version:** 2.9.0
+- **Contract deployment (`deployContract`):** Extension v3.0.0+
 - **Min Extension (Mainnet):** v2.0.1+
 - **Min Extension (Devnet):** v2.2.1+ (contract calls, privacy features)
 - **Private transfers and claims:** Extension v2.4.0+
@@ -301,6 +302,47 @@ if (OctraProviderAdapter.detect()) {
 | 4200 | Unsupported method | `UNKNOWN_ERROR` |
 | 4900 | Disconnected | `CONNECTION_REFUSED` |
 | 4901 | Network unavailable | `NETWORK_ERROR` |
+
+---
+
+## EVM Provider
+
+The SDK covers Octra. For Ethereum and other EVM networks, the 0xio browser extension (3.0 and later) is a standard EIP-1193 provider, so existing EVM libraries work with it unchanged. Users manage these connections as described in [Connecting to Sites](/wallet/connecting-sites).
+
+### Discovery
+
+- The extension announces itself through **EIP-6963** with the name **0xio Wallet** and the rdns `xyz.0xio.wallet`.
+- It defines `window.ethereum` only when the page has none, so it never replaces another wallet.
+
+```typescript
+window.addEventListener('eip6963:announceProvider', (event: any) => {
+  if (event.detail.info.rdns === 'xyz.0xio.wallet') {
+    const provider = event.detail.provider;
+    // use provider.request({ method, params })
+  }
+});
+window.dispatchEvent(new Event('eip6963:requestProvider'));
+```
+
+### Methods
+
+| Kind | Methods |
+|------|---------|
+| Open a review | `eth_requestAccounts`, `wallet_requestPermissions`, `eth_sendTransaction`, `personal_sign`, `eth_signTypedData_v4`, `wallet_switchEthereumChain`, `wallet_addEthereumChain`, `wallet_watchAsset` |
+| Answered by the wallet | `eth_chainId`, `net_version`, `eth_accounts`, `wallet_getPermissions`, `wallet_getCapabilities`, `web3_sha3`, `net_listening` |
+| Forwarded to the site's network | `eth_call`, `eth_getBalance`, `eth_estimateGas`, receipts, logs, blocks, filters, `eth_syncing` and the other read methods |
+| Refused (`4200`) | `eth_sign`, `eth_signTransaction`, `eth_sendRawTransaction`, older typed-data versions, `wallet_sendCalls` and any other unknown method |
+
+### Behavior to Expect
+
+- **One address:** `eth_accounts` answers only the address the site uses, even when several of the user's wallets are connected to it. A request naming another address is refused. While the wallet is locked it answers `[]`, and the same account comes back after unlock without a prompt.
+- **Events:** `accountsChanged` when the site moves to another of its wallets, `chainChanged` when the user moves it to another network. Events go only to the tabs and frames that used the provider.
+- **Fees:** transactions are signed with the wallet's live fee. The fee your site sends is used only when the network gives none.
+- **Approvals:** the user can lower the amount of an `approve` or `increaseAllowance` on the review, or pick Unlimited. Never assume the signed amount equals the one you sent.
+- **Contract creation:** a transaction with no `to` opens a deploy review with the new contract's address; signing is refused if the nonce moved after the review.
+- **Adding a network:** a chain the user already has is never changed by `wallet_addEthereumChain`; the request only asks to switch. A chain on the other side of the user's Mainnet or Testnet setting asks to switch all of 0xio first.
+- **Repeats and limits:** the same connect, switch or add request sent again while its review is open waits on that review. Reads are rate limited per page and per site and answer `-32005` beyond the limit.
+- **Reload:** when the extension reloads, pending requests reject with `4900` and the provider emits `disconnect` once.
 
 ---
 
@@ -1513,7 +1555,7 @@ import {
   checkSDKCompatibility
 } from '@0xio/sdk';
 
-console.log('SDK Version:', SDK_VERSION); // "2.8.1"
+console.log('SDK Version:', SDK_VERSION); // "2.9.0"
 console.log('Min Extension (Mainnet):', MIN_EXTENSION_VERSION); // "2.0.1"
 console.log('Min Extension (Devnet):', MIN_EXTENSION_VERSION_DEVNET); // "2.2.1"
 console.log('Supported:', SUPPORTED_EXTENSION_VERSIONS); // "^2.0.1"

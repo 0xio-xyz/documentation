@@ -65,7 +65,7 @@ You are paid first: the solver sends OCT before it claims anything on Ethereum. 
 ## Features
 
 - **Cross-Chain Swaps**: OCT ↔ ETH between Octra and Ethereum Sepolia
-- **TWAP Pricing**: 5-minute time-weighted average prices from CoinGecko + DexScreener
+- **TWAP Pricing**: 5-minute time-weighted average of the 0xio Oracle's OCT price (the live Uniswap pool price, cross-checked against CoinGecko and DexScreener)
 - **On-Chain Rate Protection**: `min_receive` committed at lock time, so the solver can't underpay
 - **Slippage Control**: Configurable slippage tolerance (0.1%, 0.5%, 1%, or a custom value up to 5%)
 - **Liquidity Display**: Real-time solver balance shown before swap

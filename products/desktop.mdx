@@ -1,25 +1,62 @@
 ---
 title: 'Desktop Wallet'
-description: 'Install the 0xio Desktop wallet for macOS and Windows, a Tauri-based app with a native FHE engine that accelerates encrypted operations.'
+description: 'The 0xio Desktop wallet for macOS and Windows: a native Octra wallet with a menu bar panel, a native privacy engine that speeds up the browser extension, and contract tools.'
 icon: 'desktop'
 ---
 
-The **0xio Desktop** is a native desktop application built with [Tauri](https://tauri.app/) (Rust backend + React frontend). It serves two roles: a full-featured wallet for the Octra Network, and a **native computation engine** that accelerates FHE operations for the browser extension.
+The **0xio Desktop** is a native desktop application built with [Tauri](https://tauri.app/) (Rust backend and React frontend). It is a full wallet for the Octra Network, a menu bar panel for everyday sends and private operations, and a **native privacy engine** that builds proofs for the browser extension.
 
 <Note>
-  **Status: Live (v0.4.2).** Download it from [0xio.xyz/install](https://0xio.xyz/install) for macOS (Apple Silicon, signed and notarized by Apple) or Windows. Linux coming soon.
+  **Status: Live (v0.5.5).** Download it from [0xio.xyz/install](https://0xio.xyz/install) for macOS (Apple Silicon, signed and notarized by Apple) or Windows.
 </Note>
 
 ## Why Desktop?
 
-Browser extensions run in a sandboxed environment with limited CPU access and a 4GB memory ceiling. FHE operations, particularly range proof generation, are computationally heavy:
+Browser extensions run in a sandbox with limited access to the CPU and memory, and private proofs are heavy work. The desktop app runs **pvac-rs** natively with every CPU core, so private operations finish faster than in the browser, both in the app and for the extension when the two run together.
 
-| Platform | Range Proof Time | Reason |
-|----------|-----------------|--------|
-| Extension (WASM) | ~80 seconds | Multithreaded via rayon, batched LC assembly |
-| Desktop (native Rust) | ~17 seconds | Full CPU access, native ARM64/x86 optimizations |
+---
 
-The desktop app removes these bottlenecks by running **pvac-rs** natively, with full access to all CPU cores and system memory.
+## Menu Bar Panel
+
+Click the 0xio icon in the menu bar for your wallet at a glance. The panel opens over other apps, including full-screen ones, on every Space and on the display you clicked.
+
+- **Balance** up front, hidden until you click it, with a live status line for the privacy engine.
+- **Send**, **Receive** (with a QR code), **Private** and **Lock**, and a wallet switcher. The **•••** menu holds the network, Lock now, Open at login, Open and Quit.
+- **Private:** encrypt or decrypt, claim private transfers, turn on a private balance, migrate it or update the encryption key, each with the live network fee.
+- **Locked:** unlock in the panel with Touch ID or your password.
+- The menu bar icon shows an outline while locked, a turning slash while a private proof runs, and the number of transfers waiting to be claimed.
+
+### Command Line
+
+The panel has a command line that reads loose input, for example `send 10 to 0xio privately`, `pay bob half` or `5 to oct8Hk...`. It accepts any word order and small typos, amounts such as max, half, 25% or 1.5k, and recipients by contact name, wallet name or address prefix. A live line says what Return will do. A command only fills the form: every send still opens its review.
+
+<Frame caption="The menu bar panel with a command typed">
+  <img src="/images/desktop/menu-bar-command-line.png" alt="Menu bar panel with the balance hidden and a typed command with its live preview" width="300" />
+</Frame>
+
+
+### Themes
+
+Choose the panel's look in **Settings > Appearance > Menu bar theme**: Match app, Original, Smoke, Frost, Octra, Clear, Phosphor, Ember or CLI.
+
+The **CLI** theme turns the panel into a terminal with no buttons. Type `0xio --help` for the commands (send, receive, qr, encrypt, decrypt, private, claim, migrate, lock, unlock, balance, status, wallets, use, network, theme, open, quit and more). It keeps history and tab completion, shows a review before anything is signed, and signs only after you type `y`. A review lapses when the wallet, network, lock state or fee changes before you answer.
+
+<Frame caption="The CLI theme with a send review">
+  <img src="/images/desktop/menu-bar-cli.png" alt="CLI theme showing a send review that waits for y" width="300" />
+</Frame>
+
+
+### Reviews and Fees
+
+- Every send, encrypt, decrypt, setup, migration and key update shows a review with the wallet, network and live network fee, then asks for Touch ID or your password.
+- The fee on the review is the fee signed, as long as the network still accepts it. You are asked to review again only when the network's minimum fee rises above it.
+- A fee that cannot be read blocks the action with **Network fee unavailable. Try again.** No default fee is ever signed.
+- An approved request runs only on the wallet and network its review showed.
+- A private send is offered only when the private balance is ready. A balance that is due for a migration, needs a key update or setup, or is waiting for the network shows its status, with **Migrate**, **Update** or **Turn on** where the app can do it.
+
+### Lives in the Menu Bar
+
+Closing the window (the red button, Cmd+W or Cmd+Q) keeps 0xio Desktop running in the menu bar without a Dock icon. The wallet, auto-lock and proof work carry on. Open the window again from the menu bar, Finder, Spotlight or the Dock. **Quit** in the menu bar menu or panel quits the app. **Open at login** starts it quietly in the menu bar.
 
 ---
 
@@ -36,10 +73,11 @@ The home screen displays your public and private (FHE-encrypted) balances, recen
 - **Bulk send**: Send to many recipients in one batch, with a pre-send summary plus duplicate-address and insufficient-balance guards and per-row stealth progress. Private (FHE) bulk sends are available only in the desktop app
 - **QR codes**: Generate and share receive addresses
 - **OU control**: Customize Operational Unit (gas) fees per transaction
+- **Private send readiness**: in the main window, private send is disabled before the confirm while the private balance cannot be proven or the encryption key differs from the network's, with the reason in the Send button's place
 
 ### Privacy Operations
 
-Full encrypt/decrypt/claim support, same as the extension:
+Full encrypt, decrypt and claim support, same as the extension. Setting up a private balance, updating the encryption key and migrating a balance each open a review with the wallet, network and live fee, then ask for Touch ID or your password. A changed fee, wallet or network is refused before any proof work.
 
 <Steps>
   <Step title="Encrypt (Public → Private)">
@@ -63,18 +101,22 @@ Create or import multiple wallets using 12/24-word seed phrases. All wallets use
 
 ### NFT Gallery
 
-A full-width grid of your NFT collections with search, filters, and adjustable grid densities. Click any NFT to open a split-view detail page with metadata, ownership, and contract information alongside the artwork.
+- Every collection the wallet holds shows without an import step, including collections on the 0xio NFT list that the node does not list. **Import** stays for any other contract.
+- The newest piece leads, then one shelf per collection, newest first.
+- Hide a collection or a single piece, with Undo for four seconds. Hidden ones wait on the **Hidden** shelf, kept per network and wallet.
+- A piece opens as a page with its status, who holds it and two actions.
 
 ### Living NFTs
 
-Native support for **Geodesics** by Euint Labs: self-rendering on-chain programs. The detail view runs the NFT's on-chain rendering program and displays it live, so the artwork reflects current contract state rather than a static image. Each program runs in an isolated frame with no network access and reads the chain only through the wallet's read-only bridge, so it can never reach your keys or other data.
+Living NFTs are on-chain programs that draw their own art. The detail view runs the program in an isolated frame with no access to the wallet. A program that reads the chain may reach only its own network's RPC; gallery thumbnails stay offline. See [NFT Standards](/wallet/nft-standards#living-nfts-euint-labs-geodesics-and-chain-state-collections).
 
 ### Xpectrum Marketplace
 
-List and manage your NFTs on the Xpectrum marketplace directly from the wallet:
+List and manage your NFTs on the Xpectrum marketplace from the wallet:
 
-- **List for sale**: Two-signature listing flow with on-chain verification
-- **Cancel listing**: Delist an NFT at any time
+- **List for sale**: two-signature listing flow with on-chain verification
+- **Change price**: cancels, approves again when needed and lists again, with every signature shown on the review first
+- **Cancel listing**: delist an NFT at any time
 
 ---
 
@@ -92,12 +134,7 @@ The desktop app runs a **local WebSocket server** on `ws://127.0.0.1:19345` that
 
 ### What Gets Accelerated
 
-| Operation | Without Desktop | With Desktop |
-|-----------|----------------|--------------|
-| Range proof generation | ~80s (WASM) | ~17s (native) |
-| PVAC key decompression | ~10s | ~3s |
-| Pedersen commitment | ~1s | ~200ms |
-| Bound proof | ~2s | ~500ms |
+Range proofs, bound proofs, commitments and PVAC key work for the extension's encrypt, decrypt, private send and claim all run natively in the desktop app.
 
 ### Security
 
@@ -110,9 +147,9 @@ The desktop app runs a **local WebSocket server** on `ws://127.0.0.1:19345` that
 
 ### Status Indicators
 
-- **Sidebar badge**: Shows "Extension Connected" when paired
-- **System tray icon**: Changes color during proof computation
-- **Computing state**: Real-time progress display for active FHE operations
+- **Extension**: the extension's status bar shows a **0xio Desktop** chip while the desktop app runs its proofs
+- **Menu bar icon**: the slash turns while a private proof runs
+- **Engine card**: the menu bar names the extension only for the extension's own proofs
 
 ---
 
@@ -120,9 +157,9 @@ The desktop app runs a **local WebSocket server** on `ws://127.0.0.1:19345` that
 
 The desktop app includes an AI-powered assistant for smart contract development:
 
-- **AML Brainstorming**: Describe what you want your contract to do and get AML code suggestions
-- **Code Generation**: Generate complete contract templates from natural language descriptions
-- **Error Fixing**: Paste compiler errors and get automated fix suggestions
+- **AML brainstorming**: describe what you want your contract to do and get AML code suggestions
+- **Code generation**: generate complete contract templates from natural language descriptions
+- **Error fixing**: paste compiler errors and get suggested fixes
 
 ---
 
@@ -162,22 +199,11 @@ Keep a local registry of your deployed contracts with name, address, language, a
 
 ---
 
-## FHE Tools
-
-Standalone encrypt/decrypt utilities for developers and power users:
-
-- **Encrypt**: Convert a plaintext integer to an FHE ciphertext (`hfhe_v1|...` format)
-- **Decrypt**: Recover the plaintext from an FHE ciphertext using your PVAC context
-
-These are useful for testing contract parameters, verifying encrypted balances, or debugging FHE operations.
-
----
-
 ## Built-in DApp Browser
 
 Browse Octra ecosystem dApps without leaving the desktop wallet:
 
-- **DApp directory**: Quick links to Octrascan, 0xio DEX, Atlas, and developer docs
+- **DApp directory**: Quick links to ecosystem sites
 - **URL navigation**: Visit any URL directly
 - **Open in window**: Launch dApps in a native window for sites that don't support iframe embedding
 - **Connected DApp management**: View and manage permissions for connected dApps
@@ -208,7 +234,9 @@ Switch networks in **Settings**. Devnet is recommended for testing FHE operation
 - **Seed phrase backup**: Requires password re-entry to view
 - **Input validation**: Address format, amount bounds, and JSON parsing checks
 - **Sandboxed browser**: Restricted iframe permissions, blocks `javascript:`, `data:`, and `file:` schemes
-- **Isolated frames**: Living NFTs, `oct://` pages and the Circles preview load from the app's own isolated scheme, each with a security policy of its own and an opaque origin, so untrusted content cannot reach the wallet or other sites. Living NFT programs get no network access at all
+- **Isolated frames**: Living NFTs, `oct://` pages and the Circles preview load from the app's own isolated scheme, each with a security policy of its own and an opaque origin, so untrusted content cannot reach the wallet or other sites. A seed-only living NFT program gets no network access at all, and one that reads the chain may reach only its own network's RPC
+- **dApp windows**: A dApp opened in its own window can only send wallet requests, which go through the same approvals as the in-app browser. It cannot reach any other part of the app
+- **Menu bar approvals**: Every send, encrypt, decrypt, migration and key update from the menu bar signs only on the wallet and network its review showed, at the live network fee the review showed. A fee that cannot be read blocks the action with a retry; no default fee is ever signed
 - **Sentry crash reporting**: Automated error reporting for stability improvements
 
 ---
@@ -244,7 +272,7 @@ The desktop app checks [0xio.xyz](https://0xio.xyz/install) for updates automati
 
 1. Download the latest build from [0xio.xyz/install](https://0xio.xyz/install)
 2. Follow the platform-specific installer instructions
-3. Open the app. It appears in your menu bar (macOS) or system tray
+3. Open the app. It also appears in your menu bar (macOS) or system tray
 
 ### Creating a Wallet
 
@@ -257,9 +285,9 @@ The desktop app checks [0xio.xyz](https://0xio.xyz/install) for updates automati
 No configuration needed. If both the desktop app and the browser extension are running with the same wallet:
 
 1. The extension detects the desktop app automatically
-2. A "Desktop Connected" indicator appears in the extension
-3. FHE operations are now accelerated through the desktop engine
+2. A **0xio Desktop** chip appears in the extension's status bar
+3. Private proofs now run in the desktop app
 
 <Tip>
-For the best experience, keep the desktop app running while using the browser extension. All heavy cryptographic operations will be silently offloaded to native code.
+Keep the desktop app running while you use the browser extension; it can stay in the menu bar with the window closed.
 </Tip>

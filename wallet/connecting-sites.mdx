@@ -1,0 +1,108 @@
+---
+title: "Connecting to Sites"
+description: "Connect the 0xio browser extension to Octra and EVM websites, choose which wallet a site uses, and manage connected sites."
+icon: "plug"
+---
+
+The 0xio browser extension connects to two kinds of websites:
+
+- **Octra sites**, through the [0xio SDK](/developers/sdk-guide) and the `window.octra` provider.
+- **EVM sites** (Ethereum and other EVM networks). Sites find the wallet through EIP-6963 and list it as **0xio Wallet**. The extension also sets `window.ethereum` when no other wallet has set it.
+
+A site sees nothing until you approve its connection, and every transaction and signature it asks for opens a review first.
+
+<Note>
+This page covers the browser extension. The mobile app connects to sites in its built-in browser and through WalletConnect, see [Mobile Wallet](/products/mobile#connect-a-dapp-walletconnect). The desktop app has its own built-in browser, see [Desktop Wallet](/products/desktop#built-in-dapp-browser).
+</Note>
+
+## Connecting
+
+Sites ask to connect from their own page. The connect review shows the site, the wallet it will see and the network:
+
+- The site can view this address and its balances.
+- Every transaction and signature needs your approval.
+
+Choose **Reject** or **Connect**.
+
+### When the Open Wallet Has No EVM Address
+
+A wallet imported from an Octra private key has no 0x address. When such a wallet is open and an EVM site asks to connect, the review lists your wallets that have an EVM address, with the one you used last picked first. Watch-only wallets are never listed.
+
+<Frame caption="Choosing a wallet for an EVM site">
+  <img src="/images/extension/site-wallet-picker.png" alt="Connection request listing wallets with an EVM address while a private key wallet is open" width="320" />
+</Frame>
+
+If none of your wallets has an EVM address, the review offers **Add a wallet**: import a recovery phrase or create a new wallet. The review stays open and comes back with the new wallet picked.
+
+## Several Wallets per Site
+
+An EVM site can be connected to more than one of your wallets:
+
+- When you open a wallet that is connected to the site, the site moves to it.
+- When you open a wallet that is not connected to the site, the site keeps the wallet it had.
+- Switching wallets never disconnects a site.
+- A site only ever sees the wallet in use. It cannot learn which of your other wallets are connected to it, and a request naming another address is refused.
+
+An Octra site keeps one wallet. Switching wallets does not move it, and its requests sign with its own wallet. When a site on another wallet asks for a private operation, the wallet asks first: switch to that wallet, or move the site to the open one.
+
+Removing a wallet from 0xio lists its connected sites first, removes it from every site, and disconnects a site left with no wallet.
+
+## The Site Chip
+
+The status bar at the bottom of the wallet shows the open tab's site:
+
+| Chip | Meaning |
+|------|---------|
+| Host with a dot | The site uses the open wallet |
+| Wallet picture and host | The site uses another of your connected wallets |
+| **Not connected** | The open wallet is not connected to this site |
+
+<Frame caption="The site chip menu">
+  <img src="/images/extension/site-chip-menu.png" alt="Site chip menu with the connected wallets, the network and Disconnect" width="320" />
+</Frame>
+
+Tap **Not connected** to open the connect review for the open wallet. On a connected site the chip's menu lists the site's wallets, **Connect another wallet**, the **Network** the site is on (choose another of your networks to move it) and **Disconnect**. Choosing another of the site's wallets opens a short review: both stay connected, and the site uses the new one until you open another connected wallet.
+
+## Mainnet and Testnet
+
+0xio is on Mainnet or Testnet as a whole (see [EVM Networks](/wallet/evm#mainnet-and-testnet)). When a site asks for a network on the other side, the review asks to **Switch 0xio to Mainnet** or **Switch 0xio to Testnet**. Approving moves Home, balances, History and every connected site to that side, then puts the site on the network it asked for. Rejecting changes nothing.
+
+<Frame caption="A site asks for a testnet">
+  <img src="/images/extension/site-switch-side.png" alt="Network request asking to switch 0xio from Mainnet to Testnet, with Reject and Switch to Testnet" width="320" />
+</Frame>
+
+
+## Reviewing Requests
+
+Every request from a site opens its own review, names the site, and shows the wallet that signs with its balance (EVM reviews label it **Signing with**). Each review ends with **Reject** and the action, for example **Connect**, **Sign**, **Send**, **Switch**, **Add and switch**, **Add token** or **Deploy**.
+
+- **Messages:** the full message. A message that is not readable text is shown as hex with a warning. A token permit says that it lets the spender move your tokens without a separate approval.
+- **Transactions:** what the call does (for example a token transfer or approval), the amount, the recipient or spender, and the maximum fee. A call 0xio cannot decode says so.
+- **Token approvals:** tap the pencil on the Amount row to change the amount, or turn on Unlimited. The amount signed is the one shown, and never more than the site asked for unless you pick Unlimited.
+- **Fees:** site transactions use the wallet's live network fee. The fee the site sent is used only when the network gives none, and the review marks it **Suggested by site**.
+- **Contract deployment:** a review with the code size, the new contract's address and the live fee.
+- **Add a network** and **Add token** show what will be added. Add networks only from sites you trust: the RPC sees your address and your activity on that network.
+
+After you approve, the wallet checks again that the signing wallet is still in 0xio, still connected to the site, and still has the same address. If anything changed, nothing is signed.
+
+## Connected Sites
+
+**Settings > Connections > Connected sites** lists every site once, with its first wallet, a **+N** count for more wallets and its network. Open a site to see its wallets (each with **Remove**), **Connect another wallet**, the network and **Disconnect**.
+
+<Frame caption="A connected site">
+  <img src="/images/extension/connected-site.png" alt="A connected site page with its wallet, network and Disconnect" width="320" />
+</Frame>
+
+
+<Warning>
+Disconnecting stops a site from reading your address and asking for transactions. It does not cancel pending transactions or revoke token approvals already on chain.
+</Warning>
+
+## While Locked
+
+While the wallet is locked, sites receive no address and no balances. The same connection comes back after you unlock, without a new prompt.
+
+## For Developers
+
+- Octra sites: [SDK Guide](/developers/sdk-guide).
+- EVM sites: the provider supports the standard EIP-1193 methods. See [EVM Provider](/developers/sdk-guide#evm-provider) for the methods that open a review, those answered locally and those refused.

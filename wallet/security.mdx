@@ -10,7 +10,7 @@ icon: "lock"
 
 All three clients support biometric unlock with a password or PIN fallback:
 
-- **Extension:** WebAuthn passkey: unlock with your device biometrics (enable it under Security & Backup). Passkey unlock is currently Chrome-only and not available on Firefox.
+- **Extension:** a passkey (Touch ID, Windows Hello or a security key) can unlock the wallet instead of the password. Set it up in **Settings > Security**. The lock screen opens the passkey prompt only when you tap **Use passkey**. Passkeys are not available on Firefox, and changing or removing the password turns the passkey off.
 - **Desktop:** Touch ID / Windows Hello. On desktop, biometrics are the **primary** prompt for sensitive actions, with your password as the fallback
 - **Mobile:** Face ID / Touch ID / fingerprint for transaction approval and unlock, with PIN fallback
 
@@ -24,10 +24,10 @@ Automatically lock your wallet after periods of inactivity.
 
 ### Configuration
 
-1. Navigate to **Settings > Security > Auto-Lock**
+1. Navigate to **Settings > Security** and open the auto-lock setting
 2. Select timeout period:
    - 5 minutes
-   - 15 minutes (recommended)
+   - 15 minutes
    - 30 minutes
    - 1 hour
    - Never (not recommended)
@@ -35,9 +35,9 @@ Automatically lock your wallet after periods of inactivity.
 ### How It Works
 
 - Timer resets with any wallet interaction
-- Locked wallet requires password to reopen
-- Protects against unauthorized access if you step away
-- Active sessions close automatically
+- Locked wallet requires your password (or passkey) to reopen
+- Locking clears decrypted private balances and wallet data held in memory, and shuts down the private balance engine
+- While the extension is locked, its toolbar icon shows a padlock and sites receive no address or balances
 
 <Warning>
 **Security Recommendation:** Use 15 minutes or less for shared or public computers.
@@ -49,13 +49,13 @@ Automatically lock your wallet after periods of inactivity.
 
 <Steps>
   <Step title="Open Security Settings">
-    Go to Settings > Security > Change Password
+    Go to Settings > Security and choose Change password
   </Step>
   <Step title="Enter Current Password">
     Verify your identity with existing password
   </Step>
   <Step title="Enter New Password">
-    Create a strong new password (12+ characters)
+    Create a strong new password (at least 8 characters, 12 or more recommended)
   </Step>
   <Step title="Confirm New Password">
     Re-enter to confirm
@@ -86,10 +86,10 @@ Automatically lock your wallet after periods of inactivity.
 **Extreme Caution:** Only view your recovery phrase in a secure, private location. Never screenshot or photograph it.
 </Warning>
 
-1. **Settings > Security > Show Recovery Phrase**
+1. **Settings > Backup**, then the recovery phrase (extension). On a new wallet, the **Back up** tag on Home opens the same backup
 2. Enter your password
 3. Write down all 12 words in order
-4. Hide/close the view immediately
+4. Hide or close the view immediately
 
 ### Multiple Devices
 
@@ -122,7 +122,7 @@ Use your Recovery Phrase to access the same wallet on multiple devices:
 - Cold storage solutions
 
 **How to Export:**
-1. **Settings > Advanced > Export Private Key**
+1. **Settings > Backup**, then the private key (extension). With EVM on, the EVM key is shown too, with its own QR code
 2. Enter password
 3. Copy private key (never screenshot)
 4. Store securely (treat like recovery phrase)
@@ -131,9 +131,11 @@ Use your Recovery Phrase to access the same wallet on multiple devices:
 
 All transactions require explicit approval:
 
-- **Review:** Every transaction shows full details (including contract method and parameters for contract calls)
-- **Confirm:** Password or biometric required (on mobile, sends to an address you have whitelisted skip this check; see [Whitelisted Addresses](/wallet/sending#whitelisted-addresses-mobile))
+- **Review:** Every transaction, approval included, shows full details before anything is signed (including the contract method and its arguments for contract calls)
+- **Confirm:** In the extension the review ends with a button pair: **Back** and **Send** for your own sends, **Reject** and the action (Connect, Sign, Send and so on) for site requests. The desktop menu bar asks for Touch ID or your password after its review. On mobile every send, approval, signature and connection is confirmed with a slide, then Face ID or the PIN when **Ask before sending** (sends) or **Ask for PIN before signing** (sites) is on
+- **Fee shown is fee signed:** the network fee on the review is read live, and that fee is the one signed. A fee that cannot be read blocks the action instead of falling back to a default
 - **Signing wallet shown:** Every approval, message signatures included, names the wallet and network it signs with
+- **Bound to what you reviewed:** a transaction is signed only on the wallet and network its review showed. Switching wallet or network before it is sent refuses it
 - **No Auto-Sign:** Even for connected dApps
 - **Cancel Anytime:** Before signing completes
 
@@ -143,22 +145,29 @@ All transactions require explicit approval:
 
 View and manage website connections:
 
-1. **Settings > Connected Sites**
-2. See all authorized dApps
-3. View permissions granted
-4. Revoke access anytime
+1. **Settings > Connections > Connected sites** (extension)
+2. See every connected site with its wallets and network
+3. Open a site to remove a wallet from it or disconnect it
+4. Disconnecting does not revoke token approvals already on chain
+
+See [Connecting to Sites](/wallet/connecting-sites).
 
 #### Permission Types
 
+Octra sites ask for these permissions when they connect:
+
 | Permission | Description |
 |-----------|-------------|
-| `read_address` | Access your wallet address |
-| `read_balance` | View your public balance |
-| `send_transactions` | Request transaction signatures |
-| `sign_messages` | Request message signatures |
-| `contract_calls` | Request smart-contract calls |
-| `view_private_balance` | Access your encrypted balance (requires explicit consent) |
-| `private_transfers` | Initiate, list, and claim stealth transfers |
+| `accounts` | Your address and public balance |
+| `public_transactions` | Ask you to sign public transactions and messages |
+| `contract_calls` | Ask you to sign smart contract calls |
+| `contract_views` | Read-only contract calls |
+| `private_balance_read` | Your private balance, decrypted values and pending transfers (sensitive) |
+| `private_proofs` | Encrypting values and building proofs (sensitive) |
+| `private_transfers` | Ask you to send private transfers (sensitive) |
+| `private_claims` | Ask you to claim private transfers (sensitive) |
+
+EVM sites see only the 0x address of the wallet in use and its balances.
 
 <Tip>
 **Best Practice:** Regularly audit connected dApps and revoke unused connections.
@@ -168,15 +177,15 @@ View and manage website connections:
 
 ### Connected dApp Sessions
 
-Each connected dApp holds a session scoped to the permissions you granted. Review and revoke them under **Connected Sites** (see [Connection Management](#connection-management)). Revoking a connection immediately ends that dApp's session.
+Each connected site holds a session scoped to the permissions you granted. Review and revoke them under **Connected sites** (see [Connection Management](#connection-management)). Disconnecting immediately ends that site's session.
 
 ### Secure Logout
 
 Always lock the wallet on shared devices:
 
-1. Click the lock icon in the header (extension/desktop)
-2. Or use **Settings > Lock Wallet**
-3. Unlock requires your password, PIN, or biometrics
+1. Extension: **Settings > Lock wallet**
+2. Desktop: **Lock** in the menu bar panel, or Cmd+L while the panel is open
+3. Unlock requires your password, PIN, passkey or biometrics
 
 ## Watch-Only and Balance Privacy
 
@@ -192,6 +201,8 @@ The mobile app adds device-level safeguards:
 - **Jailbreak / root detection** with an on-screen warning when a compromised device is detected
 - **PIN lock** with auto-lock and rate limiting, backed by the device keychain/keystore
 - **Honest browser lock:** the in-app browser shows a lock only on https pages, marks plain http as not secure, and shows none for `oct://` content
+- **Lookalike site warnings:** the in-app browser flags a site whose name is spelt close to a listed app, or uses another alphabet, and warns before it can connect, sign or send (on by default, in Browser settings)
+- **Erase this phone:** lists each wallet as backed up or not before anything is erased, and asks once more when one is not
 
 ## Network Security
 
@@ -199,20 +210,21 @@ The mobile app adds device-level safeguards:
 
 0xio validates RPC endpoints before connecting:
 
-- **Certificate Validation:** HTTPS only
-- **Known Networks:** Pre-configured safe RPCs
-- **Custom Networks:** A node must answer as an Octra node before it is added, with a warning that it sees your address and the transactions you sign there
+- **Known Networks:** Pre-configured RPCs for Octra mainnet and devnet and the built-in EVM networks
+- **Custom Octra Networks:** a node must answer as an Octra node before it is added, with a warning that it sees your address and the transactions you sign there. Its URL must be http or https
+- **Custom EVM Networks:** the RPC must be https and must answer with the network's chain ID before it is saved. A site can never change the RPC, name or symbol of a network you already have
+- **Optional RPC proxy:** wallets talk to the Octra node directly. The 0xio RPC proxy is used only when you turn it on, never as a silent fallback
 
 ### Phishing Protection
 
 Built-in protections against common attacks:
 
-- **Address Validation:** Checks address format
-- **Warning Banners:** Alerts for suspicious transactions
-- **Domain Verification:** Highlights mismatched domains
-- **Transaction Preview:** Always shows full details
+- **Address Validation:** Octra addresses must be `oct` plus 44 Base58 characters; pasted spaces are stripped. Sends to your own address are refused
+- **Transaction Preview:** Always shows full details, the signing wallet and the network
+- **Spam filtering:** tokens and NFT collections that look like spam (links or bait words in the name, or a symbol imitating a known token) start hidden, and EVM history leaves out zero-value transfers and spam tokens, so address-poisoning transfers never show
+- **Lookalike sites (mobile):** see below
 - **Wallet pictures:** Each wallet's picture is drawn from its address, the same in the mobile app and the extension, so a wrong wallet looks wrong before you check the address
-- **Isolated content (desktop):** Living NFTs, `oct://` pages and the Circles preview run in isolated frames with a security policy of their own; NFT programs have no network access and cannot reach the wallet
+- **Isolated content:** living NFTs run sandboxed with no access to the wallet or its keys; a program may reach only its own network's RPC. On desktop, `oct://` pages and the Circles preview also run in isolated frames with a security policy of their own
 
 ## Security Best Practices
 
@@ -284,7 +296,7 @@ Perform monthly security audits:
 - [ ] Auto-lock enabled
 - [ ] Connected dApps reviewed
 - [ ] No suspicious transaction history
-- [ ] Extension is latest version
+- [ ] Wallet apps are on the latest version
 - [ ] Device security software updated
 
 ### Reporting Security Issues

@@ -5,77 +5,121 @@ icon: 'mobile'
 ---
 
 <Note>
-  **Status: Live (v1.3.0).** Install from [0xio.xyz/install](https://0xio.xyz/install).
-  - **iOS**: on TestFlight; the App Store release is in review
+  **Status: Live (v1.3.3).** Install from [0xio.xyz/install](https://0xio.xyz/install).
+  - **iOS**: on TestFlight
   - **Android**: open testing on Google Play
 </Note>
 
-The **0xio Mobile App** brings the power of the Octra Network to your pocket. Built with React Native 0.86 and Expo SDK 57, it offers the same high-grade encryption as the extension, including native pvac-rs FHE, optimized for touch interfaces and mobile security.
+The **0xio Mobile App** is the 0xio Octra wallet for iOS and Android. Built with React Native 0.86 and Expo SDK 57, it runs the same pvac-rs privacy engine as the other clients, natively on the phone.
 
 ## Mobile-Exclusive Features
 
 ### PIN & Biometric Security
-Forget typing passwords every time. The mobile app integrates directly with your device's secure enclave.
+The mobile app keeps your keys in the device's secure storage and unlocks with a PIN or biometrics.
 * **PIN Code:** Set a 6-digit PIN with rate-limited retry protection.
 * **FaceID / TouchID:** Log in and sign transactions using your unique biometric signature.
-* **Every transaction is confirmed:** each one shows a review with Close and Continue before anything is signed, whether or not a PIN or biometrics are set. With **Transaction Auth** on, the PIN or biometric check follows, and turning Transaction Auth off asks for it first.
+* **Every transaction is confirmed:** each send, approval, signature and connection ends on a review you confirm with a slide, whether or not a PIN or biometrics are set. Tap outside the review to back out. With **Ask before sending** on (Settings, Security), the PIN or biometric check follows the slide, and turning it off asks for it first. No address skips this check.
 * **Secure Storage:** Your encrypted keys are protected by the device's hardware-backed Keychain/Keystore.
 
 ### Push Notifications
 Stay informed with real-time alerts for incoming transactions, claim-ready private transfers, and network events.
 
 ### DApp Browser
-Browse and interact with Octra dApps directly from the mobile wallet without leaving the app. The start page lists the ecosystem's sites by category, with your recent sites below. While you browse, the address sits at the bottom within reach of your thumb: tap it to type an address or a search, with suggestions from your recent and known sites. A lock shows only on https pages, plain http is marked not secure, and a green dot means the site is connected to your wallet.
+Browse and interact with Octra dApps directly from the mobile wallet without leaving the app. The start page lists the ecosystem's sites by category, with your recent sites below.
 
-The **...** menu next to the address reloads the page, shares its link, opens it in your phone's browser, switches the network (after asking) and disconnects the site. Every request from a site opens in its own sheet naming the site, the wallet and the network it acts for: connecting lists what the site will be able to do, signing shows the whole message, and a transaction shows the amount, the recipient and the network fee it signs with. Approve or Sign then asks Close or Continue, naming the site, the full recipient and the fee, before anything is signed. A request to sign a transaction without sending it says the site can send what you sign, a transaction the site signed earlier is only sent after you approve it, and sites cannot submit through raw RPC calls.
+One bar at the top of the start page takes anything you type:
+* **An app name or words:** matching apps, your recent sites, then a web search.
+* **An Octra address** (or a payment request): Send to this address, Open in Octrascan, or Save as contact.
+* **A transaction hash:** your matching transaction, and Open in Octrascan.
+* **An `oct://` address:** a circle hosted on Octra, read from the chain. Sealed circles ask for their passphrase.
+* **Anything else:** opened as a site.
+
+Scan sits beside the bar. While you browse, the address sits at the bottom within reach of your thumb. A lock shows only on https pages, plain http is marked not secure, and a green dot means the site is connected to your wallet. The **...** menu next to the address reloads the page, shares its link, opens it in your phone's browser, switches the network (after asking) and disconnects the site.
+
+Every request from a site opens in its own sheet naming the site and the wallet it acts for, one request at a time:
+* **Connect** lists what the site can see (your address and balance), what it can ask (signatures you review), any private permissions, and that it can never move funds on its own. Tap **Change** to connect another wallet. Slide to connect.
+* **Sign a message** shows the whole message. Signing moves no funds and costs no fee. Slide to sign.
+* **A transaction** shows a receipt: what it does, the amount with its USD value, the recipient, the fee, the network and your wallet. Slide to approve.
+
+<Frame caption="Connecting a site in the mobile app">
+  <img src="/images/mobile/connect-review.jpg" alt="Mobile connect sheet naming the site and wallet with Slide to connect" width="280" />
+</Frame>
+
+
+With **Ask for PIN before signing** on, Face ID or the PIN follows the slide. A request to sign a transaction without sending it says the site can send what you sign, a transaction the site signed earlier is only sent after you approve it, and sites cannot submit through raw RPC calls. If you switch wallet or network before a request is signed, nothing is signed or sent. A site connection lasts 24 hours.
+
+### Browser Settings
+Tap the gear on the Browse start page:
+* **Connected sites** for this wallet and network.
+* **Ask for PIN before signing** (on by default). Turning it off asks for your PIN or biometrics.
+* **Search with** DuckDuckGo, Brave or Google.
+* **Outside links open in** 0xio or your phone's browser.
+* **Keep recent sites** (on by default, 30 days).
+* **Warn on lookalike sites** (on by default).
+* **Clear recent sites** and **Clear site data**, each with two taps.
+
+### Lookalike Site Warnings
+A site whose name is spelt close to an app listed in the browser, or is written in another alphabet, is marked **Lookalike** next to its address. Before it can connect, sign, send or switch network, a red warning names the app it resembles. **Close** refuses the request; **Continue** goes on if you meant to open that site. Listed apps are never flagged.
 
 ### Connect a dApp (WalletConnect)
-Use a dApp on another device from your phone: tap the scan icon on the home screen and scan the site's WalletConnect code, or paste its connection link. Before anything connects, the app shows the site, the wallet it will see and the network. A watch-only wallet cannot connect, since it cannot sign. Connected sites are listed on the same screen with their wallet and network, each with Disconnect. A connection request that arrives after you leave the screen is refused, never approved unseen. Requests from a connected site use the same approval sheet as the browser, with the same Close or Continue step.
+Use a dApp on another device from your phone: tap the scan icon on the home screen. The camera opens on the code; you can also paste a connection link. The connect sheet shows the site, the wallet and the network, each with **Change**, and warns when the site asked for another network. Slide to connect. A watch-only wallet cannot connect, since it cannot sign.
 
-### NFT Support
-Import and browse NFT collections, view owned tokens, and manage your NFT portfolio on the go.
+Live sessions are listed on the same screen as wallet on network, each with Disconnect (two taps). A session stays with the wallet and network it was approved on: if the app is on another one later, its requests ask you to switch back or reconnect. A connection request that arrives after you leave the screen is refused, never approved unseen. Requests from a connected site use the same sheets and slide as the browser.
+
+### Connected Sites
+**Settings > Connected dApps** (or Browser settings) lists every site by wallet and network, the one you are on first. Tap a site to see what it sees, can ask and can never do, and Disconnect it (two taps) for that wallet and network only. WalletConnect sessions are listed below, and **Disconnect all** clears everything.
+
+### Collectables
+The NFTs tab opens on your newest piece, then a shelf per collection. Pull down to refresh. Tap a piece for its art, status, traits and more from its collection.
+* **Send** a piece to an address, a contact or one of your wallets.
+* **List for sale**, **Change price** or **Cancel listing** on a supported market, with the price in OCT or USD. The first listing approves the market for that piece only.
+* Each step ends on a review you slide to confirm.
+* **Hide** a piece or a whole collection from **More**, with Undo. **Hidden**, under the last shelf, shows them again. Hidden pieces are kept per wallet and network.
+* A piece you send leaves the gallery at once and its page shows **Sent**.
+* Tap **+** to import a collection.
 
 ### Address Book
-Save and label frequently used addresses for quick access when sending transactions.
+Save and label frequently used addresses. Search by name or address, tap a contact to send to it or copy its address, and edit or delete it (two taps). The app says when an address is not valid or is already saved.
 
 ### Multi-Wallet Support
-Create or import multiple wallets and switch between them seamlessly. All wallets use the same master root key derivation as the extension and desktop. From the wallet list you can also add another account from a recovery phrase already on the phone, or watch an address you don't hold the keys for.
+Create or import multiple wallets and switch between them from the wallet list (tap the wallet name on Home, or swipe from the left edge). All wallets use the same master root key derivation as the extension and desktop.
+
+**Add a wallet** is one sheet: **Create new wallet**, **Derive account** from a recovery phrase already on the phone, and under **Already have one**: **Recovery phrase**, **Private key** or **Watch an address**.
+
+**Rename** a wallet from the wallet list or Settings: a sheet with the wallet's picture, quick names (Savings, Daily, Trading, Cold) and its full address.
 
 ### Wallet Pictures
 Every wallet has its own picture, drawn from its address: the 0xio braces around a composition of circles, in muted colours. It appears on the home screen, in the wallet list, in the address picker and on the Receive screen. The same address always draws the same picture, and the browser extension draws it identically, so a wallet looks the same on your phone and in your browser and the wrong one stands out before you read its address.
 
-### Readable History
-Token and NFT transfers show what actually moved. An NFT reads as **Received NFT** with its number and collection (for example `#5 GDSC`), a token transfer shows its amount and symbol, and a transfer you sent names the person you sent it to rather than the token contract.
+### History
+History follows your wallet's address on every network the app knows (mainnet, devnet and your own nodes), newest first, with each entry marked with its network and chips to filter to one. It loads more as you scroll, and you can pull down to refresh.
 
-### Whitelisted Addresses
-When sending to an address you trust, tick **Whitelist this address** to mark it as trusted in Send and the Address Book. Sends to it still show the review and, with Transaction Auth on, the PIN or biometric check. You can remove an address from the whitelist in the Address Book.
+Entries read as sentences: **Received from**, **Sent to** or **Sent privately**, with a contact or wallet name where the app knows one. NFT and token transfers show what actually moved.
+
+Tap an entry for its receipt: the amount with its USD value and status, To and From with names and full addresses, the time, the network, the fee and the total, then the transaction hash to copy, **Send again** or **Send back**, **Save contact** for a new sender, and **View on Octrascan** on the transaction's own network.
 
 ### Your Own Node
-Add a network in **Settings > Network > Add a network** by giving it a name and the node's RPC address. The app asks the node to answer as an Octra node before saving it, and you choose whether it supports private balances.
+Add a network in **Settings > Network** by giving the node's address. The app checks that the node answers as an Octra node as you type, fills in a name, and asks you to confirm you trust the node with your address and what you sign. You choose whether it supports private balances and can add an explorer. Removing a network asks first; removing the one you are on moves the app to Octra Mainnet.
+
+**Settings > Advanced > Test connection** checks the network you are on: whether the node answers and how fast, whether it answers as Octra, its latest epoch, private balances, and the backup route.
 
 ### Stealth Transfers
 Send private FHE-encrypted transfers where the amount is hidden from everyone except the recipient.
 
 ### Bulk Send
-Send OCT to up to 5 recipients from your public balance in a single batch, signed with the fee its review shows. Private (FHE) bulk sends are available in [0xio Desktop](/products/desktop).
+Bulk sends are available in [0xio Desktop](/products/desktop) and the browser extension. The mobile app sends to one recipient at a time.
 
 ### Optional RPC Proxy
 By default, balances and history come straight from the Octra node. Turn on the **RPC proxy** in **Settings > Advanced** to route mainnet and devnet requests through the 0xio proxy, which compresses history responses for slow connections. The proxy is never used silently as a fallback, and a network you add yourself never uses it.
 
-### Network-Aware History
-History shows the network you are on. With the RPC proxy on, it also shows the other built-in network in the same timeline, with each entry marked.
-
-### Infinite Scroll Pagination
-Transaction history loads progressively as you scroll, with no manual "load more" buttons.
-
 ### Sentry Crash Reporting
-Automated crash reporting with session replay for stability improvements and rapid bug resolution.
+Crash reports help fix problems quickly. They never include keys, recovery phrases or PINs; see the [Privacy Policy](https://0xio.xyz/privacy) for what is sent.
 
 ### Dynamic Recommended Fees
 The app recommends different OU fee amounts per operation type (standard transfer, FHE encrypt, decrypt, etc.) based on current network conditions.
 
-### PVAC Key Switch Detection
-Automatically detects when your PVAC public key has changed on-chain and triggers auto-recovery to re-register, ensuring uninterrupted private operations.
+### Private Balance Status
+When your private balance cannot be used as is (the network holds it for a migration, its key needs an update, or it was made by an older version), a tag sits beside your balance on Home. Tap it to see why and, when your account allows it, re-register your encryption key.
 
 ### Stealth Claim Caching
 Previously claimed stealth transfers are cached locally, so the claim scan only processes new transfers on subsequent runs.
@@ -85,40 +129,54 @@ Previously claimed stealth transfers are cached locally, so the claim scan only 
 ## Core Functionality
 
 ### Dashboard & Balances
-The **Home Screen** provides a dual-view of your assets:
-* **Public Balance:** Instantly visible OCT and tokens.
-* **Private Balance:** Your FHE-encrypted wealth. Tap the "Eye" icon to reveal (requires authentication).
+The **Home Screen** shows your total balance over a faint chart of the day's worth. Drag across the chart to read the worth and change at any moment, and pull down on your assets to refresh. Send, Receive and Privacy sit right below, and only your asset list scrolls. Tap the eye beside the balance to hide amounts.
+
+Each asset shows its name over its symbol, the amount and its USD value, or **No price yet**. Tap one for its page: **Octra** has Send, Receive and Encrypt with your public activity; **Private OCT** has Send, Receive and Decrypt with your private activity only; a custom token shows its contract and decimals, and one you imported can be removed.
+
+The glass bar at the bottom switches between Wallet, History, Browse and NFTs: tap a tab, or hold the bar and slide your finger to carry the lens to another tab. While the app starts its FHE engine, a small **Initializing FHE** pill shows above the bar and you can keep using the wallet.
+
+<Frame caption="Home in the mobile app">
+  <img src="/images/mobile/home.jpg" alt="Mobile Home with the balance blurred, Send, Receive and Privacy, and the tab bar" width="280" />
+</Frame>
+
+
+### Receiving
+**Receive** shows your QR code and address. Type an amount on its keypad to turn the QR into a payment request; **Share request** sends it as a link. Someone scanning it with 0xio gets your address and the amount filled in. See [Payment Requests](/wallet/receiving#payment-requests-mobile) for the format.
 
 ### Sending Assets
 The **Send Flow** is optimized for one-handed use:
-* **Scan to Pay:** Use the camera to scan QR codes for instant address entry.
-* **Privacy Toggle:** Switch between "Public" and "Private" transfer modes with a single tap.
+* **Pick a recipient:** type or paste an address, or choose a contact or a recent recipient. With nobody saved yet, your other wallets are listed.
+* **Scan to Pay:** scan an address, or a payment request that fills in the amount too.
+* **Private sends:** pick **Private OCT** to send privately.
+* **Slide to send** on the review. You can close the progress screen while it runs; the result arrives as a notice.
 
 ### Privacy Suite (FHE)
-Just like the extension, you have full control over your visibility:
-1.  **Encrypt:** Move funds from Public -> Private.
-2.  **Decrypt:** Move funds from Private -> Public.
-3.  **Claim:** Scan the blockchain for incoming private transfers and add them to your balance.
+Tap **Privacy** on Home for a sheet over your wallet:
+1. **Encrypt:** Move funds from Public -> Private.
+2. **Decrypt:** Move funds from Private -> Public.
+3. **Waiting for you:** incoming private transfers, each with **Claim**, and **Claim all**, which claims them one at a time with Pause and Stop.
+
+A private balance can carry a limited number of encrypted layers. When an encrypt, decrypt or private send meets that limit, the review says the balance is refreshed first, shows the fee for both transactions, and one slide runs both.
 
 ---
 
 ## Getting Started
 
 ### Creating a Wallet
-1.  Install the app from [0xio.xyz/install](https://0xio.xyz/install).
-2.  Tap **Create a wallet**.
-3.  **Write down your recovery phrase:** you are shown 12 words once. Write them down, in order, offline.
-4.  **Confirm your backup:** pick the right word for three positions, to prove your written copy works.
-5.  **Set a PIN and biometrics** to protect the wallet on this phone.
+1. Install the app from [0xio.xyz/install](https://0xio.xyz/install).
+2. Tap **Create a wallet**.
+3. **Set a PIN and biometrics** to protect the wallet on this phone.
+4. Name your wallet and copy its address on **Your wallet is ready**.
+5. **Back up your recovery phrase:** tap the **Back up** pill on Home. After your PIN, hold to show your 12 words, write them down in order offline, then tap **I wrote them down**. Until you do, Receive reminds you first.
 
 ### Importing
 Already have the Browser Extension or another 0xio wallet?
-1.  Tap **Import a wallet**.
-2.  Choose **Recovery phrase** (12 or 24 words) or **Private key**, then type, paste or scan it.
-3.  Check the address shown under **This imports**, then tap **Import**. Your public and private balances sync automatically.
+1. Tap **I already have a wallet**.
+2. Type, paste or scan your recovery phrase (12 or 24 words) or private key into the one field. The app tells which it is and flags typos.
+3. Check the wallet it found, with its address and balance, then import it. Your public and private balances sync automatically.
 
 ### Watching an Address
-Tap **Watch an address** and paste or scan any `oct...` address to follow its balance and history. A watched wallet holds no keys, so it can never send.
+From the wallet list, tap **Add a wallet**, then **Watch an address**, and paste or scan any `oct...` address. The app shows its balance and latest activity before you add it. A watched wallet holds no keys, so it can never send.
 
 ---
 
@@ -133,26 +191,6 @@ The mobile app supports multiple Octra networks:
 | Your own node | If you say it runs the FHE stack | The explorer you set, if any |
 
 Switch networks in **Settings > Network**. Devnet is recommended for testing FHE features such as encrypted balances, private transfers, and the encrypt/decrypt flow.
-
----
-
-## Smart Contract Interaction
-
-The mobile app includes a **Tasks** screen for interacting with deployed smart contracts:
-
-* **View calls**: Read contract state without a transaction (free).
-* **Call**: Execute state-changing methods that cost gas (OU).
-* **FHE parameter encryption**: Use `enc(42)` syntax to encrypt integer parameters before sending to the contract.
-* **Auto-decrypt results**: Long return values are automatically tested for FHE decryption.
-
----
-
-## FHE Tools
-
-Standalone encrypt and decrypt tools are available for power users:
-
-* **Encrypt**: Convert a plaintext integer to an FHE ciphertext.
-* **Decrypt**: Recover the plaintext from an FHE ciphertext using your PVAC context.
 
 <CardGroup cols="1">
   <Card title="Install 0xio Mobile" icon="download" href="https://0xio.xyz/install">

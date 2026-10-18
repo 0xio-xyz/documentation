@@ -4,7 +4,7 @@ description: "Technical reference for 0xio cryptographic primitives including Ed
 icon: "key"
 ---
 
-0xio implements industry-standard cryptographic algorithms to ensure the highest level of security for your assets.
+0xio uses standard, widely reviewed cryptographic algorithms.
 
 ## Signing Algorithm
 
@@ -67,6 +67,10 @@ master_key = HMAC-SHA512("Octra seed", seed)[0:32]
 - **Cross-platform:** Importing the same seed phrase produces the same address on all 0xio products (extension, mobile, desktop)
 - **Secure:** HMAC-SHA512 provides cryptographic strength; the first 32 bytes become the Ed25519 seed (the next 32 bytes form the chain code)
 
+### EVM Key Derivation (Extension)
+
+With EVM on, the browser extension also derives a secp256k1 key from the same BIP-39 seed along the standard path `m/44'/60'/0'/0/i`, where `i` is the account index of the matching Octra account. The 0x address (EIP-55 checksummed) is the one other EVM wallets derive from that phrase. Only the address is stored; the key is derived for a single signature, checked against the address and wiped, together with the master key and every intermediate node. A wallet imported from an Octra private key has no EVM key.
+
 ## Address Format
 
 0xio generates Octra addresses through a multi-step process:
@@ -95,12 +99,12 @@ master_key = HMAC-SHA512("Octra seed", seed)[0:32]
 | **Private Key Storage** | AES-256-GCM encrypted vault on device |
 | **Session Management** | Auto-lock with configurable timeout |
 | **Password Protection** | PBKDF2-HMAC-SHA256 with user-defined password |
-| **Telemetry** | **Zero** (no tracking or analytics) |
+| **Telemetry** | No tracking or analytics. Desktop and mobile send crash reports without keys or phrases |
 | **Network Communication** | HTTPS only |
 
-<Warning>
-**Privacy First:** 0xio implements zero telemetry. We never collect IP addresses, wallet addresses, or usage data.
-</Warning>
+<Note>
+What each client sends, and to whom, is set out in the [Privacy Policy](https://0xio.xyz/privacy).
+</Note>
 
 ## Privacy Cryptography (PVAC)
 

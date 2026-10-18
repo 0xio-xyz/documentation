@@ -4,7 +4,7 @@ description: "Receive OCT and Octra tokens in 0xio using a single oct... address
 icon: "qrcode"
 ---
 
-Receiving funds in 0xio is simple. Your wallet address can receive both public and private transfers.
+Your Octra address receives both public and private transfers. In the browser extension, a wallet with EVM on also has a 0x address for Ethereum and other EVM networks; see [EVM Networks](/wallet/evm#receiving).
 
 ## Your Wallet Address
 
@@ -21,15 +21,24 @@ Receiving funds in 0xio is simple. Your wallet address can receive both public a
   <Step title="Open Receive Tab">
     Click "Receive" in the main navigation
   </Step>
-  <Step title="View Address">
-    Your wallet address is displayed prominently
+  <Step title="Pick the address">
+    In the extension, Receive has an **Octra** tab and an **EVM** tab. Send only Octra (OCT) assets to the Octra address, and only EVM assets to the 0x address
   </Step>
   <Step title="Copy or Share">
-    - Click address to copy to clipboard
-    - Show QR code for in-person transfers
-    - Share via messaging apps
+    - Copy the address (the button shows **Copied** in place)
+    - Show the QR code for in-person transfers
+    - Share it through messaging apps
   </Step>
 </Steps>
+
+<Frame caption="Receive on the EVM tab">
+  <img src="/images/extension/receive-evm.png" alt="Receive screen on the EVM tab with the 0x address, QR code and network logos" width="320" />
+</Frame>
+
+
+<Note>
+Until a new wallet's recovery phrase is backed up, Receive asks you to back it up first.
+</Note>
 
 ## Sharing Your Address
 
@@ -48,6 +57,26 @@ Perfect for in-person payments:
 3. Your address fills into their Send screen
 4. **Optional:** Save the QR code image
 
+### Payment Requests (Mobile)
+
+On the mobile app, Receive has a keypad for an amount. With no amount the QR and **Share** carry your plain address. Once you type an amount, the QR becomes a payment request and the button reads **Share request**. **Copy address** always copies the plain address.
+
+When someone scans the request with the 0xio mobile app, Send opens with your address and the amount already filled in, in public OCT. They still review it and slide to send.
+
+The request is a plain text URI:
+
+```
+octra:<address>?amount=<amount in OCT>
+```
+
+- `amount` is in OCT, not micro-OCT: a plain decimal with up to 6 decimal places, greater than 0 and under 1,000,000,000 (for example `octra:oct...?amount=12.5`)
+- The `octra:` scheme is case-insensitive
+- Only `amount` is read; any other parameter is ignored. There is no token, memo or network parameter, so the request is always for OCT on the network the payer is using
+- An empty or zero amount is treated as a plain address
+- An invalid address, or an amount that is not a plain decimal, refuses the whole request; nothing is filled in
+
+To build a request from your own app or site, encode the URI above in a QR code.
+
 ## Receiving Public Transfers
 
 When someone sends you a public transfer:
@@ -63,7 +92,7 @@ When someone sends you a public transfer:
     Funds appear in your **Public Balance** immediately
   </Step>
   <Step title="Notification">
-    You receive an in-wallet notification
+    On the mobile app, optional push notifications tell you about incoming transactions
   </Step>
 </Steps>
 
@@ -89,18 +118,22 @@ This design:
     Go to the Privacy screen (Encrypt / Decrypt / Claim) in your wallet.
   </Step>
   <Step title="Scan for Pending">
-    Run the stealth scan. The wallet checks recent outputs and reports live progress (for example, "Scanning 80/150 outputs"); detected transfers appear in the Claim list.
+    The wallet scans the network's stealth outputs for ones addressed to you, resuming from where it last stopped. Waiting transfers are checked again every 30 seconds; detected transfers appear in the Claim list.
   </Step>
   <Step title="Click Claim">
-    Click "Claim" next to a pending transfer (or claim all at once).
+    Click "Claim" next to a pending transfer, or claim them all at once.
   </Step>
   <Step title="Confirm">
-    Confirm and sign. A network fee applies for the decryption and state update.
+    Confirm on the claim review, which shows the live network fee. Before any proof, the wallet reads the output fresh from the node and checks its amount.
   </Step>
   <Step title="Credited">
     Funds move to your **Private Balance** after confirmation.
   </Step>
 </Steps>
+
+<Note>
+On the mobile app, incoming private transfers are listed under **Waiting for you** in the Privacy sheet. Each has its own **Claim**, and **Claim all** claims them one at a time under one review, with Pause and Stop.
+</Note>
 
 ### Claim Fees
 
@@ -132,10 +165,9 @@ Use the **0xio Telegram Bot** for real-time alerts:
 
 Save addresses that frequently send you funds:
 
-1. Go to **Settings > Address Book**
-2. Click "Add Contact"
-3. Enter name and address
-4. Add notes (optional)
+1. Go to **Settings > Connections > Address book** (extension) or **Address Book** (mobile and desktop)
+2. Add a contact
+3. Enter a name and an Octra address (the extension also takes 0x addresses)
 
 **Benefits:**
 - Quickly identify senders
@@ -190,9 +222,9 @@ When receiving large amounts:
 ### "Private transfer isn't showing"
 
 1. Go to the **Privacy screen** and open the Claim tab
-2. Run the stealth scan
-3. Wait for the wallet to query the blockchain
-4. Claim any found transfers
+2. Wait for the scan to finish
+3. Claim any found transfers
+4. Make sure the sender's network matches yours: a transfer on devnet is not visible on mainnet
 
 ### "Address rejected as invalid"
 

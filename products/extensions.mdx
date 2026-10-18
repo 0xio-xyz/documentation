@@ -1,221 +1,187 @@
 ---
 title: 'Browser Extension'
-description: 'Overview of the 0xio Browser Extension wallet for Chrome, Brave, Edge, Opera, and Firefox with FHE privacy operations and dApp connectivity.'
+description: 'The 0xio browser extension: an Octra wallet with private balances and an EVM wallet, a built-in bridge, NFTs and site connections, for Chrome, Brave, Edge, Opera and Firefox.'
 icon: 'chrome'
 ---
 
-The **0xio Browser Extension** (v2.5.5) is your primary gateway to the Octra Network. Built with React 18 and Vite (Manifest V3), it lets you manage assets, interact with dApps, and perform private FHE operations directly from your browser.
+The **0xio Browser Extension** is a non-custodial wallet for the Octra Network with an EVM wallet built in. It keeps public and private (FHE-encrypted) OCT balances, holds a 0x address on Ethereum, Robinhood Chain and any EVM network you add, bridges between Octra and Ethereum, and connects to Octra and EVM websites.
 
 <Note>
-  **Status: Live on Chrome Web Store (v2.5.5).** Install from the [Chrome Web Store](https://chromewebstore.google.com/detail/0xio-wallet/anknhjilldkeelailocijnfibefmepcc) or from [0xio.xyz/install](https://0xio.xyz/install); the Firefox version is in review on Mozilla Add-ons.
+  **Status: Live (v3.0.2) on the Chrome Web Store.** Install from the [Chrome Web Store](https://chromewebstore.google.com/detail/0xio-wallet/anknhjilldkeelailocijnfibefmepcc) or from [0xio.xyz/install](https://0xio.xyz/install). v3.0.3 is in progress. The Firefox version is in review on Mozilla Add-ons.
 </Note>
+
+## Requirements
+
+- Chromium browsers (Chrome, Brave, Edge, Opera) version 111 or later
+- Firefox 140 or later (142 on Android)
+- Manifest V3
 
 ## Getting Started
 
-### Installation & Setup
-Once installed, accept the Terms of Service and Privacy Policy, then pick one of three ways in:
+The welcome screen offers **Create a wallet** and **I already have a wallet**. The Terms of Service and Privacy Policy are linked below them.
 
-<CardGroup cols="3">
-  <Card title="Create New" icon="plus">
-    Shows a fresh 12-word recovery phrase behind **Show words**. Write it down, then pick three of its words back to prove the copy works.
-  </Card>
-  <Card title="Import Wallet" icon="file-import">
-    Paste a **recovery phrase** or a **private key** into one field; the extension tells which it is, checks it as you type and shows the wallet it opens. **Type it word by word** switches to a 12 or 24 cell grid.
-  </Card>
-  <Card title="Watch Mode" icon="eye">
-    Track any public address without a private key (view only). The address is checked as you type and its balance is shown before you add it.
-  </Card>
-</CardGroup>
+- **Create a wallet:** create a password, confirm it on the next screen, optionally add a passkey, choose your networks and land on **Your wallet is ready**, which lists your Octra and EVM addresses. You back up the recovery phrase afterwards, from the **Back up** tag on Home.
+- **I already have a wallet:** paste a recovery phrase (12 or 24 words), a private key or an address into one field. The extension tells which it is, offers a one-tap fix for a mistyped word, and shows the wallet it found with its balance. An address adds a watch-only wallet.
 
-Every way in ends on **Protect this wallet**: name the wallet and set a password of at least 8 characters. The password is required; it encrypts your keys on this device and unlocks the extension. On Chromium browsers a **passkey** (Touch ID, Windows Hello or a security key) can unlock it instead of typing the password.
+The password needs at least 8 characters and unlocks the extension in this browser. See [Installation & Setup](/wallet/installation) for each step.
 
-### Adding more wallets
-In the wallet list, **Add wallet** offers the same flows without the password step (the extension is already unlocked):
+### Adding More Wallets
 
-* **Create wallet:** a new recovery phrase, backed up and checked.
-* **Add account:** another address from one of your wallets' recovery phrase. The next free account number is picked and its address shown before anything is added; **Use another account number** picks a different one. Restoring that wallet's phrase brings these accounts back too.
-* **Import wallet** and **Watch an address**, as above.
+In the wallet list, **Add wallet** offers:
 
-<Note>
-  **Back up again if asked:** wallets created with first-run Create between May 18 and September 23, 2026 were shown a recovery phrase that does not restore them. Those wallets show a **Back up your recovery phrase again** card on the dashboard; it opens the wallet's real phrase in Settings.
-</Note>
+- **Create wallet:** a new wallet and recovery phrase, saved at once.
+- **Add account:** another address from one of your wallets' recovery phrases. It gets its own Octra and 0x address.
+- **Import wallet:** a phrase, a private key or an address (watch-only).
+
+The wallet list shows where each wallet comes from (Phrase, Private key or Watch-only) and both of its addresses, each with a copy button. Switching wallets says which wallet it switched to.
 
 ---
 
-## Dashboard Overview
+## Home
 
-The main screen gives you a snapshot of your financial privacy.
+<Frame caption="Home in the extension, amounts hidden">
+  <img src="/images/extension/home.png" alt="Extension Home with amounts hidden" width="320" />
+</Frame>
 
-* **Wallet picture:** Each wallet has its own picture drawn from its address (the 0xio braces around a composition of circles), shown in the header, the wallet list, site connections, approvals, Send, the address book and Receive. The 0xio mobile app draws the same picture for the same wallet. Click it in the header to open the wallet list.
-* **Quick actions:** **Send** and **Receive** as two buttons, with **Privacy**, **Bridge** and **History** in a row beneath them, the same arrangement as the 0xio mobile app.
+- **Header:** your wallet's picture and name (click for the wallet list), the network switch (**All networks**, **Octra** or **EVM**) and Settings.
+- **Balance:** the total in USD over a chart of the day (green up, red down, grey when flat). Tags at the top right of the balance card ask for action, most urgent first, for example **Back up** or **Set up private**.
+- **Actions:** **Send**, then **Receive**, **Bridge**, **Privacy** and **History**. On EVM, Privacy stays visible but disabled.
+- **Assets:** OCT, the encrypted (private) OCT row, Octra tokens and EVM assets, each with its USD value. Tap one for its page with a 1D, 7D or 1M price chart, the balance, actions and recent activity.
+- **Status bar:** the open site's connection chip, a **0xio Desktop** chip when the desktop app is running private proofs, and the **Mainnet** or **Testnet** chip.
 
-* **Public Balance:** Your visible `OCT` balance, usable for standard transactions and gas fees.
-* **Private Balance:** Your FHE-encrypted balance. These funds are visible only to you and are used for shielded transfers.
-* **Portfolio Worth:** Real-time USD value of your holdings powered by the 0xio Oracle (CoinGecko + DexScreener aggregation). Toggle between USD and OCT display.
-* **24h Chart:** Portfolio worth chart reflecting actual price movement over the last 24 hours. Hover to see interpolated worth at any point in time.
-* **24h Change:** Percentage change in portfolio value based on oracle price data.
+Balances that are not read yet show `--`, never 0. Home reads balances lightly every 30 seconds while open and not at all while hidden or locked.
 
----
-
-## Sending Assets
-
-Navigate to the **Send** tab to transfer funds. 0xio supports two distinct transfer modes:
-
-### 1. Standard vs. Private (FHE)
-You can toggle between modes using the slider at the top of the Send screen.
-
-| Mode | Icon | Description |
-| :--- | :--- | :--- |
-| **Standard** | <Icon icon="unlock" /> | A transparent blockchain transaction. Sender, receiver, and amount are public. |
-| **Private (FHE)** | <Icon icon="shield" /> | Uses Fully Homomorphic Encryption. The amount is encrypted locally before sending. Supports **stealth transfers** where the recipient's privacy is also preserved. |
-
-### 2. Bulk Sending
-Need to pay multiple people? Switch to **Bulk Mode**.
-* **Capacity:** Add up to **5 recipients** in a single transaction batch.
-* **Efficiency:** Signs all transactions in one go to save time.
-
-### 3. Network Fees (OU)
-For advanced users, you can customize the **Operational Unit (OU)** fee to prioritize transactions during network congestion.
-* **Default:** 10,000 OU (Standard) / 30,000 OU (High Value).
-* **Custom:** Click "Est. Network Fee" at the bottom to set a custom value.
+See [Wallet Interface](/wallet/interface) for a full tour.
 
 ---
 
-## Privacy Operations
+## Sending
 
-The **Privacy** tab is the control center for Octra's FHE capabilities. It handles moving funds between your public and private states.
+- **Octra:** public OCT, Octra tokens and private sends. **Bulk** sends OCT to up to 5 recipients from the public balance.
+- **EVM:** ETH and tokens on any EVM network that is on. See [EVM Networks](/wallet/evm#sending).
+- **Fees:** one live network fee per send, read from the node. It drives the shown fee, **Max**, every balance check and the signature. You can pick another tier or a custom fee of 100 to 10,000,000 OU. If the fee cannot be read, Review is blocked with **Network fee unavailable**.
+- **Review:** every send opens a review with **Back** and **Send**. After Send, a result screen shows **Sending**, then **Sent** once the network confirms it (**Queued** for private sends).
 
-<Steps>
-  <Step title="Encrypt (Public → Private)">
-    Moves `OCT` from your Public Balance to your Private Balance. A **review sheet** shows the transaction details (from/to, amount, fee, total) before confirmation. MAX button available to encrypt your full balance (minus fee reserve).
-    * *Use case:* Prepare funds for a private transfer.
-  </Step>
-  <Step title="Decrypt (Private → Public)">
-    Moves funds back to your Public Balance. Includes FHE encryption + range proof generation. A **proof overlay** shows real-time progress: verify → encrypt → range proof (with circuit counter) → submit.
-    * *Use case:* Cashing out or sending to an exchange that doesn't support FHE.
-  </Step>
-  <Step title="Claim Transfers">
-    If someone sends you a **Private Transfer**, it doesn't appear in your balance immediately. Navigate to the **Claim** tab to scan for pending transfers. The scan shows live progress ("Scanning 80/150 outputs (2 found)..."). Once found, review and claim individual transfers or all at once with a **claim review sheet** showing output details and fees.
-  </Step>
-</Steps>
+See [Sending Transactions](/wallet/sending).
 
 ---
 
-## Asset Management
+## Privacy
 
-### Token Auto-Discovery
+The **Privacy** screen moves OCT between your public and private balances and claims private transfers sent to you:
 
-The extension automatically discovers tokens associated with your address and displays them on the dashboard. You can also manually import any fungible token.
+- **Encrypt** (public to private), **Decrypt** (private to public) and **Claim**, each with a review and the live network fee.
+- **Set up private:** a wallet with no encryption key on chain shows a **Set up private** tag on Home. Its sheet shows the one-time network fee, and **Turn on** registers the key.
+- **Private on hold:** when the network holds a private balance (for example an older format waiting for a migration), Home shows a tag and the Encrypted row reads **On hold**. The sheet shows the node's reason.
 
-### Custom Token Import
-
-Import any fungible token by entering its contract address. The extension validates the contract on-chain (checking `name`, `symbol`, and `decimals`) and tracks your balance via `balance_of`. Imported tokens appear alongside the default token list and can be managed in **Settings > Tokens**.
-
-### NFT Gallery
-
-The **NFTs** tab in the wallet dashboard lets you import and browse NFT collections.
-
-<Steps>
-  <Step title="Import Collection">
-    Click the **+** button on the NFTs tab and enter a contract address. The extension validates it by calling `collection_name()`, `symbol()`, and `total_supply()` view functions. Supports SNS-1 (Spectrum) and Geodesics (Euint Labs) NFT standards.
-  </Step>
-  <Step title="View Owned NFTs">
-    Each collection card shows how many NFTs you own (via `balance_of`). Click a collection to expand it and see individual token IDs.
-  </Step>
-  <Step title="Token Metadata">
-    When expanded, the extension fetches `token_uri` for each owned token. Contracts without enumeration support still display the owned count.
-  </Step>
-</Steps>
-
-<Note>
-  NFT collections are stored per-network and auto-refresh every 60 seconds. To remove a collection, click the **⋮** (three-dot) menu on the collection header and select **Remove Collection**.
-</Note>
+All proofs run on your device. With [0xio Desktop](/products/desktop) running, they run in the desktop app instead, which is faster. See [Privacy Operations](/wallet/privacy-operations).
 
 ---
 
-## FHE Tools in Contract Calls
+## EVM Wallet
 
-When interacting with smart contracts, the extension supports inline FHE encryption of parameters using the `enc(42)` syntax. Return values from contract calls are automatically tested for FHE decryption, allowing seamless encrypted contract interaction.
-
----
-
-## Staging & Mempool View
-
-Monitor pending transactions and network activity with the built-in staging/mempool view. See your transactions as they propagate through the network before confirmation.
+Every wallet made from a recovery phrase also has a 0x address. The extension shows ETH and tokens, sends, receives, shows EVM NFTs and lists EVM history next to Octra. Networks can be turned on or off, given your own RPC, or added from a list of popular chains or the public chain list. See [EVM Networks](/wallet/evm).
 
 ---
 
-## Language Support
+## Bridge
 
-The extension is available in **5 languages**, making it accessible to a global user base.
+**Bridge** on Home bridges between Octra and Ethereum without leaving the wallet:
 
----
+- **Bridge to Ethereum:** OCT on Octra becomes wOCT on Ethereum, claimed with the wallet's 0x address.
+- **Bridge to Octra:** wOCT on Ethereum becomes OCT on Octra.
+- **Any chain to OCT:** pay with a token on another chain and receive OCT on Octra.
+- **Claim:** a page for transfers to Ethereum, grouped as Ready, In progress and Completed, with **Find my transfers** and **Add by hash**.
 
-## Settings & Management
-
-Settings opens on your wallet (click it for the wallet list), then six places, each showing its current state in one line so most answers need no extra click:
-
-* **Security:** password, passkey unlock and when the extension locks itself; resetting the extension lives at the bottom.
-* **Backup:** the recovery phrase and private key of the active wallet. It shows **Back up again** when a wallet needs a fresh backup.
-* **Connections:** connected sites (view and revoke what they can do) and the address book.
-* **Appearance:** theme (Dim, Day or Octra) and language.
-* **Network:** Mainnet, Devnet or a network you added, its node, the optional RPC proxy and the private-balance cache.
-* **Tokens:** custom tokens imported by contract address.
-
-**Lock wallet** sits at the bottom and locks the extension until you enter your password again.
+Each step has its own review, and the Octra network fee is read live. See [0xio Bridge](/products/bridge#bridge-inside-the-extension).
 
 ---
 
-## dApp Interaction
+## History
 
-When a dApp requests a transaction or message signature, the extension opens an approval popup with:
-
-* **Origin verification:** The requesting site's domain and favicon are displayed prominently.
-* **Wallet context:** Shows which of your wallets will sign, with its picture, name and address, for transactions and message signatures alike.
-* **Network fee (OU):** Displays the estimated Operational Unit cost.
-* **Auto-reject:** If the popup window is closed without a response, the request is rejected at once, with no timeout delay.
+History lists Octra and EVM activity together, newest first, on two pages: **Mainnet** and **Testnet**. Contract calls read as actions (Swap, Approve, Bridge or the method in words) with the contract named. Every row opens a details card, and contract calls have a **View call data** page. See [Wallet Interface](/wallet/interface#history).
 
 ---
 
-## RFC-O-1 Provider Standard
+## NFTs
 
-The extension implements the **RFC-O-1** wallet provider standard, exposing `window.octra` for third-party wallet and dApp interoperability.
+- Every collection the wallet holds shows without an import step; **Import** stays for other contracts.
+- The three newest pieces come first, then one row per collection, then **Hidden**.
+- Hide a piece or a whole collection with Undo. Hidden items are kept per network and wallet.
+- A piece's page shows its art, traits, status, holder and contract, with **List for sale** and **Send**, or **Change price** and **Cancel listing** for a listed piece. Every step opens a review with the fee.
+- Octra collections (SNS-1, Bionts and living NFTs) and EVM collections (ERC-721 and ERC-1155) share the list. See [NFT Standards](/wallet/nft-standards).
+
+---
+
+## Connecting to Sites
+
+The extension connects to Octra sites through the 0xio SDK and to EVM sites, which list it as **0xio Wallet**. EVM sites can be connected to several of your wallets, and a site only ever sees the wallet in use. The status bar shows the open site's connection, and **Settings > Connections > Connected sites** lists them all. See [Connecting to Sites](/wallet/connecting-sites).
+
+---
+
+## Settings
+
+Settings opens on your wallet, then:
+
+- **Security:** password, passkey unlock, auto-lock time, and Reset wallet under This browser.
+- **Backup:** recovery phrase and private key (the EVM key too while EVM is on). Shows **Back up again** when a wallet needs a new backup.
+- **Connections:** connected sites and the address book.
+- **Appearance:** theme (Dim, Day or Octra) and language (English, Chinese, Japanese, Korean or Indonesian).
+- **Networks:** Octra (Mainnet, Devnet or a node you add, and the optional RPC proxy), then the EVM networks.
+- **Tokens and NFTs:** a switch for every token and collection, shown or hidden as likely spam. Imported tokens carry an **Imported** tag.
+- **EVM:** turn EVM on or off for the open wallet.
+
+**Lock wallet** sits at the bottom, with links to these docs, the Terms and the [Privacy Policy](https://0xio.xyz/privacy).
+
+---
+
+## Locking
+
+- The toolbar icon shows a padlock while the wallet is locked.
+- Unlock with your password, or tap **Use passkey** where a passkey is set up. The passkey prompt never opens by itself.
+- Locking shuts down the private balance engine and clears decrypted private balances and wallet data held in memory.
+
+---
+
+## Notices
+
+Messages appear as one small pill above the status bar. Information fades after 4 seconds, errors and warnings after 6 seconds. Hovering pauses it. Copy buttons show **Copied** in place, and successful actions show in the screen itself rather than as a notice.
+
+---
+
+## RFC-O-1 Provider
+
+The extension implements the **RFC-O-1** wallet provider standard and exposes `window.octra`:
 
 ```javascript
-// Any RFC-O-1 compliant dApp can connect
 const accounts = await window.octra.request({ method: 'octra_requestAccounts' });
 const balance = await window.octra.request({ method: 'octra_getEncryptedBalance' });
 
-// Listen for events
-window.octra.on('accountsChanged', (accounts) => { ... });
-window.octra.on('connect', (info) => { ... });
+window.octra.on('accountsChanged', (accounts) => { /* ... */ });
+window.octra.on('connect', (info) => { /* ... */ });
 ```
 
-The `@0xio/sdk` includes an `OctraProviderAdapter` that automatically uses `window.octra` as a transport, so any RFC-O-1 compliant wallet works with the SDK.
+The `@0xio/sdk` includes an `OctraProviderAdapter` that uses `window.octra` as a transport. For EVM sites the extension is a standard EIP-1193 provider, see [EVM Provider](/developers/sdk-guide#evm-provider).
 
 ---
 
-## Network Support
-
-The extension supports multiple Octra networks:
+## Networks
 
 | Network | Privacy (FHE) | Explorer |
 |---------|:---:|---|
-| Mainnet | Yes | [octrascan.io](https://octrascan.io) |
-| Devnet | Yes | [devnet.octrascan.io](https://devnet.octrascan.io) |
+| Octra Mainnet | Yes | [octrascan.io](https://octrascan.io) |
+| Octra Devnet | Yes | [devnet.octrascan.io](https://devnet.octrascan.io) |
+| Your own Octra node | If you mark it as running privacy | The explorer you set, if any |
+| EVM networks | No | Each network's explorer |
 
-**Devnet** is a test network with full FHE support enabled. Use it for testing encrypted balances, private transfers, and smart contract development. Switch networks in **Settings > Network**.
+Octra Devnet is a test network with full FHE support. It sits on the **Testnet** side together with the EVM testnets.
 
 ---
 
-## Desktop Companion Mode
+## Desktop Companion
 
-When the **0xio Desktop** app is running on the same machine, the extension automatically connects to it and offloads heavy FHE computations to native code.
+When [0xio Desktop](/products/desktop) runs on the same computer, the extension connects to it and runs private proofs there, which is faster than in the browser.
 
-* **Automatic pairing:** No setup required; the extension detects the desktop app on `127.0.0.1`.
-* **Faster privacy operations:** Range proof generation drops from ~80 seconds (WASM) to ~17 seconds (native Rust). Decrypt operations also benefit from parallel PRF computation.
-* **Status indicator:** A "Desktop Connected" badge appears when paired.
-
-<Tip>
-Install the 0xio Desktop app to significantly speed up encrypt, decrypt, and claim operations. See the [Desktop Wallet](/products/desktop) page for details.
-</Tip>
+- **Automatic:** no setup. The extension finds the desktop app on `127.0.0.1`.
+- **Status:** the status bar shows a **0xio Desktop** chip, which tells whether proofs run in the desktop app or in this browser.
+- **No signing key:** the desktop app builds proofs but never receives the key that signs your transactions.

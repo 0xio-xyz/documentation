@@ -1,13 +1,13 @@
 ---
 title: "Welcome to 0xio"
-description: "Non-custodial wallet ecosystem for the Octra Network with encrypted balances, private transfers, FHE privacy tooling, and developer SDKs."
+description: "Non-custodial wallets for the Octra Network with encrypted balances and private transfers, an EVM wallet in the browser extension, a bridge to Ethereum and developer SDKs."
 ---
 
 ## What is 0xio?
 
-**0xio** is the premier non-custodial wallet ecosystem for the **Octra Network**, designed to make encrypted blockchain computation usable, safe, and intuitive.
+**0xio** is a set of non-custodial wallets and tools for the **Octra Network**. It makes Octra's encrypted balances and private transfers usable from a browser, a desktop and a phone.
 
-While Octra provides the underlying Layer-1 blockchain and cryptographic infrastructure, 0xio delivers the wallets, SDKs, and applications that allow users and developers to interact with Octra's fully encrypted execution model.
+Octra provides the Layer-1 blockchain and its encryption. 0xio provides the wallets, SDKs and applications that let users and developers work with it. The browser extension also holds an EVM wallet for Ethereum and other EVM networks, and the 0xio Bridge moves OCT between Octra and Ethereum.
 
 <CardGroup cols="2">
   <Card
@@ -56,7 +56,15 @@ While Octra provides the underlying Layer-1 blockchain and cryptographic infrast
   </Accordion>
 
   <Accordion title="Dual Balance System" icon="scale-balanced">
-    Maintain both Public and Private balances. Choose transparency for lower costs or privacy for confidential transactions. Move between them seamlessly with simple encrypt/decrypt operations.
+    Hold both Public and Private balances. Choose transparency for lower costs or privacy for confidential transactions, and move between them with encrypt and decrypt.
+  </Accordion>
+
+  <Accordion title="Octra and EVM in One Wallet" icon="layer-group">
+    In the browser extension, one recovery phrase gives each wallet an Octra address and a 0x address. Balances, sends, NFTs and history for Ethereum, Robinhood Chain and any EVM network you add sit next to Octra.
+  </Accordion>
+
+  <Accordion title="A Review Before Every Signature" icon="eye">
+    Every transaction, approval and signature opens a review with the signing wallet, the network and the live fee before anything is signed.
   </Accordion>
 </AccordionGroup>
 
@@ -68,9 +76,9 @@ While Octra provides the underlying Layer-1 blockchain and cryptographic infrast
     icon="chrome"
     href="/products/extensions"
   >
-    **Live (v2.5.5)**
+    **Live (v3.0.2)**
 
-    Non-custodial wallet for Chrome, Brave, Edge, Opera, and Firefox.
+    Octra and EVM wallet for Chrome, Brave, Edge, Opera and Firefox, with a built-in bridge.
   </Card>
 
   <Card
@@ -78,9 +86,9 @@ While Octra provides the underlying Layer-1 blockchain and cryptographic infrast
     icon="desktop"
     href="/products/desktop"
   >
-    **Live (v0.4.2)**
+    **Live (v0.5.5)**
 
-    Native Tauri 2 + Rust wallet with native PVAC engine for accelerated privacy operations. Signed and notarized for macOS (Apple Silicon) and Windows.
+    Native Tauri 2 and Rust wallet with a menu bar panel and a native privacy engine that speeds up private operations. For macOS (Apple Silicon, signed and notarized) and Windows.
   </Card>
 
   <Card
@@ -88,9 +96,9 @@ While Octra provides the underlying Layer-1 blockchain and cryptographic infrast
     icon="mobile"
     href="/products/mobile"
   >
-    **Live (v1.3.0)**
+    **Live (v1.3.3)**
 
-    Privacy on the go with biometric security, on iOS (TestFlight, App Store release in review) and Android (Google Play open testing).
+    Octra wallet for iOS (TestFlight) and Android (Google Play open testing) with biometric security and a built-in dApp browser.
   </Card>
 
   <Card
@@ -98,7 +106,7 @@ While Octra provides the underlying Layer-1 blockchain and cryptographic infrast
     icon="code"
     href="/developers/sdk-guide"
   >
-    **Live (v2.8.1)**
+    **Live (v2.9.0)**
 
     TypeScript SDK (`@0xio/sdk`) for integrating dApps with 0xio and Octra's FHE capabilities
   </Card>
@@ -120,7 +128,7 @@ While Octra provides the underlying Layer-1 blockchain and cryptographic infrast
   >
     **Live**
 
-    Trustless OCT to wOCT bridge between Octra and Ethereum, secured by a light client
+    Bridge to Ethereum, Bridge to Octra and Any chain to OCT, secured by a light client
   </Card>
 
   <Card
@@ -143,7 +151,7 @@ On most blockchains:
 - Financial privacy doesn't exist
 
 With 0xio on Octra:
-- Private balances by default
+- Private balances when you want them
 - Encrypted transactions without revealing amounts
 - Applications that operate on private state
 - Privacy enforced by cryptography, not trust

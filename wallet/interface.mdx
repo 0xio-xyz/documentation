@@ -1,200 +1,145 @@
 ---
 title: "Wallet Interface"
-description: "Tour the 0xio Wallet Extension dashboard including the balance card, navigation tabs, privacy controls, and transaction history features."
+description: "Tour the 0xio browser extension: Home, the status bar, History with Mainnet and Testnet pages, transaction details and call data, Settings and locking."
 icon: "dashboard"
 ---
 
 <Note>
-This guide covers the **0xio Wallet Browser Extension** interface for Chrome, Brave, Edge, Opera, and Firefox. The desktop and mobile apps share the same concepts (balance overview, Send/Receive/History, and a Privacy hub for Encrypt/Decrypt/Claim) with platform-native layouts; see [Desktop Wallet](/products/desktop) and [Mobile Wallet](/products/mobile).
+This guide covers the **0xio browser extension** (v3.0). The desktop and mobile apps share the same ideas (a balance overview, Send, Receive, History and a Privacy hub) with layouts of their own; see [Desktop Wallet](/products/desktop) and [Mobile Wallet](/products/mobile).
 </Note>
 
-The 0xio Wallet Extension provides an intuitive interface for managing your Octra assets and privacy features.
+## Home
 
-## Main Dashboard
+<Frame caption="Home on All networks, with amounts hidden">
+  <img src="/images/extension/home.png" alt="Extension Home with amounts hidden, the network switch, Send and the asset list" width="320" />
+</Frame>
 
-When you open the wallet extension, you'll see your financial overview at a glance.
-
-### Balance Card
-
-The main balance card displays:
-
-- **Total Balance** - Your combined OCT holdings displayed prominently
-- **24-Hour Chart** - Interactive balance history graph showing changes over the past day
-- **Percentage Change** - Today's balance change indicator (positive/negative)
-- **Eye Toggle** - Click to show/hide your balance for privacy
-
-<Tip>
-Hover over the balance chart to see your balance at any point in the last 24 hours.
-</Tip>
-
-### Action Grid
-
-Four main action buttons provide quick access to core functions:
-
-<CardGroup cols="4">
-  <Card title="Send" icon="arrow-up-right">
-    Transfer OCT to other addresses
-  </Card>
-  <Card title="Receive" icon="arrow-down-left">
-    Display your wallet address and QR code
-  </Card>
-  <Card title="History" icon="clock">
-    View complete transaction log
-  </Card>
-  <Card title="Swap" icon="repeat">
-    Exchange tokens (planned; see [DEX](/products/dex))
-  </Card>
-</CardGroup>
-
-### Widget Row
-
-Below the action grid, you'll find quick-access widgets for additional features.
-
-### Token List
-
-Displays your token holdings with:
-- Token symbol and name
-- Current balance
-- Token value (when available)
-
-## Navigation
 
 ### Header
 
-The header contains:
+- **Wallet picture and name:** each wallet has its own picture drawn from its address (the 0xio braces around a composition of circles). The mobile app draws the same picture for the same wallet. Click it to open the wallet list.
+- **Network switch:** three glyphs choose what Home shows: **All networks**, **Octra** or **EVM**. All networks adds Octra and EVM together in USD.
+- **Settings**
 
-- **Wallet Selector** - Switch between multiple wallets (on main screen). Each wallet shows its own picture, drawn from its address, so you can tell wallets apart at a glance; the mobile app draws the same picture for the same wallet
-- **Settings** - Access wallet configuration
-- **Lock** - Quickly lock your wallet
+### Balance Card
 
-### Screen Navigation
+- **Total balance** in USD, over a chart of the day: green when up, red when down, grey when flat. Hover over the chart to read the value at any point.
+- **Day's change** in percent. It follows the value you hold, so an empty wallet reads 0.0%.
+- **Eye toggle** to hide amounts.
+- **Tags** at the top right of the card, most urgent first. For example **Back up** (the recovery phrase is not backed up yet), **Set up private** (the wallet can turn on its private balance) or a private balance on hold. Tap a tag for its sheet.
 
-The extension uses a clean single-screen navigation pattern:
+Balances not read yet show `--`, never 0. If one network or token read fails, the total shows what is known and notes that some balances are missing.
 
-| Screen | Path | Description |
-|--------|------|-------------|
-| Main Dashboard | `/` | Balance, actions, and tokens overview |
-| Send | `/send` | Transfer OCT to other addresses |
-| Receive | `/receive` | Your address and QR code |
-| History | `/history` | Transaction history and details |
-| Privacy | `/privacy` | Encrypt, Decrypt, and Claim operations |
-| Settings | `/settings` | Wallet configuration |
-| Wallet List | `/walletlist` | Manage multiple wallets |
+### Actions
 
-## Privacy Screen
+**Send** sits beside a row for **Receive**, **Bridge**, **Privacy** and **History**, each named on hover. On the EVM view, Privacy stays visible but disabled, since private balances exist on Octra only.
 
-The Privacy screen is your control center for PVAC-HFHE privacy operations, with three modes:
+### Assets
 
-### Encrypt Mode
-Move funds from **Public → Private** balance:
-- Enter amount to encrypt
-- View current public and private balances
-- Execute encryption with one click
+Each asset shows its logo, name, amount and USD value. On Octra you see OCT, the **Encrypted** row (your private balance) and Octra tokens; on EVM you see ETH and tokens, each logo with a badge for its network.
 
-### Decrypt Mode
-Move funds from **Private → Public** balance:
-- Enter amount to decrypt
-- Balance validation prevents over-decryption
-- Instant balance refresh after operation
+Tap an asset for its page: the price with a 1D, 7D or 1M chart that shows price and time under the pointer, your balance, actions that keep that token selected, and its recent activity. An imported token can be removed from its page.
 
-### Claim Mode
-Receive incoming private transfers:
-- Automatic scanning for pending transfers
-- Shows claimable amount
-- One-click claim to your private balance
+### Status Bar
 
-<Info>
-The Privacy screen shows real-time balance information for both Public (OCT) and Private (FHE) balances with a refresh button to update.
-</Info>
+A strip along the bottom of the wallet shows:
 
-## Settings
+| Chip | What it shows |
+|------|---------------|
+| Site | The open tab's site and whether the open wallet is connected to it, or **Not connected**. See [Connecting to Sites](/wallet/connecting-sites#the-site-chip) |
+| 0xio Desktop | Shown when the desktop app is running private proofs for the extension |
+| Mainnet or Testnet | The side 0xio is on. Switching it moves Octra and the EVM networks together |
 
-Access settings from the gear icon to configure:
+## Screens
 
-### Security & Backup
-- View recovery phrase
-- Export private key
-- Change password
+| Screen | What it does |
+|--------|--------------|
+| Home | Balance, actions and assets |
+| Send | Send OCT, tokens, private transfers and EVM assets |
+| Receive | Your Octra and EVM addresses with QR codes |
+| Bridge | Bridge to Ethereum, Bridge to Octra, Any chain to OCT, and the Claim page |
+| Privacy | Encrypt, Decrypt and Claim |
+| History | Octra and EVM activity on Mainnet and Testnet pages |
+| NFTs | Your collections, newest pieces first |
+| Settings | Security, Backup, Connections, Appearance, Networks, Tokens and NFTs, EVM |
+| Wallet list | Switch, add, rename and remove wallets |
 
-### Preferences
-- Theme settings (Dim, Light, Octra)
-- Currency display
-- Language options (English, Indonesian, Chinese, Japanese, Korean)
+## History
 
-### Address Book
-- Save frequently used addresses
-- Add labels for easy identification
-- Quick access when sending
+History lists everything your address did, newest first, Octra and EVM together. It has two pages:
 
-### Connected dApps
-- View authorized connections
-- Revoke dApp permissions
-- Manage site access
+- **Mainnet:** Octra mainnet and the EVM mainnets.
+- **Testnet:** Octra devnet and the EVM testnets. Rows here carry a **Testnet** tag.
 
-## Transaction History
+Each page shows how many entries it holds. History opens on the side 0xio is on. A network you added yourself is included while it is active.
 
-The History screen displays all wallet activity:
+<Frame caption="The Testnet page of History">
+  <img src="/images/extension/history-testnet.png" alt="History on the Testnet page with Testnet tags on Sepolia transfers" width="320" />
+</Frame>
 
-### Transaction Types
-- **Sent** - Outgoing transfers (arrow up icon)
-- **Received** - Incoming transfers (arrow down icon)
-- **Encrypt** - Public to Private operations
-- **Decrypt** - Private to Public operations
+
+### Rows
+
+- **Transfers** show what moved, with a sign: received or sent OCT, tokens and NFTs, encrypt, decrypt, private sends and claims, and key updates.
+- **Contract calls** read as actions: **Swap**, **Approve**, **Bridge**, **Mint**, **Claim** and others, or the method in words when there is no common name. The contract is named (known contracts, listed tokens, verified explorer names) or shown as a shortened address. One row lists every asset the call moved. A call that moved nothing shows no 0 amount, and a failed call shows **Failed** with no sign.
+- **Pending** transactions show above the list. **Cancel** works only before a transaction reaches a node; one already sent can be hidden on this device instead.
+- **EVM networks with no history source** are named at the end of the list: **History not available on** that network. A network that could not be read says so, with Refresh to try again.
 
 ### Transaction Details
 
-Each transaction shows:
-- Transaction type and icon
-- Amount transferred
-- Counterparty address (truncated)
-- Timestamp
-- Status (confirmed/pending)
+Tap any row, Octra or EVM, for its details: the amount, status, type, from and to, token, network and fee when known, with **Copy hash** and **View in explorer** (each network opens its own explorer). Contract calls also list the method and its arguments by name (for example Recipient, Minimum received or Expires), and an approval at the maximum reads **Unlimited**.
 
-Click any transaction to view:
-- Full transaction hash
-- Block number
-- Complete addresses
-- Network fee paid
-- Link to block explorer
+<Frame caption="Details of a contract call">
+  <img src="/images/extension/transaction-details.png" alt="Details of a contract call with status, type, method, contract, fee, network and View call data" width="320" />
+</Frame>
+
+
+### View Call Data
+
+For a contract call, **View call data** opens a page inside the details with:
+
+- the method and its selector
+- the contract
+- every argument with its type and full value
+- the raw input
+
+<Frame caption="The call data page">
+  <img src="/images/extension/call-data.png" alt="Call data page with method, function signature, selector, contract and named arguments" width="320" />
+</Frame>
+
+
+## Privacy Screen
+
+The Privacy screen moves OCT between your public and private balances:
+
+- **Encrypt:** public to private.
+- **Decrypt:** private to public.
+- **Claim:** incoming private transfers, each claimed after its own review.
+
+Each operation shows the live network fee before you confirm. See [Privacy Operations](/wallet/privacy-operations).
+
+## Settings
+
+- **Security:** password (change or remove it), passkey unlock, auto-lock after 5, 15, 30 or 60 minutes or never, and Reset wallet under This browser.
+- **Backup:** the recovery phrase and private key of the open wallet, behind your password. With EVM on, the EVM key is shown too.
+- **Connections:** connected sites and the address book.
+- **Appearance:** theme (Dim, Day or Octra) and language (English, Chinese, Japanese, Korean or Indonesian).
+- **Networks:** Octra and every EVM network of the side you are on. See [EVM Networks](/wallet/evm#managing-networks).
+- **Tokens and NFTs:** show or hide every token and collection.
+- **EVM:** turn EVM on or off for the open wallet.
+
+**Lock wallet** sits at the bottom.
 
 ## Lock Screen
 
-When your wallet is locked:
+- Enter your password, or tap **Use passkey** if you set one up. The passkey prompt does not open by itself.
+- The wallet locks itself after the auto-lock time you set.
+- While locked, the toolbar icon shows a padlock.
 
-1. Enter your password
-2. Click "Unlock" or press Enter
-3. Access your wallet
+## Watch-Only Wallets
 
-The wallet auto-locks after a period of inactivity (configurable in settings).
+Watch-only wallets (added with an address only) show balances and history and can receive funds. They cannot send, sign, bridge or run privacy operations. History marks them **Watch-only**.
 
-## Watch-Only Mode
+## Notices
 
-For watch-only wallets (imported via address only):
-
-- View balances and transaction history
-- Receive funds normally
-- **Cannot** send transactions
-- **Cannot** perform privacy operations (Encrypt/Decrypt/Claim)
-
-A visual indicator shows when viewing a watch-only wallet.
-
-<Warning>
-Watch-only wallets require the full wallet (with private key) to sign transactions. They are useful for monitoring addresses you don't control directly.
-</Warning>
-
-## Quick Actions
-
-### Copy Address
-- Click your address in the header or Receive screen
-- Visual confirmation appears
-- Address copied to clipboard
-
-### Refresh Balance
-- Click the refresh icon on the Balance Card
-- Or pull down on the main screen
-- Updates both public and private balances
-
-### Quick Lock
-- Click the lock icon in the header
-- Or close the extension popup
-- Wallet locks based on your timeout settings
+Short messages appear as one pill above the status bar and fade on their own: information after 4 seconds, errors and warnings after 6. Hover to keep one on screen. Copy buttons say **Copied** in place.

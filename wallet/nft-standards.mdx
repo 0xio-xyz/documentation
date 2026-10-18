@@ -61,9 +61,9 @@ Token IDs are sequential starting from 0.
 
 ---
 
-## Geodesics Standard (Single-Contract NFT)
+## Bionts (Single-Contract NFT)
 
-Geodesics are autonomous, single-contract NFTs created by [Euint Labs](https://biont.network), where each geodesic is its own deployed smart contract. Total supply is always 1, and the token ID is always 0. The `token_uri()` function returns full SVG markup directly from contract state. It is fully on-chain, with no IPFS or external servers.
+Bionts are autonomous, single-contract NFTs created by [Euint Labs](https://biont.network), where each biont is its own deployed smart contract. Total supply is always 1, and the token ID is always 0. The `token_uri()` function returns full SVG markup directly from contract state. It is fully on-chain, with no IPFS or external servers.
 
 ### View Functions
 
@@ -75,7 +75,7 @@ Geodesics are autonomous, single-contract NFTs created by [Euint Labs](https://b
 | `token_uri()` | `→ string` | Raw SVG markup (on-chain generative art) |
 | `biont_owner()` | `→ address` | Current owner |
 | `balance_of(addr)` | `address → int` | Returns 1 if owner, 0 otherwise |
-| `is_alive()` | `→ bool` | Whether the geodesic is alive |
+| `is_alive()` | `→ bool` | Whether the biont is alive |
 | `defense_level()` | `→ int` | Current defense stat |
 
 ### State-Changing Functions
@@ -83,12 +83,12 @@ Geodesics are autonomous, single-contract NFTs created by [Euint Labs](https://b
 | Method | Signature | Description |
 |--------|-----------|-------------|
 | `transfer_to(new_owner)` | `address → bool` | Transfer ownership (no token_id needed) |
-| `wander()` | `→ bool` | Move the geodesic |
-| `hunt()` | `→ bool` | Hunt another geodesic |
+| `wander()` | `→ bool` | Move the biont |
+| `hunt()` | `→ bool` | Hunt another biont |
 
 ### On-Chain SVG
 
-Unlike SNS-1 which uses IPFS for metadata, Geodesics return full SVG markup from `token_uri()`. The SVG is generated from live contract state: name, wander count, defense stats, and alive/dead status all render dynamically.
+Unlike SNS-1 which uses IPFS for metadata, Bionts return full SVG markup from `token_uri()`. The SVG is generated from live contract state: name, wander count, defense stats, and alive/dead status all render dynamically.
 
 0xio Wallet detects raw SVG responses (strings starting with `<svg`) and renders them inline via base64 data URIs.
 
@@ -98,12 +98,77 @@ Unlike SNS-1 which uses IPFS for metadata, Geodesics return full SVG markup from
 
 ---
 
+## Living NFTs (Euint Labs Geodesics and Chain-State Collections)
+
+A living NFT's art is a program: an HTML page hosted in a public Octra Circle. The collection is one contract with many token ids, and `token_uri(id)` does not return SVG.
+
+### token_uri Shapes
+
+| Shape | Example |
+|-------|---------|
+| Circle metadata file | `oct://<metadata_circle>/<n>.json` |
+| Before reveal | `oct://<metadata_circle>/unrevealed.json` |
+| Inline JSON | `data:application/json;utf8,{"name":"...","image":"oct://...","animation_url":"oct://..."}` |
+
+Inline JSON is UTF-8 text, not base64, and URLs inside it keep their own percent escapes. The wallet parses it in place (capped at 256 KB) and never sends it to `fetch()`. Percent-encoded and `;base64` bodies are read too.
+
+The metadata's `animation_url` (and usually `image`) points at the program, for example:
+
+```
+oct://<renderer_circle>/index.html?seed=<seed>&contract=<contract>&token=<id>&st=<state>&rpc=<endpoint>
+```
+
+### Two Kinds of Program
+
+- **Seed-only** (Geodesics): the program draws from `?seed=` alone and makes no network requests. Its frame has `connect-src 'none'`.
+- **Chain-state** (the query names `contract=`): the program reads its own state with read-only `contract_call` requests to the Octra JSON-RPC. `st=` carries a state snapshot with commas and colons, and devnet tokens carry `rpc=https://devnet.octrascan.io/rpc`. Mainnet tokens carry no `rpc=`, and the program defaults to `https://octra.network/rpc`.
+
+### What a Program May Reach
+
+- The frame runs sandboxed in an opaque origin, with no wallet access, no keys and no storage.
+- A chain-state program may reach exactly one endpoint, the `/rpc` path of the network its token lives on: `https://octra.network/rpc` on mainnet, `https://devnet.octrascan.io/rpc` on devnet, or the user's own node on a custom network. The frame's `connect-src` names only that endpoint.
+- An `rpc=` value is kept only when it names that endpoint. Any other host is dropped and the network's endpoint is used, so a token cannot make the wallet contact a server of its choosing. The 0xio RPC proxy is never reachable from a program.
+- The full query reaches the program byte for byte, through `new URLSearchParams(location.search)`.
+- In the extension the sandbox policy names the mainnet and devnet endpoints, and each program document narrows it to its own network. On a custom node the program has no network, and its `contract_call` requests are answered through the wallet's read-only bridge instead.
+- Live programs run on the detail screen only, one at a time. Every read counts against the same per-IP rate limit as the wallet.
+
+### Burns, Reveals and Caching
+
+- Tokens can be burned. A burned id reverts on `token_uri`, and the wallet drops it from the gallery instead of leaving an empty tile. A busy or unreachable node is not a burn.
+- Files at one `oct://` path can change, so program and metadata files are not kept on disk. A program stays in memory for 5 minutes.
+- `token_uri` is read again when a moving token's page opens, after a manual refresh, and once per session, so reveals, burns and new state show up.
+
+### Discovery
+
+Devnet's `octra_tokensByAddress` does not list the new-layout contracts yet. For an imported contract the registry does not list, the wallet reads `balance_of(wallet)`, then `owners_page(start, 50)` when the ABI has it (one owner or `-` per id), else `owner_of` id by id. Burned ids leave gaps past the live supply, so the scan does not stop at `get_total_supply`. These contracts answer `get_name` and `get_symbol` instead of `collection_name` and `symbol`.
+
+### Devnet Test Set
+
+| Item | Address |
+|------|---------|
+| Contract | `octEYrJrypHj2xndM39PokSMM5gGoxEEncKB8k9qGFyhrym` |
+| Renderer circle | `octBqsZH2c1GBnBrYhUJPJHdmLuT8YMPXFpEKsPKqEYYYfi` |
+| Metadata circle | `octGsV8bztVuWtMuhAgcrccxx8pS19tMbyqennJp3xegmaK` |
+
+---
+
+## EVM NFTs (Extension)
+
+The browser extension also shows ERC-721 and ERC-1155 tokens held by the wallet's 0x address, in the same NFTs list as Octra collections, with a network badge on each cover.
+
+- Holdings are read through the 0xio oracle (`/api/evm/nfts`), one network at a time; tokens the explorer flags as scam or spam are dropped. See [Oracle API](/developers/oracle-api#evm-nfts).
+- Images load through the 0xio proxy.
+- **Import** takes a contract and token ID; the network is detected, and the preview checks that this wallet holds the token.
+- **Send** uses `safeTransferFrom` for the token's standard, after a review with the fee.
+
+---
+
 ## How 0xio Wallet Detects the Standard
 
 1. **Fetch ABI** via `octra_contractAbi` to determine which methods the contract exposes
-2. **Name detection**: tries `collection_name()` (SNS-1), `name()`, `biont_name()` in priority order
-3. **Transfer method**: detects `transfer(to, token_id)` (SNS-1) or `transfer_to(address)` (Geodesics) from ABI
-4. **Image rendering**: if `token_uri()` returns `<svg...`, renders inline; if it returns `ipfs://...`, fetches metadata JSON and resolves the image URL
+2. **Name detection**: tries `collection_name()` (SNS-1), `name()`, `biont_name()`, `get_name()` in priority order
+3. **Transfer method**: detects `transfer(to, token_id)` (SNS-1) or `transfer_to(address)` (Bionts) from ABI
+4. **Image rendering**: if `token_uri()` returns `<svg...`, renders inline; inline `data:application/json` is parsed in place; `oct://` and `ipfs://` metadata JSON is fetched and its image resolved; an `oct://...html` `animation_url` renders as a living program
 
 When the ABI is unavailable (returns 0 methods), the wallet defaults to SNS-1 behavior (`transfer(to, token_id)` and IPFS metadata).
 
@@ -112,9 +177,12 @@ When the ABI is unavailable (returns 0 methods), the wallet defaults to SNS-1 be
 | Feature | Extension | Mobile | Desktop |
 |---------|-----------|--------|---------|
 | SNS-1 display | Yes | Yes | Yes |
-| Geodesics SVG rendering | Yes | Yes | Yes |
+| Biont SVG rendering | Yes | Yes | Yes |
+| Living NFTs, seed-only | Yes | Yes | Yes |
+| Living NFTs, chain-state | Yes | Yes | Yes |
 | SNS-1 transfer | Yes | Yes | Yes |
-| Geodesics transfer_to | Yes | Yes | Yes |
+| Biont transfer_to | Yes | Yes | Yes |
 | IPFS image loading | Yes (blob proxy) | Yes | Yes |
 | On-chain SVG | Yes (base64 data URI) | Yes | Yes |
 | ABI-based detection | Yes | Yes (`octra_contractAbi`) | Yes (`octra_contractAbi`) |
+| EVM NFTs (ERC-721, ERC-1155) | Yes | No | No |

@@ -1,10 +1,10 @@
 ---
 title: "Oracle API"
-description: "REST API reference for the 0xio Oracle with real-time price feeds, AMM swap quotes, and historical chart data for the Octra ecosystem."
+description: "REST API reference for the 0xio Oracle: OCT and token prices, swap quotes, price history, EVM address data and bridge analytics. Reads need no API key."
 icon: "chart-line"
 ---
 
-The **0xio Oracle** provides real-time price feeds, swap quotes, and historical price data for the 0xio ecosystem. Prices are aggregated from multiple sources (CoinGecko + DexScreener) with anomaly detection and stored in PostgreSQL for historical chart data.
+The **0xio Oracle** serves OCT and token prices, swap quotes, price history, EVM address data for the 0xio wallets, and bridge analytics. The OCT price follows the wOCT/ETH Uniswap v4 pool on Ethereum live, priced in USD from the ETH/USD trades of Coinbase, Kraken and Bitstamp, and is cross-checked against CoinGecko and DexScreener. Price history is stored in PostgreSQL for charts.
 
 ## Base URL
 
@@ -14,40 +14,49 @@ https://oracle.0xio.xyz
 
 ## Authentication
 
-Most API endpoints require an API key. Get your key from the [Developer Portal](https://devs.0xio.xyz).
+**Reads need no API key.** Every `GET` route works without a key, limited per client IP. A valid key skips the IP limit and counts against its own monthly quota instead (10,000 calls a month unless your plan sets another). A retired or unknown key is treated as no key, so it falls back to the IP limit rather than failing.
 
-Include the key in the `x-api-key` header:
+Get a key from the [Developer Portal](https://devs.0xio.xyz) when you need more than the IP limit allows, and send it in the `x-api-key` header:
 
 ```http
-x-api-key: 0xio-5f96c109e9e7aa34-oracle
+x-api-key: 0xio-<16 hex>-oracle
 ```
 
 <Warning>
-Keep your API key secret. Never expose it in client-side code or public repositories.
+Keep your API key secret. Use it from your own server; never ship it in client-side code or a public repository.
 </Warning>
 
-### Protected vs Public Endpoints
+### Route Access
 
-| Endpoint | Auth Required |
-|----------|---------------|
-| `GET /health` | No |
-| `GET /api/health` | No |
-| `GET /api/metrics` | No |
-| `GET /api/keys` | Signature |
-| `POST /api/keys` | Signature |
-| `DELETE /api/keys/:id` | Signature |
-| `GET /api/price/oct/details` | Yes |
-| `GET /api/price/twap` | Yes |
-| `GET /api/price/:symbol` | Yes |
-| `GET /api/prices` | Yes |
-| `GET /api/quote` | Yes |
-| `GET /api/reserves` | Yes |
-| `GET /api/chart/history` | Yes |
-| `POST /api/simulate-trade` | Admin key |
-| `POST /api/liquidity` | Admin key |
+| Endpoint | Access |
+|----------|--------|
+| `GET /health`, `GET /api/health`, `GET /api/metrics` | Public |
+| `GET /api/price/:symbol`, `GET /api/prices`, `GET /api/price/oct/details`, `GET /api/price/twap` | No key (per-IP limit) or a key |
+| `GET /api/quote`, `GET /api/reserves`, `GET /api/chart/history` | No key (per-IP limit) or a key |
+| `GET /api/evm/history`, `GET /api/evm/nfts`, `GET /api/evm/tokens` | No key (per-IP limit) or a key |
+| `GET /api/bridge/stats`, `GET /api/bridge/events`, `GET /api/bridge/chart` | No key (per-IP limit) or a key |
+| `POST /api/bridge/event` | Public, rate limited (see [Bridge Analytics](#bridge-analytics)) |
+| `POST /api/keys`, `GET /api/keys`, `DELETE /api/keys/:id`, `GET /api/usage` | Owner wallet signature |
 | `DELETE /api/keys` | The key being revoked |
+| `POST /api/simulate-trade`, `POST /api/liquidity` | Operator key only |
+| `POST /api/keys/revoke-owner`, `GET /api/keys/usage`, `PATCH /api/keys/quota` | Operator key only |
 
-Quotas are per key, per calendar month (UTC), and reset on the 1st. "Admin key" routes are for the operator's own services: any other key gets `403`.
+Any other write without a valid key gets `401`. Quotas are per key, per calendar month (UTC), and reset on the 1st. "Operator key" routes are for the operator's own services: any other key gets `403`.
+
+### Scopes
+
+A key can be limited to scopes when it is created. Each route group needs its scope:
+
+| Scope | Routes |
+|-------|--------|
+| `read:price` | `/api/price/...`, `/api/prices` |
+| `read:quote` | `/api/quote` |
+| `read:chart` | `/api/chart/history` |
+| `read:reserves` | `/api/reserves` |
+| `read:bridge` | `/api/bridge/...` |
+| `read:evm` | `/api/evm/...` |
+
+An empty or missing scope list means all scopes.
 
 ---
 
@@ -110,8 +119,7 @@ Get the current spot price for a specific token.
 
 **Example:**
 ```bash
-curl -H "x-api-key: YOUR_KEY" \
-  https://oracle.0xio.xyz/api/price/OCT
+curl https://oracle.0xio.xyz/api/price/OCT
 ```
 
 **Response:**
@@ -119,14 +127,14 @@ curl -H "x-api-key: YOUR_KEY" \
 {
   "symbol": "OCT",
   "price": 0.024816,
-  "source": "aggregated(coingecko+dexscreener)"
+  "source": "aggregated(uniswap+coingecko+dexscreener)"
 }
 ```
 
 The `source` field indicates where the price came from:
-- `aggregated(coingecko+dexscreener)`: Multi-source aggregation with anomaly detection (OCT / wOCT)
-- `pyth`: Pyth Network oracle feed (SOL, ETH, and other non-OCT symbols)
-- `static`: Hardcoded value (stablecoins USDC / USDT)
+- `aggregated(...)`: OCT and wOCT. The names in brackets are the sources that agreed: `uniswap` (the live pool price) leads while it agrees with the polled `coingecko` and `dexscreener` prices; a source too far from the others is left out
+- `spot`: ETH (from the live ETH/USD feed) and SOL (Coinbase, then Kraken)
+- `static`: USDC and USDT, pegged at $1
 
 ### Get All Prices
 
@@ -138,8 +146,7 @@ Get current prices for all supported tokens (OCT, WOCT, USDC, USDT, SOL, ETH).
 
 **Example:**
 ```bash
-curl -H "x-api-key: YOUR_KEY" \
-  https://oracle.0xio.xyz/api/prices
+curl https://oracle.0xio.xyz/api/prices
 ```
 
 **Response:**
@@ -164,8 +171,7 @@ Get full aggregated market data for OCT including 24h change, volume, liquidity,
 
 **Example:**
 ```bash
-curl -H "x-api-key: YOUR_KEY" \
-  https://oracle.0xio.xyz/api/price/oct/details
+curl https://oracle.0xio.xyz/api/price/oct/details
 ```
 
 **Response:**
@@ -176,10 +182,11 @@ curl -H "x-api-key: YOUR_KEY" \
   "priceChange24h": -2.15,
   "volume24h": 12500.00,
   "liquidityUsd": 85000.00,
-  "source": "aggregated(coingecko+dexscreener)",
+  "source": "aggregated(uniswap+coingecko+dexscreener)",
   "confidence": "high",
   "spreadPct": 0.8,
   "allSources": {
+    "uniswap": 0.024816,
     "coingecko": 0.024800,
     "dexscreener": 0.024832
   },
@@ -198,8 +205,7 @@ Get 5-minute time-weighted average prices for OCT and ETH alongside the current 
 
 **Example:**
 ```bash
-curl -H "x-api-key: YOUR_KEY" \
-  https://oracle.0xio.xyz/api/price/twap
+curl https://oracle.0xio.xyz/api/price/twap
 ```
 
 **Response:**
@@ -240,8 +246,7 @@ Get a swap quote with expected output amount and price impact.
 
 **Example:**
 ```bash
-curl -H "x-api-key: YOUR_KEY" \
-  "https://oracle.0xio.xyz/api/quote?inputMint=OCT&outputMint=USDC&amount=100"
+curl "https://oracle.0xio.xyz/api/quote?inputMint=OCT&outputMint=USDC&amount=100"
 ```
 
 **Response:**
@@ -269,8 +274,7 @@ Get current liquidity pool reserves.
 
 **Example:**
 ```bash
-curl -H "x-api-key: YOUR_KEY" \
-  https://oracle.0xio.xyz/api/reserves
+curl https://oracle.0xio.xyz/api/reserves
 ```
 
 **Response:**
@@ -285,13 +289,13 @@ curl -H "x-api-key: YOUR_KEY" \
 }
 ```
 
-### Simulate Trade (Admin)
+### Simulate Trade (Operator)
 
 ```http
 POST /api/simulate-trade
 ```
 
-Simulate a trade execution against the AMM. Updates internal reserves for quote accuracy. Requires the operator's admin key; developer keys get `403`.
+Used by the solver to reserve liquidity or update local state before on-chain execution. Requires the operator key; any other key gets `403`.
 
 **Request Body:**
 ```json
@@ -314,13 +318,13 @@ Simulate a trade execution against the AMM. Updates internal reserves for quote 
 }
 ```
 
-### Update Liquidity (Admin)
+### Update Liquidity (Operator)
 
 ```http
 POST /api/liquidity
 ```
 
-Update liquidity reserves. Used by the watcher service to sync on-chain balances. Requires the operator's admin key; developer keys get `403`.
+Adjust liquidity reserves, for example after a rebalancing. Requires the operator key; any other key gets `403`.
 
 **Request Body:**
 ```json
@@ -365,8 +369,7 @@ Get historical price data over a configurable time range. Points are downsampled
 
 **Example:**
 ```bash
-curl -H "x-api-key: YOUR_KEY" \
-  "https://oracle.0xio.xyz/api/chart/history?pair=OCT&range=30d"
+curl "https://oracle.0xio.xyz/api/chart/history?pair=OCT&range=30d"
 ```
 
 **Response:**
@@ -381,6 +384,171 @@ curl -H "x-api-key: YOUR_KEY" \
 <Note>
 The `time` field on chart data points is a Unix timestamp in **seconds** (suitable for charting libraries like Lightweight Charts). Other endpoints (`/health`, `/api/price/oct/details`, `/api/reserves`) return timestamps in **milliseconds**.
 </Note>
+
+---
+
+## EVM Data
+
+The 0xio wallets read EVM address data through these routes. They are read from Blockscout with the oracle's own key, server side. Each call covers one chain, so a client can query chains in parallel and keep per-chain failures apart.
+
+### EVM History
+
+```http
+GET /api/evm/history?chain=1&address=0x...
+```
+
+Latest transactions and ERC-20 transfers of an address.
+
+**Query Parameters:**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `chain` | integer | `1` (Ethereum), `11155111` (Sepolia), `4663` (Robinhood Chain) or `46630` (Robinhood Chain Testnet) |
+| `address` | string | `0x` and 40 hex characters |
+
+**Response:** `{ transactions, token_transfers }`, Blockscout's v2 items trimmed to the fields wallets read, under Blockscout's own names. Every other field is dropped. Cached 60 seconds per chain and address.
+
+- **`transactions` items:** `hash`, `timestamp`, `value`, `status` and `method`; `from`, `to` and `created_contract` as `{ hash }` or null; `fee` as `{ value }` (wei) or null; `raw_input`; `decoded_input` as `{ method_call, method_id, parameters: [{ name, type, value }] }` or null. Contract names are not passed on; wallets read them per address with the explorer's verified and scam flags.
+- **`token_transfers` items:** `transaction_hash`, `timestamp` and `log_index`; `from` and `to` as `{ hash }` or null; `total` as `{ value, decimals }`; `token` as `{ address_hash }`. Token names, symbols and logos are left out, so a wallet names a token only from its own list.
+- **Caps:** a scalar string is cut at 128 characters and a fee at 80. `raw_input` is kept whole up to 522 characters (a selector and eight words) and cut to its 10 character selector beyond that, and dropped unless it is `0x` and hex. `parameters` keeps the first 16. A parameter `name` or `type` is cut at 64 characters, `method_call` and a parameter `value` at 512 (a nested array or object longer than that becomes its JSON text, cut), and `method_id` at 10. A cut string ends with `…`.
+
+### EVM NFTs
+
+```http
+GET /api/evm/nfts?chain=1&address=0x...
+```
+
+ERC-721 and ERC-1155 tokens held by an address.
+
+**Query Parameters:** `chain` (a positive integer chain ID) and `address` (`0x` and 40 hex characters).
+
+**Response:**
+```json
+{
+  "items": [
+    {
+      "contract": "0x...",
+      "tokenId": "42",
+      "standard": "ERC-721",
+      "amount": "1",
+      "name": "Piece #42",
+      "collection": "Collection",
+      "image": "https://..."
+    }
+  ],
+  "complete": true
+}
+```
+
+- `contract` is lowercase. `tokenId` and `amount` are decimal strings of at most 78 digits. `standard` is `ERC-721` or `ERC-1155`.
+- `name` (token metadata) and `collection` (token name) are trimmed, stripped of control and bidi characters and capped at 80 characters, or null.
+- `image` is an `https://` or `ipfs://` URL of at most 1024 characters, or null.
+- Tokens Blockscout flags as scam or spam are dropped.
+- **Paging:** follows Blockscout's pages up to 200 items (5 pages, 20 seconds in total). `complete` is false when more remain or a later page failed. Cached 60 seconds per chain and address (10 seconds for a result cut short by a failed page).
+- **Errors:** `400` on a bad chain or address, or a chain Blockscout does not serve; `503` when Blockscout fails.
+
+### EVM Tokens
+
+```http
+GET /api/evm/tokens?chain=1&address=0x...
+```
+
+ERC-20 tokens held by an address, each with a spam verdict.
+
+**Query Parameters:** `chain` (a positive integer chain ID) and `address` (`0x` and 40 hex characters).
+
+**Response:** `{ items: [{ contract, symbol, name, decimals, balance, price, verified, spam, spamReason, logo }], complete }`, in Blockscout's order (highest USD value first).
+
+- `contract` is lowercase. `decimals` is an integer from 0 to 36 (other items are dropped). `balance` is a decimal string of at most 78 digits, and zero balances are skipped.
+- `symbol` (at most 11 characters) and `name` (at most 40) are trimmed and stripped of control, bidi and zero-width characters, or null when empty or longer.
+- `price` is Blockscout's USD exchange rate when finite and above 0, else null.
+- `logo` is kept only as an `https://` URL of at most 512 printable ASCII characters on `raw.githubusercontent.com`, `assets.coingecko.com` or `coin-images.coingecko.com`; null otherwise, and always null on a spam item. Never anything the token contract itself supplies.
+- `verified` says whether the contract source is verified. It is looked up only where it decides the verdict (unpriced tokens no other rule caught), else null.
+- `spam` is true when any rule below holds; `spamReason` is the first that matched, else null:
+  1. `flagged`: Blockscout marks it as scam or spam.
+  2. `link`: the name or symbol holds `http`, `www.` or a domain (a dot after a letter or digit, then 2 to 10 letters), such as `t.me` or `x.com`.
+  3. `bait`: the name or symbol holds claim, reward(s), airdrop, visit, free, voucher, bonus, gift, redeem or eligible as a word (camelCase split; airdrop, voucher and eligible anywhere).
+  4. `impersonation`: the symbol, with look-alike Cyrillic, Greek and fullwidth letters mapped to Latin and case and spaces ignored, is ETH, WETH, USDC, USDT, DAI or WBTC on a chain where that token is listed (1, 4663, 8453, 42161, 10, 137) at a contract that is not the canonical one. OCT and WOCT apply on every chain; the only canonical one is wOCT on Ethereum (`0x4647e1fe715c9e23959022c2416c71867f5a6e80`).
+  5. `unverified_unpriced`: the contract is not verified and has no price.
+
+  Rules 2 and 3 also see look-alike letters as Latin, and apply only to tokens with no market price, so a real token named after its site is not flagged.
+- **Paging:** follows Blockscout's pages up to 200 items (5 pages, 20 seconds in total). `complete` is false when more remain or a later page failed. Cached 60 seconds per chain and address, 10 seconds when a page failed or verification lookups were left for the next call.
+- **Errors:** `400` on a bad chain or address, or a chain Blockscout does not serve; `503` when Blockscout fails or its plan does not cover the chain.
+
+---
+
+## Bridge Analytics
+
+The [bridge site](https://bridge.0xio.xyz) reports each step of a transfer to `POST /api/bridge/event`. The read routes count a row only after the oracle has found that transfer on chain.
+
+### Report a Bridge Event
+
+```http
+POST /api/bridge/event
+```
+
+Public, no key. The body is JSON of at most 4 KB, and unknown fields are refused.
+
+```json
+{
+  "event_type": "lock",
+  "direction": "o2e",
+  "octra_addr": "oct...",
+  "eth_addr": "0x...",
+  "amount_raw": "1000000",
+  "amount_display": "1",
+  "tx_hash": "...",
+  "wallet_type": "0xio"
+}
+```
+
+| Field | Rule |
+|-------|------|
+| `event_type` and `direction` | `lock` with `o2e` (to Ethereum; `tx_hash` is the Octra hash: 64 hex, no prefix), `claim` with `o2e`, `burn` with `e2o` (to Octra) and `any_swap` with `a2o` (`tx_hash` is the Relay request ID). The last three take `0x` and 64 hex. Any other type, or a direction that does not match the type, is refused |
+| `octra_addr` | `oct` and 44 Base58 characters (43 accepted). Needed for `lock`, `burn` and `any_swap` |
+| `eth_addr` | `0x` and 40 hex, not the zero address. Needed for every type (`claim`: the recipient) |
+| `amount_raw` | Whole micro OCT, digits only, above 0 and at most 1 billion OCT |
+| `amount_display` | Optional. The stored display is always derived from `amount_raw` |
+| `wallet_type` | Null or one of `0xio`, `metamask`, `rabby`, `walletconnect`, `coinbase`, `rainbow`, `trust`, `phantom`, `okx`, `brave`, `injected` |
+
+**Response:** `{ "status": "ok" }`, or `{ "status": "duplicate" }` when the row is already known. `400` with a short `error` on any rule above; `429` past the rate limit.
+
+- **Limits:** 20 posts a minute per client IP and 300 a minute in total.
+- **Dedupe:** an event whose `(event_type, tx_hash)` already has a verified row, or a pending row with the same addresses and amount, is not stored again. At most 3 rows with different payloads may wait under one hash, and only one verified row is allowed per `(event_type, tx_hash)`, so a fake posted first with a real hash cannot block or double the real event.
+
+### Verification
+
+Every row starts unverified and is left out of every read. A background task checks rows newest first:
+
+- **lock:** the Octra contract receipt shows a successful `lock_to_eth` on the bridge vault whose `Locked` event has `octra_addr` as sender, the same amount and `eth_addr` as recipient.
+- **claim:** the Ethereum receipt succeeded, was sent to the bridge contract, is 12 blocks deep and holds a `Minted` event for the amount whose recipient (or the transaction's sender) is `eth_addr`.
+- **burn:** the same receipt checks and a `BurnToOctra` event for the amount from `eth_addr` to `octra_addr`.
+- **any_swap:** Relay reports the request as settled, and one of its Ethereum transactions sends wOCT to `octra_addr` through the bridge for the amount (within 1%).
+- A row not on chain yet is checked again after 1, 2, 4 minutes and so on, at most 12 hours apart.
+- Rows are never deleted. A row that breaks the rules, is contradicted by the chain twice, is under 7 days old and still not found after 8 checks, or whose hash another verified row already holds, is quarantined and read by no route. A row older than 7 days that is not found after 3 checks stays unverified instead.
+
+### Bridge Stats
+
+```http
+GET /api/bridge/stats
+GET /api/bridge/events?limit=50&offset=0
+GET /api/bridge/chart
+```
+
+- **`/api/bridge/stats`:** totals such as `total_events`, `total_locks`, `total_burns`, `locks_24h`, `burns_24h`, `volume_locked_oct`, `volume_locked_24h_oct`, `volume_burned_oct`, `volume_burned_24h_oct`, `unique_octra_wallets` and `unique_eth_wallets`. Cached 60 seconds.
+- **`/api/bridge/events`:** `{ events, count }`, newest first. `limit` defaults to 50 (at most 500).
+- **`/api/bridge/chart`:** `{ data }`, daily rows with `ts`, `direction`, `event_type` and `amount_oct`. Cached 120 seconds.
+
+All three read rows found on chain, plus rows recorded before validation existed that were not quarantined. Volumes are in OCT, from `amount_raw`.
+
+---
+
+## Metrics
+
+```http
+GET /api/metrics
+```
+
+Public. How live the OCT price is, for status displays, without price values: price updates in total and in the last minute, ETH/USD ticks, the venues feeding ETH/USD, whether the pool's swaps arrive live, the sources in use, the confidence and how long ago the price last changed.
 
 ---
 
@@ -404,7 +572,7 @@ List all API keys associated with your wallet address. **Requires wallet signatu
 
 **Example:**
 ```bash
-curl "https://oracle.0xio.xyz/api/keys?owner=oct1...&timestamp=170...&signature=...&public_key=..."
+curl "https://oracle.0xio.xyz/api/keys?owner=oct...&timestamp=170...&signature=...&public_key=..."
 ```
 
 **Response:**
@@ -412,7 +580,7 @@ curl "https://oracle.0xio.xyz/api/keys?owner=oct1...&timestamp=170...&signature=
 [
   {
     "id": 42,
-    "key_masked": "0xio-5f96c109e9e7...",
+    "key_masked": "0xio-<12 hex>...",
     "label": "Production App",
     "created_at": "2025-01-15 10:30:00",
     "monthly_quota": 10000,
@@ -428,12 +596,12 @@ curl "https://oracle.0xio.xyz/api/keys?owner=oct1...&timestamp=170...&signature=
 POST /api/keys
 ```
 
-Generate a new API key. Requires wallet signature for verification. Keys follow the format `0xio-{hex}-oracle`.
+Generate a new API key. Requires a wallet signature, and the owner must be on the portal whitelist. Keys look like `0xio-<16 hex>-oracle`. An owner can create at most 5 keys an hour (`429` past that).
 
 **Request Body:**
 ```json
 {
-  "owner": "oct1abc...",
+  "owner": "oct...",
   "public_key": "base64_encoded_public_key",
   "label": "My App Production",
   "scopes": ["read:price", "read:quote"],
@@ -445,10 +613,10 @@ Generate a new API key. Requires wallet signature for verification. Keys follow 
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `owner` | string | Yes | Your wallet address (oct1...) |
-| `public_key` | string | Yes | The Ed25519 public key in HEX or Base64 |
-| `label` | string | No | Descriptive label for the key |
-| `scopes` | string[] | No | Limit the key to these scopes; empty or missing means all |
+| `owner` | string | Yes | Your wallet address (`oct...`) |
+| `public_key` | string | Yes | The Ed25519 public key, Base64 |
+| `label` | string | No | Descriptive label, at most 64 printable characters |
+| `scopes` | string[] | No | Limit the key to these [scopes](#scopes); empty or missing means all |
 | `signature` | string | Yes | Base64-encoded ed25519 signature |
 | `timestamp` | number | Yes | Unix timestamp (must be within 5 minutes) |
 
@@ -457,14 +625,14 @@ Generate a new API key. Requires wallet signature for verification. Keys follow 
 0xio-api-key:{owner}:{timestamp}
 ```
 
-Example: `0xio-api-key:oct1abc123...:1706270400`
+Example: `0xio-api-key:oct...:1706270400`
 
 **Response:**
 ```json
 {
   "status": "created",
   "id": 42,
-  "key": "0xio-5f96c109e9e7aa34-oracle"
+  "key": "0xio-<16 hex>-oracle"
 }
 ```
 
@@ -497,7 +665,7 @@ Revoke one of your keys by the `id` from create or list. Signed by the owner wal
 }
 ```
 
-Returns `404` when the id does not exist or belongs to another wallet.
+Returns `404` when the id does not exist or belongs to another wallet, `401` on a bad signature and `400` on an expired or malformed one.
 
 ### Revoke Key with the Key Itself
 
@@ -505,7 +673,7 @@ Returns `404` when the id does not exist or belongs to another wallet.
 DELETE /api/keys
 ```
 
-Revoke an existing API key. The key to revoke must be provided in the header.
+Legacy revoke with the full key in the header. Kept for compatibility; prefer `DELETE /api/keys/:id`, which also works for a key that is over its quota.
 
 **Headers:**
 ```http
@@ -519,6 +687,16 @@ x-api-key: KEY_TO_REVOKE
 }
 ```
 
+### Usage Report
+
+```http
+GET /api/usage?owner=...&public_key=...&signature=...&timestamp=...&days=30&logs=20
+```
+
+Your keys' usage over the last `days` (1 to 365, default 30) with the latest `logs` requests (1 to 500, default 20). Signed by the owner wallet over `0xio-usage:{owner}:{timestamp}`.
+
+The key routes (`POST /api/keys`, `GET /api/keys`, `DELETE /api/keys/:id`) and `GET /api/usage` allow 60 calls a minute per client IP.
+
 ---
 
 ## Error Responses
@@ -526,15 +704,15 @@ x-api-key: KEY_TO_REVOKE
 | HTTP Status | Description |
 |-------------|-------------|
 | 400 | Bad Request: invalid parameters or signature payload |
-| 401 | Unauthorized: invalid or missing API key / signature |
-| 403 | Forbidden: address not whitelisted for key creation, a scope the key lacks, or an admin-only route |
-| 404 | Not Found: token or resource not found |
-| 429 | Too Many Requests: rate limited (response includes `retry_after` seconds) |
+| 401 | Unauthorized: a write without a valid key, or an invalid signature |
+| 403 | Forbidden: address not whitelisted for key creation, a scope the key lacks, or an operator-only route |
+| 404 | Not Found: token or resource not found, or the price is still initializing |
+| 429 | Too Many Requests: the per-IP limit for calls without a key, a key over its monthly quota, or a route's own rate limit |
 | 500 | Internal Server Error |
 | 502 | Bad Gateway: upstream price source error |
 | 503 | Service Unavailable: oracle data not yet initialized |
 
-Error responses use the shape `{ "error": "message" }`, with a `retry_after` field added on `429`.
+Error responses from the routes use the shape `{ "error": "message" }`; a route's own rate limit adds `retry_after` in seconds. A `401`, `403` or `429` from the key check itself (no key over the IP limit, a missing scope, a key over its quota) carries no body.
 
 ---
 
@@ -544,14 +722,12 @@ Error responses use the shape `{ "error": "message" }`, with a `retry_after` fie
 
 ```typescript
 const ORACLE_URL = 'https://oracle.0xio.xyz';
-const API_KEY = 'your_api_key';
 
+// No key needed for reads. On your own server, pass a key to skip the per-IP limit:
+// fetch(url, { headers: { 'x-api-key': process.env.ORACLE_API_KEY } })
 async function getQuote(input: string, output: string, amount: number) {
   const response = await fetch(
-    `${ORACLE_URL}/api/quote?inputMint=${input}&outputMint=${output}&amount=${amount}`,
-    {
-      headers: { 'x-api-key': API_KEY }
-    }
+    `${ORACLE_URL}/api/quote?inputMint=${input}&outputMint=${output}&amount=${amount}`
   );
 
   if (!response.ok) {
@@ -573,13 +749,10 @@ console.log(`Price impact: ${(quote.priceImpact * 100).toFixed(2)}%`);
 import requests
 
 ORACLE_URL = 'https://oracle.0xio.xyz'
-API_KEY = 'your_api_key'
 
 def get_price(symbol: str) -> dict:
-    response = requests.get(
-        f'{ORACLE_URL}/api/price/{symbol}',
-        headers={'x-api-key': API_KEY}
-    )
+    # No key needed; add headers={'x-api-key': ...} on a server to skip the per-IP limit
+    response = requests.get(f'{ORACLE_URL}/api/price/{symbol}')
     response.raise_for_status()
     return response.json()
 
@@ -591,7 +764,6 @@ print(f"OCT Price: ${price['price']} (source: {price['source']})")
 ### Rust
 
 ```rust
-use reqwest::header::HeaderMap;
 use serde::Deserialize;
 
 const ORACLE_URL: &str = "https://oracle.0xio.xyz";
@@ -606,12 +778,9 @@ struct QuoteResponse {
     price_impact: f64,
 }
 
-async fn get_quote(api_key: &str, input: &str, output: &str, amount: f64)
+async fn get_quote(input: &str, output: &str, amount: f64)
     -> Result<QuoteResponse, reqwest::Error>
 {
-    let mut headers = HeaderMap::new();
-    headers.insert("x-api-key", api_key.parse().unwrap());
-
     let client = reqwest::Client::new();
     client
         .get(format!("{}/api/quote", ORACLE_URL))
@@ -620,7 +789,6 @@ async fn get_quote(api_key: &str, input: &str, output: &str, amount: f64)
             ("outputMint", output),
             ("amount", &amount.to_string()),
         ])
-        .headers(headers)
         .send()
         .await?
         .json()

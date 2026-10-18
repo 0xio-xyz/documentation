@@ -1,64 +1,112 @@
 ---
 title: '0xio Bridge'
-description: 'Bridge OCT between Octra and Ethereum: lock OCT to mint wOCT, burn wOCT to unlock OCT.'
+description: 'Bridge between Octra and Ethereum: Bridge to Ethereum (OCT to wOCT), Bridge to Octra (wOCT to OCT) and Any chain to OCT, on bridge.0xio.xyz and inside the 0xio extension.'
 icon: 'bridge'
 ---
 
 <Note>
-  **Status: Live on Mainnet**
-  The 0xio Bridge is live at [bridge.0xio.xyz](https://bridge.0xio.xyz). Bridge OCT between Octra and Ethereum.
+  **Status: Live on Mainnet.** Use the bridge at [bridge.0xio.xyz](https://bridge.0xio.xyz) or from **Bridge** inside the [0xio browser extension](/products/extensions).
 </Note>
 
 ## Overview
 
-The **0xio Bridge** connects the **Octra Network** with **Ethereum**, enabling bidirectional transfers between native OCT and wrapped OCT (wOCT, an ERC-20 token on Ethereum).
+The **0xio Bridge** moves OCT between the **Octra Network** and **Ethereum**, where it is held as **wOCT** (an ERC-20 token). 1 OCT always equals 1 wOCT.
 
-Unlike intent-based bridges, the 0xio Bridge uses a **light client architecture**: an Octra Light Client contract on Ethereum verifies Merkle proofs of Octra transactions, providing trustless verification without relying on external oracles.
+| Route | From | To |
+|-------|------|----|
+| **Bridge to Ethereum** | OCT on Octra | wOCT on Ethereum |
+| **Bridge to Octra** | wOCT on Ethereum | OCT on Octra |
+| **Any chain to OCT** | A token on any chain Relay supports | OCT on Octra |
+
+The bridge uses a **light client**: an Octra light client contract on Ethereum verifies Merkle proofs of Octra transactions, so a claim on Ethereum does not depend on a trusted oracle.
 
 ## How It Works
 
-### OCT → wOCT (Octra to Ethereum)
+### Bridge to Ethereum (OCT to wOCT)
 
 <Steps>
-  <Step title="Connect Wallets">
-    Connect your 0xio wallet (Octra) and EVM wallet (MetaMask, Rabby, etc.)
+  <Step title="Connect wallets">
+    Connect your 0xio wallet (Octra) and an EVM wallet. In the 0xio extension both are the same wallet.
   </Step>
-  <Step title="Lock OCT">
-    Lock OCT in the BridgeVault contract on Octra with your Ethereum destination address
+  <Step title="Bridge to Ethereum">
+    Send OCT to the bridge on Octra with your Ethereum address. The bridge holds your OCT until wOCT is claimed.
   </Step>
-  <Step title="Wait for Bridge Header">
-    The bridge relayer submits epoch roots to the OctraLightClient on Ethereum (~2-5 minutes)
+  <Step title="Wait for Octra's proof on Ethereum">
+    The bridge relayer posts Octra epoch roots to the light client on Ethereum. Your transfer becomes claimable once the light client reaches its epoch. There is no fixed waiting time; the bridge shows the live wait.
   </Step>
-  <Step title="Claim wOCT">
-    Once the epoch root is verified, claim your wOCT using a Merkle proof
+  <Step title="Claim on Ethereum">
+    Claim wOCT on Ethereum with a Merkle proof. Anyone can submit the claim, but only the address you named receives the wOCT.
   </Step>
 </Steps>
 
-### wOCT → OCT (Ethereum to Octra)
+### Bridge to Octra (wOCT to OCT)
 
 <Steps>
-  <Step title="Approve wOCT">
-    Approve the EthereumBridge contract to spend your wOCT
+  <Step title="Allow wOCT">
+    Allow the bridge contract on Ethereum to use the amount of wOCT you are bridging. This is skipped when the allowance already covers it.
   </Step>
-  <Step title="Burn wOCT">
-    Burn wOCT on Ethereum with your Octra recipient address
+  <Step title="Bridge to Octra">
+    wOCT leaves Ethereum with your Octra address as the recipient.
   </Step>
-  <Step title="Automatic Unlock">
-    The bridge relayer detects the burn and unlocks OCT on Octra (~2 minutes)
+  <Step title="Arrives on Octra">
+    The bridge relayer sees the transfer and the same amount of OCT arrives at your Octra address, usually within a minute. The arrival is confirmed on chain, not assumed after a timer.
   </Step>
 </Steps>
+
+### Any Chain to OCT
+
+Pay with a token on any EVM chain that Relay supports. Relay swaps it into wOCT on Ethereum and bridges it to your Octra address in one fill. No 0xio contract is involved.
+
+- Search tokens and chains by name or symbol, or paste a contract address.
+- Type what you pay, or the OCT you want to receive; the other field shows the live quote.
+- Before your wallet signs, the order is checked against Relay's own chain list: the OCT goes to your Octra address for the amount shown, the payment stays within what you entered, and refunds come back to you. Anything else is refused.
+- A 0.25% 0xio fee applies to this route only. It is shown in **Fees and gas** before you confirm.
+
+## Bridge Inside the Extension
+
+The 0xio browser extension bridges without leaving the wallet, using the wallet's own Octra and 0x addresses. The bridge works on mainnet only.
+
+<Frame caption="Bridge in the extension">
+  <img src="/images/extension/bridge.png" alt="Bridge in the extension with OCT to wOCT, the receiving address and the Claim pill" width="320" />
+</Frame>
+
+
+- **Both directions and Any chain to OCT,** each step with its own review. Bridge to Ethereum signs the live Octra network fee shown on the review, and asks again if the network's minimum rises.
+- **Claim page:** the **Claim** pill in the Bridge header opens your transfers to Ethereum in **Ready**, **In progress** and **Completed**, with a count on each and the wait shown as hours left. The pill counts the transfers ready to claim.
+<Frame caption="The Claim page (sample transfers)">
+  <img src="/images/extension/bridge-claim.png" alt="Claim page with transfers ready to claim on Ethereum" width="320" />
+</Frame>
+
+- **Find my transfers** searches Octra and Ethereum for this wallet's bridge transfers. **Add by hash** takes an Octra or Ethereum transaction hash. The first time Bridge opens on a wallet, its transfers are read back from the chains.
+- **A transfer to Octra that was allowed but not sent** is offered again from the form.
+- **Wallets without an EVM key** (imported from an Octra private key) can bridge to Ethereum by typing a 0x address. The claim, Bridge to Octra and Any chain to OCT need an EVM wallet, so they are done on [bridge.0xio.xyz](https://bridge.0xio.xyz) with any EVM wallet; the Claim page says so and links there.
+- **Watch-only wallets** cannot bridge.
+- If a send may have reached the node but the reply was lost, the wallet follows it on Octra and asks you to check Claim before trying again, never that it was not sent.
+
+## Bridge Stats
+
+[bridge.0xio.xyz/stats](https://bridge.0xio.xyz/stats) shows transfers made on the 0xio bridge:
+
+- **Net to Ethereum:** OCT bridged to Ethereum minus OCT bridged back to Octra, over 7 days, 30 days or all time.
+- **Weekly counts** of transfers to Ethereum, transfers to Octra and claims on Ethereum.
+- **Totals:** total and 24 hour volume, transactions and wallets (Octra and Ethereum).
+- **By route:** Octra to Ethereum, Ethereum to Octra and Any chain to Octra, each with total bridged, the last 24 hours and transactions.
+- **Recent bridge events** with time (UTC), type, from, to and amount.
+
+<Frame caption="bridge.0xio.xyz/stats">
+  <img src="/images/bridge/stats.jpg" alt="Bridge analytics with the net to Ethereum chart, totals and weekly counts" />
+</Frame>
+
+The stats count a transfer only after the 0xio oracle has found it on chain. See [Bridge Analytics](/developers/oracle-api#bridge-analytics) for the API.
 
 ## Features
 
-- **Trustless Verification**: Octra Light Client on Ethereum verifies Merkle proofs, with no trusted oracle
-- **Multi-Wallet Support**: EIP-6963 detection for Rabby, MetaMask, Phantom, and other EVM wallets
-- **WalletConnect**: Scan QR code from the mobile app to bridge
-- **Auto-Reconnect**: Wallets persist across page refreshes
-- **Any chain to OCT**: Pay with any token on the EVM chains Relay supports; Relay swaps it into wOCT and burns it to your Octra address in one fill
-- **Bridge History**: Full transaction history with claim actions and relayer-assisted recovery
-- **Network Dashboard**: Live chain stats at [bridge.0xio.xyz/octra](https://bridge.0xio.xyz/octra)
-- **Bridge Stats**: Volume, transactions, unique wallets at [bridge.0xio.xyz/stats](https://bridge.0xio.xyz/stats)
-- **Transactions Log**: On-chain mint/burn event feed at [bridge.0xio.xyz/transactions](https://bridge.0xio.xyz/transactions)
+- **Light client verification:** claims are checked on Ethereum against Octra epoch roots, with no trusted oracle
+- **Multi-wallet support:** EIP-6963 detection for MetaMask, Rabby, Phantom and other EVM wallets
+- **WalletConnect:** connect the 0xio mobile app by scanning the QR code
+- **Resumable transfers:** the current transfer stays at the top of History with its Claim button and resumes after a refresh, so the page can be closed while you wait
+- **Honest states:** a transfer reads Complete only after the claim receipt or the confirmed arrival on Octra
+- **Bridge history:** claim actions, recovery from the relayer feed and lookup by hash
 
 ## Contract Addresses
 
@@ -69,58 +117,56 @@ Unlike intent-based bridges, the 0xio Bridge uses a **light client architecture*
 | EthereumBridge | Ethereum | `0xE7eD69b852fd2a1406080B26A37e8E04e7dA4caE` |
 | OctraLightClient | Ethereum | `0xC01cA57dc7f7C4B6f1B6b87B85D79e5ddf0dF55d` |
 
-## Bridge Limits
+## Limits
 
 | Parameter | Value |
 |-----------|-------|
-| Minimum lock | 1 OCT |
+| Minimum to Ethereum | 1 OCT |
 | Rate | 1 OCT = 1 wOCT (always) |
-| Cooldown | Per-address cooldown between locks (enforced on-chain) |
-| wOCT → OCT | Automatic unlock via relayer (~2 min) |
+| Per-transfer and daily limits | Set on the bridge contract and read before every review. A claim over the daily limit becomes claimable the next day |
+| Pause | Either side can be paused; the bridge says so and keeps your OCT in your wallet |
 
 ## Fees
 
 | Route | 0xio fee |
 |-------|----------|
-| OCT ↔ wOCT | None (network gas only) |
-| Any chain → OCT | 0.25%, collected by Relay and shown in Fees and gas before you confirm |
+| Bridge to Ethereum and Bridge to Octra | None (network fees only) |
+| Any chain to OCT | 0.25%, collected by Relay and shown in Fees and gas before you confirm |
 
 ## Architecture
 
 ```
-User (0xio Wallet + EVM Wallet)
-    │
-    ├── Octra: BridgeVault (lock/unlock OCT)
-    │
-    ├── Ethereum: EthereumBridge + wOCT ERC-20
-    │
-    ├── OctraLightClient (Merkle proof verification)
-    │
-    └── Bridge Relayer (epoch root updater)
+User (0xio wallet + EVM wallet)
+    |
+    +-- Octra: BridgeVault (holds OCT bridged to Ethereum)
+    |
+    +-- Ethereum: EthereumBridge + wOCT ERC-20
+    |
+    +-- OctraLightClient (Merkle proof verification)
+    |
+    +-- Bridge relayer (posts epoch roots, delivers OCT to Octra)
 ```
 
 ## Services
 
 | Service | URL | Role |
 |---------|-----|------|
-| Bridge UI | [bridge.0xio.xyz](https://bridge.0xio.xyz) | User interface |
-| Network Dashboard | [bridge.0xio.xyz/octra](https://bridge.0xio.xyz/octra) | Chain stats, privacy ops |
-| Bridge Stats | [bridge.0xio.xyz/stats](https://bridge.0xio.xyz/stats) | Volume, wallets, activity |
-| Transactions | [bridge.0xio.xyz/transactions](https://bridge.0xio.xyz/transactions) | On-chain mint/burn event log |
-| Oracle | oracle.0xio.xyz | Price feeds, bridge event tracking |
+| Bridge | [bridge.0xio.xyz](https://bridge.0xio.xyz) | Bridge interface |
+| Bridge Stats | [bridge.0xio.xyz/stats](https://bridge.0xio.xyz/stats) | Volume, wallets and activity |
+| Oracle | [oracle.0xio.xyz](https://oracle.0xio.xyz) | Prices and bridge event tracking |
 
 ## Known Limitations
 
-- **Epoch Sync Delay**: The ETH light client epoch updater may fall behind chain production. This causes Merkle proofs to be temporarily unverifiable until the sync catches up.
-- **Pruned Epochs**: Old epoch roots are pruned from the light client contract. Bridge transactions referencing pruned epochs cannot be claimed, so users should claim promptly.
+- **Epoch sync delay:** the light client on Ethereum can fall behind Octra. Until it catches up, new transfers to Ethereum are not claimable yet; the bridge keeps checking.
+- **Pruned epochs:** old epoch roots are pruned from the light client contract, so claim your wOCT promptly.
 
 ## Security
 
-- **No trusted oracle**: Verification is on-chain via Merkle proofs against the light client
-- **Bridge pause**: Owner can pause the bridge during emergencies
-- **Cooldown protection**: Rate limits prevent rapid drain attacks
-- **Account change detection**: Frontend detects wallet account switches to prevent sending to wrong address
+- **No trusted oracle:** claims are verified on chain against the light client
+- **Pause:** the bridge can be paused during emergencies
+- **Limits:** per-transfer and daily limits slow any drain
+- **Account change detection:** the site notices wallet account switches so you never send to the wrong address
 
 <Warning>
-Always verify the full destination address in the confirmation dialog before bridging. The bridge shows the complete address (not truncated) to prevent address injection attacks.
+Always check the full destination address on the review before bridging. The bridge shows the complete address, not a shortened one.
 </Warning>

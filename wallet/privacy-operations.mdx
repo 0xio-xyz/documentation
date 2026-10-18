@@ -22,6 +22,15 @@ The Privacy screen is your control center for Octra's PVAC-HFHE (homomorphic enc
   </Card>
 </CardGroup>
 
+## Setting Up Your Private Balance
+
+A wallet needs its encryption key registered on chain once before it can hold a private balance. This costs a one-time network fee.
+
+- **Extension:** Home shows a **Set up private** tag once the wallet can turn on its private balance. Its sheet shows the live one-time fee, and **Turn on** registers the key.
+- **Desktop:** Home shows a tag once the wallet holds enough OCT for the fee. It opens a review with the live fee; **Turn on** registers the key after Touch ID or your password. The menu bar panel offers the same.
+
+The fee shown is the fee signed. If it cannot be read, setup is blocked with a retry rather than signed at a default fee.
+
 ## Encrypting Funds (Public → Private)
 
 "Shielding" makes your funds invisible to blockchain observers.
@@ -50,7 +59,7 @@ The Privacy screen is your control center for Octra's PVAC-HFHE (homomorphic enc
     Check the network fee estimate (quoted live from the node in ou)
   </Step>
   <Step title="Confirm">
-    Review the preview, click "Encrypt", and sign with your password
+    Confirm on the review, which shows the amount and the live network fee
   </Step>
   <Step title="Wait for Confirmation">
     A proof-generation overlay shows progress; confirmation follows shortly after
@@ -74,7 +83,7 @@ When you encrypt funds:
 
 ### Costs
 
-Encrypt fees are denominated in **operational units (ou)** and quoted live from the node via `octra_recommendedFee`. The Privacy screen shows Slow / Normal / Fast presets sourced from the node, and you can set a custom ou amount. Encrypt also generates a range proof locally, so it takes longer than a plain transfer.
+Encrypt fees are denominated in **operational units (ou)** and quoted live from the node. The fee is paid from your public balance, so the amount plus the fee must fit in it. If the fee cannot be read, the operation is blocked with **Network fee unavailable** instead of using a fixed fee. Encrypt also generates proofs locally, so it takes longer than a plain transfer.
 
 ## Decrypting Funds (Private → Public)
 
@@ -103,7 +112,7 @@ Encrypt fees are denominated in **operational units (ou)** and quoted live from 
     Check the network fee estimate (in ou)
   </Step>
   <Step title="Confirm">
-    Sign and broadcast the transaction
+    Confirm on the review. The network fee is paid from your public balance
   </Step>
   <Step title="Confirmation">
     Funds appear in your Public Balance after confirmation
@@ -155,7 +164,19 @@ When someone sends you a private (stealth) transfer, you claim it to move the fu
 
 ### Bulk Claiming
 
-If you have multiple pending transfers, use **Claim All** to process every detected transfer in one action. The wallet still settles each claim on-chain individually, so a fee applies per claim.
+If you have multiple pending transfers, use **Claim All** to process every detected transfer in one action. The wallet still settles each claim on-chain individually, so a fee applies per claim. On the mobile app, Claim all runs under one review with Pause and Stop.
+
+## Encryption Key Updates and Held Balances
+
+From time to time the network upgrades its encryption scheme. When that happens:
+
+- **Key update:** the wallet asks you to re-register your encryption key before you can encrypt or decrypt. If you hold a private balance, it can be migrated to the new key in the same transaction. The review shows the live fee.
+- **Held balance:** when the network holds a private balance (for example one sealed under an older scheme that waits for a network migration), Home shows a tag such as **Private on hold** and the Encrypted row reads **On hold**. The tag's sheet shows the reason. Your public balance is unaffected and nothing is lost.
+- **Refresh first:** a private balance can carry only a limited number of encrypted layers. When an operation meets that limit, the desktop and mobile apps say the balance is refreshed first and show the fee for both transactions under one review.
+
+## Faster Proofs with 0xio Desktop
+
+Proofs run on your device. When [0xio Desktop](/products/desktop) runs on the same computer, the extension runs its proofs in the desktop app, which is faster than in the browser. The desktop app never receives the key that signs your transactions.
 
 ## Privacy Best Practices
 

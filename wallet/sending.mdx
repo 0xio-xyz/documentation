@@ -4,7 +4,14 @@ description: "Send public or private transfers of OCT and tokens from 0xio with 
 icon: "paper-plane"
 ---
 
-0xio lets you send native OCT, OAT tokens, and private stealth transfers, covering both public and confidential transactions. To send a token instead of OCT, pick it from the token selector on the Send screen; the steps below otherwise apply to both.
+0xio lets you send native OCT, Octra tokens and private stealth transfers. To send a token instead of OCT, pick it on the Send screen; the steps below otherwise apply to both. Sending ETH and tokens on EVM networks is covered in [EVM Networks](/wallet/evm#sending).
+
+Every send ends on a review before anything is signed. In the extension the review has **Back** and **Send**; the mobile app confirms with a slide.
+
+<Frame caption="The send review in the extension">
+  <img src="/images/extension/send-review.png" alt="Review send sheet with amount, recipient, sender, network, fee and total, and Back and Send buttons" width="320" />
+</Frame>
+
 
 ## Standard Public Send
 
@@ -19,7 +26,7 @@ Send a transparent transaction visible on the blockchain.
 
     - 47 characters (`oct` + 44 Base58)
     - Validates automatically
-    - Can paste or scan QR code
+    - Can paste or scan QR code. On mobile, scanning a payment request (`octra:<address>?amount=<OCT>`) also fills the amount; see [Payment Requests](/wallet/receiving#payment-requests-mobile)
   </Step>
   <Step title="Enter Amount">
     Specify the amount to send
@@ -40,7 +47,7 @@ Send a transparent transaction visible on the blockchain.
     - Total including fees
   </Step>
   <Step title="Confirm and Sign">
-    Click "Send" and enter your password to sign
+    Tap **Send** on the review to sign. In the extension a result screen then shows **Sending**, and **Sent** once the network confirms it
   </Step>
 </Steps>
 
@@ -51,7 +58,7 @@ Send a transparent transaction visible on the blockchain.
 - **Network fee:** Quoted live from the node via `octra_recommendedFee` and shown before you confirm
 
 <Info>
-Fees are denominated in **operational units (ou)** and displayed converted to OCT (1 OCT = 1,000,000 ou). The wallet fetches a Standard / High / Fast estimate from the node; you can override it with a custom ou value. There is no fixed fee tier; the node sets the recommended amount.
+Fees are denominated in **operational units (ou)** and displayed converted to OCT (1 OCT = 1,000,000 ou). The wallet reads its estimates from the node; you can pick another tier or set a custom ou value. One fee drives everything for a send: the fee shown, **Max**, the balance checks and the signature. If the fee cannot be read, the extension shows **Network fee unavailable** and blocks Review instead of guessing.
 </Info>
 
 ## Private Send
@@ -79,7 +86,7 @@ Send a stealth transfer where the amount stays confidential. The wallet derives 
     - Network fee (higher than a plain transfer because of proof generation)
   </Step>
   <Step title="Confirm">
-    Confirm and sign the transaction
+    Confirm on the review. Proofs run before sending and can take a few minutes; the result screen shows **Queued** while they run
   </Step>
 </Steps>
 
@@ -107,22 +114,22 @@ Send to multiple recipients in one flow. Each recipient is submitted as its own 
 
 <Steps>
   <Step title="Open Bulk / Batch Mode">
-    Switch the Send screen to bulk (the extension and mobile use a "Bulk" tab; desktop uses a "Batch" tab).
+    Switch the Send screen to bulk (the extension uses a "Bulk" tab; desktop uses a "Batch" tab). The mobile app has no bulk send.
   </Step>
   <Step title="Add Recipients">
     Add addresses with individual amounts.
 
-    - **Extension and mobile:** add up to 5 recipients, each with its own address and amount; remove rows with the trash icon.
+    - **Extension:** add up to 5 recipients, each with its own address and amount; remove rows with the trash icon. Bulk always sends OCT, and every address and amount is checked.
     - **Desktop:** add rows individually or paste/import a CSV (`address,amount` per line). A live batch summary shows the running total, flags duplicate addresses, and warns when the total exceeds your available balance.
   </Step>
   <Step title="Choose Balance Type">
-    Select the Public balance as the source. Private (FHE) bulk sends are available only in [0xio Desktop](/products/desktop); the extension and mobile app send privately to one recipient at a time.
+    Select the Public balance as the source. Private (FHE) bulk sends are available only in [0xio Desktop](/products/desktop); the extension sends privately to one recipient at a time.
   </Step>
   <Step title="Review Total">
-    Review the total amount, the per-recipient breakdown, and the estimated fee.
+    Review the total amount (fees included), the per-recipient breakdown and the fee.
   </Step>
   <Step title="Confirm">
-    Confirm and sign. The wallet processes each transfer and reports how many succeeded.
+    Confirm and sign. The wallet processes each transfer and reports how many succeeded. In the extension a bulk send reads **Sent** only once every transfer confirms on chain.
   </Step>
 </Steps>
 
@@ -139,18 +146,11 @@ Send to multiple recipients in one flow. Each recipient is submitted as its own 
 Bulk send submits a separate transaction per recipient, so total fees scale with the number of transfers; there is no per-batch discount.
 </Note>
 
-## Whitelisted Addresses (Mobile)
+## Confirming a Send (Mobile)
 
-On the mobile app, you can mark an address you trust as whitelisted, either by ticking **Whitelist this address** on the Send screen or from the Address Book.
+On the mobile app every send ends on a review: amount, recipient (with "First time sending to this address" when new), memo, fee, network and total. Slide to send to confirm, or tap outside the review to back out. With **Ask before sending** on (Settings, Security), Face ID or your PIN follows the slide; there is no address that skips it.
 
-- Whitelisting an address requires your PIN or biometrics.
-- Later sends to a whitelisted address skip the PIN or biometric check. You still see and confirm the review of every send.
-- The whitelist is checked at the moment you confirm, so changing the recipient after it was checked cannot slip past it.
-- Remove an address from the whitelist in the Address Book at any time.
-
-<Warning>
-Anyone holding your unlocked phone could send to a whitelisted address without your PIN. Whitelist only addresses you control or fully trust, and keep auto-lock on.
-</Warning>
+While a send runs you can close its progress screen. It keeps going on the wallet and network it was made on, and its result arrives as a notice.
 
 ## Transaction Priority
 
@@ -158,9 +158,9 @@ Anyone holding your unlocked phone could send to a whitelisted address without y
 
 You can customize the **operational unit (ou)** fee to control transaction priority:
 
-1. Tap the estimated network fee on the Send screen.
-2. Choose a priority level. The wallet pulls Standard, High, and Fast estimates from the node, or you can set a **Custom** ou amount.
-3. Higher ou = faster inclusion in blocks.
+1. Tap the network fee on the Send screen.
+2. Choose a tier read live from the node, or set a **Custom** ou amount. In the extension a custom fee is a whole number from 100 to 10,000,000 ou.
+3. Higher fees confirm faster.
 
 <Info>
 During network congestion, a higher ou value helps your transaction get processed sooner. The displayed presets are sourced live from the node, so exact values vary with network conditions.
@@ -170,9 +170,9 @@ During network congestion, a higher ou value helps your transaction get processe
 
 ### Pending
 
-- Transaction submitted to network
-- Awaiting validator confirmation
-- Typically 3-10 seconds
+- Transaction submitted to the network
+- Awaiting validator confirmation, usually a few seconds
+- A transaction that may have reached the node stays on **Sending**, and History settles it. Only a rejection from the node returns you to the form
 
 ### Confirmed
 
@@ -182,8 +182,8 @@ During network congestion, a higher ou value helps your transaction get processe
 
 ### Failed
 
-- Transaction rejected or reverted
-- Funds safely returned to your wallet
+- Transaction rejected by the node, dropped or expired
+- Nothing is spent when the node rejects a transaction; the extension shows the node's reason
 - **Common causes:**
   - Insufficient balance for gas
   - Network connectivity issue
@@ -194,8 +194,8 @@ During network congestion, a higher ou value helps your transaction get processe
 Include a message with your transaction:
 
 1. Open the memo field on the Send screen
-2. Enter memo text (up to 200 characters)
-3. **Note:** The memo is stored on-chain and visible for public sends
+2. Enter memo text (up to 200 bytes in the extension; the length is counted in bytes, so some characters count as more than one)
+3. **Note:** The memo is stored on-chain and visible to everyone. Memos go with public OCT sends; token sends carry none
 
 **Use Cases:**
 - Payment references
