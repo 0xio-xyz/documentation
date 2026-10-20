@@ -58,7 +58,7 @@ The bridge uses a **light client**: an Octra light client contract on Ethereum v
 Pay with a token on any EVM chain that Relay supports. Relay swaps it into wOCT on Ethereum and bridges it to your Octra address in one fill. No 0xio contract is involved.
 
 - Search tokens and chains by name or symbol, or paste a contract address.
-- Type what you pay, or the OCT you want to receive; the other field shows the live quote.
+- Type what you bridge, or the OCT you want to get; the other field shows the live quote.
 - Before your wallet signs, the order is checked against Relay's own chain list: the OCT goes to your Octra address for the amount shown, the payment stays within what you entered, and refunds come back to you. Anything else is refused.
 - A 0.25% 0xio fee applies to this route only. It is shown in **Fees and gas** before you confirm.
 
@@ -85,11 +85,12 @@ The 0xio browser extension bridges without leaving the wallet, using the wallet'
 
 ## Bridge Stats
 
-[bridge.0xio.xyz/stats](https://bridge.0xio.xyz/stats) shows transfers made on the 0xio bridge:
+[bridge.0xio.xyz/stats](https://bridge.0xio.xyz/stats) shows transfers made on the bridge site and from **Bridge** in the 0xio extension:
 
 - **Net to Ethereum:** OCT bridged to Ethereum minus OCT bridged back to Octra, over 7 days, 30 days or all time.
 - **Weekly counts** of transfers to Ethereum, transfers to Octra and claims on Ethereum.
 - **Totals:** total and 24 hour volume, transactions and wallets (Octra and Ethereum).
+- **By client:** Web (the bridge site) and 0xio Extension, each with its total bridged and transactions.
 - **By route:** Octra to Ethereum, Ethereum to Octra and Any chain to Octra, each with total bridged, the last 24 hours and transactions.
 - **Recent bridge events** with time (UTC), type, from, to and amount.
 

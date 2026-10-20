@@ -478,7 +478,7 @@ ERC-20 tokens held by an address, each with a spam verdict.
 
 ## Bridge Analytics
 
-The [bridge site](https://bridge.0xio.xyz) reports each step of a transfer to `POST /api/bridge/event`. The read routes count a row only after the oracle has found that transfer on chain.
+The [bridge site](https://bridge.0xio.xyz) and the 0xio Extension report each step of a transfer to `POST /api/bridge/event`. The read routes count a row only after the oracle has found that transfer on chain.
 
 ### Report a Bridge Event
 
@@ -497,7 +497,8 @@ Public, no key. The body is JSON of at most 4 KB, and unknown fields are refused
   "amount_raw": "1000000",
   "amount_display": "1",
   "tx_hash": "...",
-  "wallet_type": "0xio"
+  "wallet_type": "0xio",
+  "source": "web"
 }
 ```
 
@@ -509,6 +510,7 @@ Public, no key. The body is JSON of at most 4 KB, and unknown fields are refused
 | `amount_raw` | Whole micro OCT, digits only, above 0 and at most 1 billion OCT |
 | `amount_display` | Optional. The stored display is always derived from `amount_raw` |
 | `wallet_type` | Null or one of `0xio`, `metamask`, `rabby`, `walletconnect`, `coinbase`, `rainbow`, `trust`, `phantom`, `okx`, `brave`, `injected` |
+| `source` | Optional. `web` (the bridge site) or `extension` (the 0xio Extension); absent means `web`. Self-reported and not checked on chain; the first report of a transfer keeps its source |
 
 **Response:** `{ "status": "ok" }`, or `{ "status": "duplicate" }` when the row is already known. `400` with a short `error` on any rule above; `429` past the rate limit.
 
@@ -534,9 +536,9 @@ GET /api/bridge/events?limit=50&offset=0
 GET /api/bridge/chart
 ```
 
-- **`/api/bridge/stats`:** totals such as `total_events`, `total_locks`, `total_burns`, `locks_24h`, `burns_24h`, `volume_locked_oct`, `volume_locked_24h_oct`, `volume_burned_oct`, `volume_burned_24h_oct`, `unique_octra_wallets` and `unique_eth_wallets`. Cached 60 seconds.
+- **`/api/bridge/stats`:** totals such as `total_events`, `total_locks`, `total_burns`, `locks_24h`, `burns_24h`, `volume_locked_oct`, `volume_locked_24h_oct`, `volume_burned_oct`, `volume_burned_24h_oct`, `unique_octra_wallets` and `unique_eth_wallets`, plus `by_source` with the same totals for `web` (the bridge site) and `extension` (the 0xio Extension). Both keys are always present, and wallet counts are per source, so the two can overlap. The top-level `source` field is a fixed `"bridge_frontend_only"`, kept for older readers: it only says these are client-reported transfers rather than full on-chain totals, and does not name a client; use `by_source` for the split. `note` describes what is counted. Cached 60 seconds.
 - **`/api/bridge/events`:** `{ events, count }`, newest first. `limit` defaults to 50 (at most 500).
-- **`/api/bridge/chart`:** `{ data }`, daily rows with `ts`, `direction`, `event_type` and `amount_oct`. Cached 120 seconds.
+- **`/api/bridge/chart`:** `{ data }`, daily rows with `ts`, `direction`, `event_type`, `amount_oct` and `source`. Cached 120 seconds.
 
 All three read rows found on chain, plus rows recorded before validation existed that were not quarantined. Volumes are in OCT, from `amount_raw`.
 
