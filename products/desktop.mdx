@@ -24,7 +24,7 @@ Click the 0xio icon in the menu bar for your wallet at a glance. The panel opens
 - **Send**, **Receive** (with a QR code), **Private** and **Lock**, and a wallet switcher. The **•••** menu holds the network, Lock now, Open at login, Open and Quit.
 - **Private:** encrypt or decrypt, claim private transfers, turn on a private balance, migrate it or update the encryption key, each with the live network fee.
 - **Locked:** unlock in the panel with Touch ID or your password.
-- The menu bar icon shows an outline while locked, a turning slash while a private proof runs, and the number of transfers waiting to be claimed.
+- The menu bar icon shows an outline while locked, a turning slash while a private proof runs, and the number of site requests waiting (else the transfers waiting to be claimed).
 
 ### Command Line
 
@@ -54,6 +54,32 @@ The **CLI** theme turns the panel into a terminal with no buttons. Type `0xio --
 - An approved request runs only on the wallet and network its review showed.
 - A private send is offered only when the private balance is ready. A balance that is due for a migration, needs a key update or setup, or is waiting for the network shows its status, with **Migrate**, **Update** or **Turn on** where the app can do it.
 
+### Sites Through the Extension
+
+A website can sign with the desktop wallet instead of the browser. In the extension's connect review, pick **Sign with: 0xio Desktop** and press **Continue**. The extension only carries the site's requests over the paired connection; every one is reviewed in the menu bar and signed by the desktop app.
+
+- **Arrival:** when nothing is waiting and the panel is closed, the first request opens the panel on its review. Later requests never take focus; they raise the count on the menu bar icon.
+- **Notifications:** while the panel is closed, a later request also shows one macOS notification for its site, for example "https://app.octradex.xyz wants you to sign a transaction". A site gets one at a time. Click it to open the panel on that request, or on the Requests list when more wait. macOS asks for permission the first time one is due. Turn them off in **Settings > Security & Privacy**, **Notify me about site requests**; if macOS has them off, the row says so with **Open settings**.
+- **Requests:** two or more waiting show the Requests list, grouped by site with its browser and **Reject all** per site. Repeat connect requests from one site merge into one row (for example 2 tabs). A review has a way back to the list; answering lands on the list, or closes the panel when nothing is left. A click outside closes the panel without answering.
+- **Every review:** Reject and the verb (Connect, Send, Sign, Switch, Claim, Deploy), the full site address with its scheme, the page around it when the site is in a frame, **Via 0xio extension (Chrome)** or **(Firefox)**, the wallet, and the live network fee for anything that pays one. Touch ID or your password follows for anything that signs.
+- **Locked:** the panel asks you to unlock first, then shows the review.
+- **Networks:** each site keeps its own network. A site's network switch is its own review and moves only that site.
+- **Limits:** at most 3 requests per site wait at once and a site is rate limited; a request beyond that gets an error at once. A tab that closes or reloads takes its requests with it.
+
+Sites connected this way are listed in **Settings > Security & Privacy**, **Connected sites**, per network (Mainnet or Devnet), each with the browser it came through and the wallet it uses. **Disconnect** asks once more in place. Removing the extension in **Paired apps** first says how many sites it forgets and lists them in the panel.
+
+### Sites Straight from the Browser
+
+A website can also reach the desktop wallet with no extension at all. When the site offers **0xio Desktop** and you press Connect, it opens a connection to the app on this computer; the browser names the site and the site cannot pretend to be another one.
+
+- **Same reviews:** every connect, sign, send and network switch opens in the menu bar exactly like a site through the extension, with **Reject** and the verb, the live fee, then Touch ID or your password. The review shows **Connection: Direct from browser** where a relayed site shows the extension. A locked wallet asks you to unlock first.
+- **What a site learns:** nothing about you until you approve its connect. After that it sees the wallet it uses, as with the extension.
+- **Chrome asks first:** the first time a website reaches the app, Chrome (and Edge) shows a prompt that the site wants to access apps and services on this device (**Apps on device**). Allow it for sites you use; Block stops that site from reaching the app. You can change it later in the site's settings in Chrome.
+- **Limits:** the same as through the extension (3 waiting requests per site, a rate limit), and a cap on how many pages can be connected at once. Closing a tab ends its waiting requests; the site stays connected and picks up again when you come back.
+- **Turn it off:** **Settings > Security & Privacy**, **Websites can connect without the extension** (on by default). Off refuses websites at once and closes the open ones; sites through the extension keep working.
+
+These sites are listed under **Connected sites** with **Direct from browser** and **Disconnect**.
+
 ### Lives in the Menu Bar
 
 Closing the window (the red button, Cmd+W or Cmd+Q) keeps 0xio Desktop running in the menu bar without a Dock icon. The wallet, auto-lock and proof work carry on. Open the window again from the menu bar, Finder, Spotlight or the Dock. **Quit** in the menu bar menu or panel quits the app. **Open at login** starts it quietly in the menu bar.
@@ -68,16 +94,22 @@ The home screen displays your public and private (FHE-encrypted) balances, recen
 
 ### Sending & Receiving
 
+- **Send screen**: the form on the left and a live panel on the right. Pick a recipient from the address book, your wallets or recent sends (each shows when you last sent), enter the amount with Max and the token, and add a message on public OCT. The panel shows both balances, the live network fee, who the recipient is to you (saved in, sent before, last send) and what is left after the send
+- **Review in place**: Review send locks the form and turns the panel into the review card (amount, from, to, network fee, total, balance after, message) with **Reject** and **Send**. Reject returns to editing with every value kept; Send reads the fee again, asks for Touch ID or your password, then shows Signing and Broadcasting, and Sent with the hash, View in History and New send
 - **Standard transfers**: Public on-chain transactions with memo support
-- **Private transfers**: FHE-encrypted stealth transfers (recipient must have a registered PVAC public key)
-- **Bulk send**: Send to many recipients in one batch, with a pre-send summary plus duplicate-address and insufficient-balance guards and per-row stealth progress. Private (FHE) bulk sends are available only in the desktop app
+- **Private transfers**: FHE-encrypted stealth transfers (recipient must have a registered PVAC public key). The proofs run in the shared proof queue with five steps and the elapsed time of each; a private send pays its fee from the public balance, so the total shows a private line and a public line
+- **Bulk send**: rows in the same frame (add one, paste a list or import a CSV), totals in the panel, then one review listing every send in order and the progress in the same card. Duplicate addresses and a total over the balance are flagged. Private (FHE) bulk sends are available only in the desktop app and run as one job in the proof queue
 - **QR codes**: Generate and share receive addresses
-- **OU control**: Customize Operational Unit (gas) fees per transaction
-- **Private send readiness**: in the main window, private send is disabled before the confirm while the private balance cannot be proven or the encryption key differs from the network's, with the reason in the Send button's place
+- **OU control**: press the network fee to pick Slow, Normal, Fast or a custom fee
+- **Private send readiness**: a private send is offered only when the private balance is ready; otherwise the panel shows what comes first (turn on, refresh the key, migrate, a key update on hold) with its own review
 
 ### Privacy Operations
 
-Full encrypt, decrypt and claim support, same as the extension. Setting up a private balance, updating the encryption key and migrating a balance each open a review with the wallet, network and live fee, then ask for Touch ID or your password. A changed fee, wallet or network is refused before any proof work.
+Full encrypt, decrypt and claim support, same as the extension. The Privacy screen has a composer on the left with **Encrypt**, **Decrypt** and **Claim** tabs and a live **Proofs** panel on the right. Each operation is reviewed in the composer's place with **Reject** and the verb, then Touch ID or your password; the job then joins the proof queue and the composer is free for the next one.
+
+- **Proof queue**: one job at a time, in the order confirmed, so nonces and the balance's layers stay in order. The running job shows its step dots (encrypt has four steps; decrypt, claim and private send five) with the elapsed time of each step, then Up next and what finished today. A failed proof stays on top with its error, **Remove** and **Retry**, and the jobs behind it wait as Paused
+- **Claim**: waiting transfers oldest first, each with its own Claim. Any of them can be claimed, one per press, because each claim adds two layers; the review shows the sender, the live fee, the private balance and the layers after
+- **Turn on private balance**, **Refresh key** (at four or more of eight layers), **Migrate balance** and a **key update on hold** each show in the composer with the wallet, network and live fee. A changed fee, wallet or network is refused before any proof work
 
 <Steps>
   <Step title="Encrypt (Public → Private)">
@@ -126,8 +158,8 @@ The desktop app runs a **local WebSocket server** on `ws://127.0.0.1:19345` that
 
 ### How It Works
 
-1. The extension detects the desktop app on the local machine
-2. The extension sends the PVAC master seed, a one-way hash of the wallet key, and the desktop derives the same PVAC keys from it. The key that signs transactions never leaves the extension
+1. The extension detects the desktop app on the local machine, and both prove the pairing secret to each other (see Pairing with the Extension)
+2. Only then the extension sends the PVAC master seed, a one-way hash of the wallet key, and the desktop derives the same PVAC keys from it. The key that signs transactions never leaves the extension
 3. For heavy FHE operations, the extension delegates computation to the desktop app
 4. Desktop computes using native Rust with all CPU cores, returns the result
 5. Extension uses the result as if it computed locally
@@ -139,6 +171,7 @@ Range proofs, bound proofs, commitments and PVAC key work for the extension's en
 ### Security
 
 - **Loopback only**: The WebSocket server binds to `127.0.0.1`, so no remote connections are accepted
+- **Paired clients only**: The extension and local programs pair once, and the extension proves its pairing on every connection before any key material moves. A website that connects straight from the browser can only send site requests for its own address, each reviewed in the menu bar; it never reaches proofs, keys or pairing
 - **Connection limit**: Maximum 8 concurrent connections
 - **Message size cap**: 16MB per message (range proofs can be 1 to 3MB)
 - **Idle timeout**: 300 seconds
@@ -221,7 +254,7 @@ The desktop app supports switching between Octra networks:
 
 RPC endpoints are configured automatically by the app (mainnet connects directly to `octra.network`). An **RPC proxy toggle** in Settings routes mainnet and devnet requests through the 0xio proxy. It is off by default, it is never used as a silent fallback, and a network you add yourself never uses it.
 
-Switch networks in **Settings**. Devnet is recommended for testing FHE operations and smart contract development.
+Switch networks in **Settings > Network**, which also shows the latest epoch and how fast each network answers. Devnet is recommended for testing FHE operations and smart contract development.
 
 ---
 
@@ -229,7 +262,7 @@ Switch networks in **Settings**. Devnet is recommended for testing FHE operation
 
 - **Encrypted vault**: All private keys encrypted with AES-256-GCM at rest
 - **PBKDF2 key derivation**: 600,000 iterations for password-to-key conversion
-- **Biometric unlock**: Touch ID (macOS) / Windows Hello, with a password fallback
+- **Biometric unlock**: Touch ID (macOS) / Windows Hello, with a password fallback. On macOS only a fingerprint opens it, never the Mac login password: the prompt's one button is **Cancel** on the lock screen, or **Use password** where a password field is waiting. If you add or remove a fingerprint, Touch ID turns off and **Settings > Security & Privacy** says so; turn it on again there
 - **Auto-lock**: Configurable inactivity timeout
 - **Seed phrase backup**: Requires password re-entry to view
 - **Input validation**: Address format, amount bounds, and JSON parsing checks
@@ -282,11 +315,18 @@ The desktop app checks [0xio.xyz](https://0xio.xyz/install) for updates automati
 
 ### Pairing with the Extension
 
-No configuration needed. If both the desktop app and the browser extension are running with the same wallet:
+Pair once, with both the desktop app and the browser extension running:
 
-1. The extension detects the desktop app automatically
-2. A **0xio Desktop** chip appears in the extension's status bar
-3. Private proofs now run in the desktop app
+1. In the extension, tap the desktop status or open **Settings**, **Connections**, **0xio Desktop** and tap **Pair**
+2. Both show the same 6 digit code. Check that they match, then approve the request in the desktop app
+3. A **0xio Desktop** chip appears in the extension's status bar and private proofs now run in the desktop app
+
+Paired apps are listed in the desktop under **Settings > Security & Privacy**, **Paired apps**, each with when it was last used and **Remove**. The choices below sit in the **Connections** group on the same tab, each takes effect at once, and the panel on the right shows how each one is set.
+
+- **Forget unused pairings after**: 7, 30 or 90 days, or Never (90 days by default). A pairing not used for that long is removed; the extension then shows Not paired with Pair
+- **Websites can connect without the extension**: on by default. Sites you approve still need a review in the menu bar. Off refuses websites and closes the open ones at once
+- **Notify me about site requests**: on by default. A site request that waits while the menu bar panel is closed shows a macOS notification
+- **Allow older extensions without pairing**: on by default. The 0xio extension 3.0.3 and older cannot pair, so while this is on they can still run their own private proofs in the desktop app, and nothing else. Turn it off to refuse them; they then run proofs in the browser. Extension 3.0.4 and later always pair, and if the desktop app is too old to pair the extension asks you to update it and runs proofs in the browser
 
 <Tip>
 Keep the desktop app running while you use the browser extension; it can stay in the menu bar with the window closed.

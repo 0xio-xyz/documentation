@@ -27,7 +27,7 @@ pnpm add @0xio/sdk
 </CodeGroup>
 
 **Package Details:**
-- **Version:** 2.10.0
+- **Version:** 2.11.0
 - **Watch-only signal (`canSign`, `WATCH_ONLY`):** Extension v3.0.3+
 - **Contract deployment (`deployContract`):** Extension v3.0.0+
 - **Min Extension (Mainnet):** v2.0.1+
@@ -200,6 +200,7 @@ The SDK automatically detects the wallet environment and uses the appropriate tr
 | **RFC-O-1 Third-Party Wallet** | `window.octra.request()` | Any wallet implementing the RFC-O-1 standard |
 | **0xio Desktop** | `window.parent.postMessage` (iframe) | DApp loaded in Desktop's built-in BrowserScreen |
 | **0xio App** | `window.parent.postMessage` (WebView) | DApp loaded in App's built-in browser |
+| **0xio Desktop, no extension** | WebSocket to `ws://127.0.0.1:19345` | Used only when no extension answers; approvals in the desktop menu bar (SDK 2.11.0) |
 
 ### How It Works
 
@@ -211,6 +212,34 @@ The SDK automatically detects the wallet environment and uses the appropriate tr
 <Tip>
 DApp developers do not need to change any code. Just use the SDK as normal: it auto-detects the environment and selects the correct transport.
 </Tip>
+
+### 0xio Desktop without the extension (2.11.0)
+
+A visitor who has 0xio Desktop but not the extension can use your site as is. `initialize()` looks for the extension first and the extension always wins. When none answers, the SDK reaches 0xio Desktop on this computer and `wallet.transport` reads `'desktop'` (otherwise `'extension'`).
+
+```typescript
+const wallet = new ZeroXIOWallet({ appName: 'My DApp' });
+await wallet.initialize();
+console.log(wallet.transport); // 'extension', 'desktop', or null until connect()
+console.log(wallet.desktopAvailableOnConnect); // true: connect() will try 0xio Desktop
+
+// Opt out for this site:
+new ZeroXIOWallet({ appName: 'My DApp', desktop: false });
+```
+
+What the visitor sees:
+
+- **A Chrome prompt the first time, after Connect.** Chrome asks once to let the site "access other apps and services on this device". The SDK never triggers it on page load: when Chrome would ask, `initialize()` resolves with `transport` `null` and `desktopAvailableOnConnect` `true`, and the next `connect()` opens the desktop. Keep the Connect button enabled in that state. If the visitor blocks the prompt, the SDK stops trying on that site.
+- **Approvals in the menu bar.** Connect, signing, sends and network switches are reviewed in the 0xio Desktop menu bar (Reject or the action), not in a popup. The SDK waits up to ten minutes for an answer.
+
+Rules and differences:
+
+- Tried only on `https:` pages that are a secure context, or on `http://localhost`, `127.0.0.1` and `[::1]` during development; never with `desktop: false` or an adapter for another wallet.
+- `getBalance()` reports `private: 0`; read private balances with `getPrivateBalance()`.
+- Private methods run only for the wallet open in the desktop and while it is on the site's network; otherwise they fail with `WALLET_CHANGED` or `NOT_AVAILABLE`.
+- `getPendingPrivateTransfers()` fails with `UNSUPPORTED_METHOD`; use `getPrivateBalance({ include_claimable: true })` and `claimPrivateTransfer()`.
+- At most 3 requests from a site wait at once, and 60 a minute.
+- If the desktop quits, the SDK emits `disconnect` with reason `network_error`; the next call reconnects. Call `getConnectionStatus()` or `connect()` to restore the session.
 
 ### Cross-Origin Iframe Bridge (v2.4.4)
 
@@ -1032,8 +1061,9 @@ User disconnected from dApp or locked wallet.
 
 ```typescript
 wallet.on('disconnect', (event) => {
-  console.log('Disconnect Reason:', event.reason);
+  console.log('Disconnect Reason:', event.data.reason);
   // Possible reasons: 'user_action', 'extension_locked', 'network_error'
+  // Also fires when the wallet ends the session for your site (2.11.0).
 
   // Clear user session, show connect button
   clearUserSession();
@@ -1232,12 +1262,15 @@ try {
 | `NOT_CONNECTED` | The page has not connected; call `connect()` first |
 | `INVALID_PARAMS` | The wallet rejected the request parameters |
 | `METHOD_NOT_ALLOWED` | `rpcCall` with a method outside the read-only allow-list |
-| `NOT_AVAILABLE` | Not served by the wallet over the bridge (`encryptBalance`, `decryptBalance`) |
+| `NOT_AVAILABLE` | Not served by the wallet over the bridge (`encryptBalance`, `decryptBalance`), or a private method while 0xio Desktop is on another network |
 | `PRIVATE_PROOF_FAILED` | A private primitive failed inside the wallet |
 | `PRIVATE_TRANSFER_FAILED` | The private transfer was refused or failed |
 | `CONTRACT_CALL_FAILED` | The contract call failed |
 | `SIGN_FAILED` | Transaction signing failed |
 | `RECIPIENT_NOT_REGISTERED` | The recipient has no private view key on-chain |
+| `UNSUPPORTED_METHOD` | The wallet has no answer for this method (0xio Desktop: `getPendingPrivateTransfers`) |
+| `NETWORK_CHANGED` | The site's network or wallet moved while the request waited for review; nothing was sent |
+| `WALLET_CHANGED` | A private method while 0xio Desktop has another wallet open than the one this site uses |
 | `UNKNOWN_ERROR` | Unexpected error occurred |
 
 ## Framework Integration

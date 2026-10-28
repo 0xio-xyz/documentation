@@ -118,6 +118,11 @@ Crash reports help fix problems quickly. They never include keys, recovery phras
 ### Dynamic Recommended Fees
 The app recommends different OU fee amounts per operation type (standard transfer, FHE encrypt, decrypt, etc.) based on current network conditions.
 
+- Every fee is the network's live quote for that operation: a transfer, a token send or NFT action (a contract call), encrypt, decrypt, a private send or a claim. No default fee is ever shown or signed.
+- A fee that cannot be read shows **Unavailable** and **Could not read the network fee. Try again.** The review and the slide stay off until a live fee exists.
+- The fee on the review is the fee signed, as long as the network still accepts it. You are asked to review again only when the network's minimum fee rises above it: **The network fee changed. Review again.**
+- A site, circle or WalletConnect request uses the site's fee only when the network accepts it, else the live recommended fee. Without a live fee the request is refused before the approval opens.
+
 ### Private Balance Status
 When your private balance cannot be used as is (the network holds it for a migration, its key needs an update, or it was made by an older version), a tag sits beside your balance on Home. Tap it to see why and, when your account allows it, re-register your encryption key.
 

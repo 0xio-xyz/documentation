@@ -114,13 +114,13 @@ Send to multiple recipients in one flow. Each recipient is submitted as its own 
 
 <Steps>
   <Step title="Open Bulk / Batch Mode">
-    Switch the Send screen to bulk (the extension uses a "Bulk" tab; desktop uses a "Batch" tab). The mobile app has no bulk send.
+    Switch the Send screen to bulk with the "Bulk" tab (extension and desktop). The mobile app has no bulk send.
   </Step>
   <Step title="Add Recipients">
     Add addresses with individual amounts.
 
     - **Extension:** add up to 5 recipients, each with its own address and amount; remove rows with the trash icon. Bulk always sends OCT, and every address and amount is checked.
-    - **Desktop:** add rows individually or paste/import a CSV (`address,amount` per line). A live batch summary shows the running total, flags duplicate addresses, and warns when the total exceeds your available balance.
+    - **Desktop:** add rows individually or paste/import a CSV (`address,amount` per line). The panel beside the rows shows the total, the fee per send and in total and what is left, flags duplicate addresses, and warns when the total exceeds your available balance. The review lists every send in order with Reject and Send, and the progress shows in the same card.
   </Step>
   <Step title="Choose Balance Type">
     Select the Public balance as the source. Private (FHE) bulk sends are available only in [0xio Desktop](/products/desktop); the extension sends privately to one recipient at a time.
