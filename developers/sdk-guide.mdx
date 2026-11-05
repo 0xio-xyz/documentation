@@ -178,6 +178,27 @@ The older SDK names (`read_balance`, `send_transactions`, `sign_messages`, `view
 
 The wallet refuses anything that signs, submits or changes state until the page has connected (`NOT_CONNECTED`), and opens its unlock screen at most once a minute for a page that is not connected (`WALLET_LOCKED`). While the wallet is locked, `getBalance` and the private balance reads also return `WALLET_LOCKED` (extension 3.0.0 and newer).
 
+## What the Review Shows
+
+The user approves exactly what is signed. The wallet reduces each request to the fields it signs, and the review shows those same fields, so a request cannot show one thing and sign another.
+
+- **One value per field.** A request may name its recipient as `to`, `to_` or `contract`, its method as `method` or `encrypted_data`, and its arguments as `params` or `message`. When two of them are set and differ, the wallet refuses the request with `INVALID_PARAMS` before any review opens. Send each value once.
+- **Arguments are signed as given.** A contract call signs its arguments as JSON array text. An array in `params` is written out as JSON. When the request carries the text itself, the extension signs it byte for byte, so integers above 2^53 keep every digit and the review shows them exactly. A JavaScript number above 2^53 has already lost digits before it reaches the wallet, so send such a call as text:
+
+  ```typescript
+  await wallet.request('call_contract', {
+    contract: 'oct26LiaGUz78Jnby2TWEHcmboKHyupnu1NX1G3Evz28YHm',
+    method: 'set_limit',
+    message: '[18446744073709551615, true]', // signed exactly as written
+  });
+  ```
+- **Sequences show every step.** `sendContractTransactionSequence` lists each step with its contract, method, exact arguments and attached amount.
+- **Fees.** The wallet uses the fee you pass only when it is a whole number at or above the network's live minimum; otherwise it shows and signs the live recommended fee. With no live fee the request is refused before the review. Private operations have floors (5,000 OU, claims 3,000 OU) and fees stop at 10,000,000 OU. See [Network Fees](/wallet/sending#network-fees).
+- **Resends.** When the node answers that a transaction was not accepted for now, the wallet sends the same signed bytes again, up to 3 tries. A used nonce goes back to the user for a new review. Nothing is re-signed without the user. See [What Happens After You Send](/wallet/sending#what-happens-after-you-send).
+- **Hash.** The hash returned is computed by the wallet the same way the network computes it, so you can look it up even when the node's reply was lost.
+
+0xio Desktop adds a few limits of its own: `signTransaction` signs standard transfers only, messages and memos over 4,000 characters are refused (never cut), and contract `params` must be an array. Each is `INVALID_PARAMS` before any review.
+
 ## Security (v2.7.x)
 
 The SDK includes several security hardening measures:
@@ -265,6 +286,7 @@ The app's built-in browser injects the same providers (`window.wallet0xio` and `
 | `submitTransaction()` | The same approval as a send; accepted only when signed by the connected wallet | **Slide to approve** |
 | `switchNetwork()` | A confirm sheet; only mainnet and devnet, and only for a connected site | Switch network or Cancel |
 
+- **https only.** The wallet answers only pages served over https. A plain http page loads but cannot connect. Development builds of the app also accept `http://localhost`.
 - **One request at a time.** A second request while one is open is refused; wait for the first to settle.
 - **Biometrics or PIN after the slide.** With the user's **Ask for PIN before signing** setting on (the default), Face ID or the PIN follows the slide. Allow for a few seconds of user time on every call.
 - **Bound to a wallet and network.** A request is held to the wallet and network it was reviewed under. If the user switches either before it is signed, nothing is signed or sent and your call rejects. Listen for `accountChanged` and `networkChanged` and re-read state.
@@ -277,6 +299,8 @@ The app's built-in browser injects the same providers (`window.wallet0xio` and `
 A dApp on another device can reach the mobile wallet through WalletConnect v2 (v1 links are refused). The user scans your code from the scan icon on Home, or pastes the connection link.
 
 - **Connect:** the sheet shows your site, the wallet and the network, each with **Change**, and warns when you asked for a different network than the one chosen. The user confirms with **Slide to connect**. Watch-only wallets cannot connect.
+- **Site identity:** the app names your site by the origin WalletConnect's Verify service confirms, only when Verify reports it valid. Otherwise it shows the name your metadata gives, tagged **Unverified** (or **Lookalike** when it is spelt like a listed app). A domain Verify reports invalid, or one flagged as a scam, is refused before any sheet. Serve your dApp from the domain registered for your WalletConnect project so it shows as verified.
+- **Arguments:** `octra_contractCall` sheets show the arguments exactly as signed. A request that expires on your side while the transaction is being sent is still answered with its real result.
 - **Session scope:** the session is bound to the wallet and network chosen at connect. Choosing them does not switch the app; if the app is on another wallet or network later, requests fail and the user is asked to switch back or reconnect.
 - **Methods:** `octra_sendTransaction`, `octra_contractCall` and `octra_signMessage` open the same sheets as the in-app browser, with the same slide; `octra_getAddress` and `octra_getBalance` are answered without a prompt.
 - **Timing:** connect requests that arrive after the user leaves the WalletConnect screen are refused. Requests from a session already connected are answered anywhere in the app once it is unlocked.
@@ -785,6 +809,8 @@ console.log('Success:', result.success);
 AML contract calls use **flat arguments**: `params: [arg1, arg2]`, not `params: [[arg1, arg2]]`. The extension handles nonce, signing, and broadcasting automatically.
 </Warning>
 
+The review shows the method with its arguments exactly as they are signed. For integers above 2^53, see [What the Review Shows](#what-the-review-shows).
+
 #### `contractCallView(data)`
 
 Read-only contract query. Does **not** require wallet unlock, signing, or user approval. Only requires `initialize()` (not `connect()`). For a page that is not connected the wallet leaves the caller empty unless you pass `caller`.
@@ -840,7 +866,7 @@ console.log(missing); // null
 
 #### `sendContractTransactionSequence(data)`
 
-Several contract calls under one approval, submitted in order with consecutive nonces. The approval window lists every step with its contract, attached value and fee.
+Several contract calls under one approval, submitted in order with consecutive nonces. The approval window lists every step with its contract, method, exact arguments, attached value and fee. A step whose fields disagree (see [What the Review Shows](#what-the-review-shows)) refuses the whole sequence with `INVALID_PARAMS`, naming the step.
 
 ```typescript
 const result = await wallet.sendContractTransactionSequence({
@@ -970,6 +996,8 @@ Building blocks for private contracts. Keys never leave the wallet: the dapp rec
 | `makeRangeProof({ cipher, value_raw })` | `private_proofs` | `{ proof, encoding }` |
 | `getPrivateBalance()` | `private_balance_read` | `{ address, private_oct_raw, private_oct, tokens }` |
 | `registerPrivateViewKey({ address })` | `private_transfers` | registration status; opens an approval |
+
+Proofs follow the proof rules the network states (see [Network Proof Rules](/developers/pvac-guide#network-proof-rules)). When the network states none, or the wallet cannot reach it to check, every private method and private transfer is refused and nothing is sent. Public calls are not affected.
 
 ```typescript
 const caps = await wallet.getPrivateCapabilities();
@@ -1260,7 +1288,7 @@ try {
 | `NONCE_TOO_FAR` | Transaction nonce too far ahead |
 | `INTERNAL_ERROR` | Internal server error |
 | `NOT_CONNECTED` | The page has not connected; call `connect()` first |
-| `INVALID_PARAMS` | The wallet rejected the request parameters |
+| `INVALID_PARAMS` | The wallet rejected the request parameters, for example two fields that name different recipients, methods or arguments |
 | `METHOD_NOT_ALLOWED` | `rpcCall` with a method outside the read-only allow-list |
 | `NOT_AVAILABLE` | Not served by the wallet over the bridge (`encryptBalance`, `decryptBalance`), or a private method while 0xio Desktop is on another network |
 | `PRIVATE_PROOF_FAILED` | A private primitive failed inside the wallet |
@@ -1635,7 +1663,7 @@ import {
   checkSDKCompatibility
 } from '@0xio/sdk';
 
-console.log('SDK Version:', SDK_VERSION); // "2.10.0"
+console.log('SDK Version:', SDK_VERSION); // "2.11.0"
 console.log('Min Extension (Mainnet):', MIN_EXTENSION_VERSION); // "2.0.1"
 console.log('Min Extension (Devnet):', MIN_EXTENSION_VERSION_DEVNET); // "2.2.1"
 console.log('Supported:', SUPPORTED_EXTENSION_VERSIONS); // ">=2.0.1"

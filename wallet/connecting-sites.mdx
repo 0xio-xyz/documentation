@@ -77,11 +77,14 @@ Tap **Not connected** to open the connect review for the open wallet. On a conne
 Every request from a site opens its own review, names the site, and shows the wallet that signs with its balance (EVM reviews label it **Signing with**). Each review ends with **Reject** and the action, for example **Connect**, **Sign**, **Send**, **Switch**, **Add and switch**, **Add token** or **Deploy**.
 
 - **Messages:** the full message. A message that is not readable text is shown as hex with a warning. A token permit says that it lets the spender move your tokens without a separate approval.
-- **Transactions:** what the call does (for example a token transfer or approval), the amount, the recipient or spender, and the maximum fee. A call 0xio cannot decode says so.
+- **Transactions:** what the call does (for example a token transfer or approval), the amount, the recipient or spender, and the network fee (in USD first on priced networks). A call 0xio cannot decode says so.
+- **Octra contract calls:** the contract, the method and its arguments exactly as they are signed, large numbers included. A sequence lists every step with its arguments and the amount it attaches.
 - **Token approvals:** tap the pencil on the Amount row to change the amount, or turn on Unlimited. The amount signed is the one shown, and never more than the site asked for unless you pick Unlimited.
 - **Fees:** site transactions use the wallet's live network fee. The fee the site sent is used only when the network gives none, and the review marks it **Suggested by site**.
 - **Contract deployment:** a review with the code size, the new contract's address and the live fee.
 - **Add a network** and **Add token** show what will be added. Add networks only from sites you trust: the RPC sees your address and your activity on that network.
+
+What you review is what is signed: the review and the signature are built from the same fields. A request that names two different recipients, two different methods or two different argument lists is refused before any review opens.
 
 After you approve, the wallet checks again that the signing wallet is still in 0xio, still connected to the site, and still has the same address. If anything changed, nothing is signed.
 

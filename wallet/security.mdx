@@ -136,6 +136,8 @@ All transactions require explicit approval:
 - **Fee shown is fee signed:** the network fee on the review is read live, and that fee is the one signed. A fee that cannot be read blocks the action instead of falling back to a default
 - **Signing wallet shown:** Every approval, message signatures included, names the wallet and network it signs with
 - **Bound to what you reviewed:** a transaction is signed only on the wallet and network its review showed. Switching wallet or network before it is sent refuses it
+- **What you see is what is signed:** site reviews show the exact arguments, amounts and memo that are signed. The extension refuses a site request whose fields disagree before any review
+- **Never re-signed on its own:** a busy node gets the same signed transaction again; a used nonce or an unclear result asks you to review or check History, never signs a new one
 - **No Auto-Sign:** Even for connected dApps
 - **Cancel Anytime:** Before signing completes
 
@@ -202,6 +204,8 @@ The mobile app adds device-level safeguards:
 - **PIN lock** with auto-lock and rate limiting, backed by the device keychain/keystore
 - **Honest browser lock:** the in-app browser shows a lock only on https pages, marks plain http as not secure, and shows none for `oct://` content
 - **Lookalike site warnings:** the in-app browser flags a site whose name is spelt close to a listed app, or uses another alphabet, and warns before it can connect, sign or send (on by default, in Browser settings)
+- **https sites only:** only pages served over https can reach the wallet from the in-app browser
+- **Verified WalletConnect sites:** a WalletConnect site is named by its verified address, or tagged **Unverified**; a site that fails verification or is flagged as a scam is refused
 - **Erase this phone:** lists each wallet as backed up or not before anything is erased, and asks once more when one is not
 
 ## Network Security

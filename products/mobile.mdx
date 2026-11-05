@@ -5,7 +5,7 @@ icon: 'mobile'
 ---
 
 <Note>
-  **Status: Live (v1.3.3).** Install from [0xio.xyz/install](https://0xio.xyz/install).
+  **Status: Live (v1.3.3).** Install from [0xio.xyz/install](https://0xio.xyz/install). v1.3.4 is in progress.
   - **iOS**: on TestFlight
   - **Android**: open testing on Google Play
 </Note>
@@ -31,15 +31,15 @@ One bar at the top of the start page takes anything you type:
 * **An app name or words:** matching apps, your recent sites, then a web search.
 * **An Octra address** (or a payment request): Send to this address, Open in Octrascan, or Save as contact.
 * **A transaction hash:** your matching transaction, and Open in Octrascan.
-* **An `oct://` address:** a circle hosted on Octra, read from the chain. Sealed circles ask for their passphrase.
+* **An `oct://` address:** a circle hosted on Octra, read from the chain. Public circle pages load with their images, scripts and stylesheets, and files stored as chunks are put back together and checked against their hashes first (see [Chunked Circle Files](/wallet/nft-standards#chunked-circle-files)). Sealed circles ask for their passphrase.
 * **Anything else:** opened as a site.
 
-Scan sits beside the bar. While you browse, the address sits at the bottom within reach of your thumb. A lock shows only on https pages, plain http is marked not secure, and a green dot means the site is connected to your wallet. The **...** menu next to the address reloads the page, shares its link, opens it in your phone's browser, switches the network (after asking) and disconnects the site.
+Scan sits beside the bar. While you browse, the address sits at the bottom within reach of your thumb. A lock shows only on https pages, plain http is marked not secure, and a green dot means the site is connected to your wallet. Only https sites can reach the wallet; a plain http page can be read but cannot connect. The **...** menu next to the address reloads the page, shares its link, opens it in your phone's browser, switches the network (after asking) and disconnects the site.
 
 Every request from a site opens in its own sheet naming the site and the wallet it acts for, one request at a time:
 * **Connect** lists what the site can see (your address and balance), what it can ask (signatures you review), any private permissions, and that it can never move funds on its own. Tap **Change** to connect another wallet. Slide to connect.
 * **Sign a message** shows the whole message. Signing moves no funds and costs no fee. Slide to sign.
-* **A transaction** shows a receipt: what it does, the amount with its USD value, the recipient, the fee, the network and your wallet. Slide to approve.
+* **A transaction** shows a receipt: what it does, the amount with its USD value, the recipient, the fee, the network and your wallet. A contract call shows its arguments exactly as they are signed. Slide to approve.
 
 <Frame caption="Connecting a site in the mobile app">
   <img src="/images/mobile/connect-review.jpg" alt="Mobile connect sheet naming the site and wallet with Slide to connect" width="280" />
@@ -64,6 +64,14 @@ A site whose name is spelt close to an app listed in the browser, or is written 
 ### Connect a dApp (WalletConnect)
 Use a dApp on another device from your phone: tap the scan icon on the home screen. The camera opens on the code; you can also paste a connection link. The connect sheet shows the site, the wallet and the network, each with **Change**, and warns when the site asked for another network. Slide to connect. A watch-only wallet cannot connect, since it cannot sign.
 
+Sites are named by the address WalletConnect verified for them:
+
+* **Verified:** the sheet shows the site's verified address.
+* **Not verified:** the sheet shows the name the site gave, tagged **Unverified**. A name spelt like a listed app is tagged **Lookalike**.
+* **Invalid or flagged:** a site whose address fails verification, or one flagged as a scam, is refused before any sheet opens.
+
+Request sheets carry the same tag. Contract calls show their arguments exactly as they are signed.
+
 Live sessions are listed on the same screen as wallet on network, each with Disconnect (two taps). A session stays with the wallet and network it was approved on: if the app is on another one later, its requests ask you to switch back or reconnect. A connection request that arrives after you leave the screen is refused, never approved unseen. Requests from a connected site use the same sheets and slide as the browser.
 
 ### Connected Sites
@@ -77,6 +85,7 @@ The NFTs tab opens on your newest piece, then a shelf per collection. Pull down 
 * **Hide** a piece or a whole collection from **More**, with Undo. **Hidden**, under the last shelf, shows them again. Hidden pieces are kept per wallet and network.
 * A piece you send leaves the gallery at once and its page shows **Sent**.
 * Tap **+** to import a collection.
+* Art and living NFT programs stored in a circle as chunks are put back together and checked against their hashes before they show (see [Chunked Circle Files](/wallet/nft-standards#chunked-circle-files)).
 
 ### Address Book
 Save and label frequently used addresses. Search by name or address, tap a contact to send to it or copy its address, and edit or delete it (two taps). The app says when an address is not valid or is already saved.
@@ -122,6 +131,9 @@ The app recommends different OU fee amounts per operation type (standard transfe
 - A fee that cannot be read shows **Unavailable** and **Could not read the network fee. Try again.** The review and the slide stay off until a live fee exists.
 - The fee on the review is the fee signed, as long as the network still accepts it. You are asked to review again only when the network's minimum fee rises above it: **The network fee changed. Review again.**
 - A site, circle or WalletConnect request uses the site's fee only when the network accepts it, else the live recommended fee. Without a live fee the request is refused before the approval opens.
+- **Fast** is offered only when the network quotes it; otherwise the fee sheet shows Standard and Custom.
+- Private operations have floors: key switch, encrypt, decrypt and private send 5,000 OU, claim 3,000 OU.
+- A custom fee below the network minimum or above 10,000,000 OU cannot be used. See [Network Fees](/wallet/sending#network-fees).
 
 ### Private Balance Status
 When your private balance cannot be used as is (the network holds it for a migration, its key needs an update, or it was made by an older version), a tag sits beside your balance on Home. Tap it to see why and, when your account allows it, re-register your encryption key.
@@ -154,6 +166,7 @@ The **Send Flow** is optimized for one-handed use:
 * **Scan to Pay:** scan an address, or a payment request that fills in the amount too.
 * **Private sends:** pick **Private OCT** to send privately.
 * **Slide to send** on the review. You can close the progress screen while it runs; the result arrives as a notice.
+* **Not confirmed:** when the app cannot tell whether a send went through, it checks the network first. If it still cannot tell, the send stays pending and says **Check History before sending again**. See [Not Confirmed](/wallet/sending#not-confirmed).
 
 ### Privacy Suite (FHE)
 Tap **Privacy** on Home for a sheet over your wallet:
@@ -162,6 +175,8 @@ Tap **Privacy** on Home for a sheet over your wallet:
 3. **Waiting for you:** incoming private transfers, each with **Claim**, and **Claim all**, which claims them one at a time with Pause and Stop.
 
 A private balance can carry a limited number of encrypted layers. When an encrypt, decrypt or private send meets that limit, the review says the balance is refreshed first, shows the fee for both transactions, and one slide runs both.
+
+Private actions follow the proof rules the network states, read before you prepare and again right before signing. When the network does not state them, private actions pause and nothing is sent. See [Network Proof Rules](/wallet/privacy-operations#network-proof-rules).
 
 ---
 

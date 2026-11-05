@@ -29,7 +29,22 @@ A wallet needs its encryption key registered on chain once before it can hold a 
 - **Extension:** Home shows a **Set up private** tag once the wallet can turn on its private balance. Its sheet shows the live one-time fee, and **Turn on** registers the key.
 - **Desktop:** Home shows a tag once the wallet holds enough OCT for the fee. It opens a review with the live fee; **Turn on** registers the key after Touch ID or your password. The menu bar panel offers the same.
 
-The fee shown is the fee signed. If it cannot be read, setup is blocked with a retry rather than signed at a default fee.
+- **Mobile:** Home shows a blue **Set up private** tag. Its sheet shows the one-time fee, and **Slide to turn on** registers the key after your PIN or biometrics.
+
+The fee shown is the fee signed, and never below 5,000 ou. If it cannot be read, setup is blocked with a retry rather than signed at a default fee.
+
+## Network Proof Rules
+
+Every private operation carries zero-knowledge proofs, and the network decides which proof rules it accepts. Before any private action (setup, encrypt, decrypt, private send, claim, key update or migration), the wallet asks the network for its rules. It reads them again right before signing.
+
+- **Rules stated:** the action goes ahead under those rules.
+- **Rules not stated:** private actions pause with a message that the network did not say which proof rules it takes. Nothing is sent. Public sends keep working.
+- **Network not reachable:** the wallet says it could not reach the network to check its proof rules. Nothing is sent; try again later.
+- **Rules changed in between:** nothing is sent, and you prepare the action again.
+
+When the network binds proofs to the encryption key, every key switch also carries a proof that you own the key. The wallet adds it for you.
+
+This works the same in the extension, the mobile app (from v1.3.4) and 0xio Desktop.
 
 ## Encrypting Funds (Public → Private)
 
@@ -83,7 +98,7 @@ When you encrypt funds:
 
 ### Costs
 
-Encrypt fees are denominated in **operational units (ou)** and quoted live from the node. The fee is paid from your public balance, so the amount plus the fee must fit in it. If the fee cannot be read, the operation is blocked with **Network fee unavailable** instead of using a fixed fee. Encrypt also generates proofs locally, so it takes longer than a plain transfer.
+Encrypt fees are denominated in **operational units (ou)** and quoted live from the node, with a floor of 5,000 ou (decrypt and private sends share it). The fee is paid from your public balance, so the amount plus the fee must fit in it. If the fee cannot be read, the operation is blocked with **Network fee unavailable** instead of using a fixed fee. Encrypt also generates proofs locally, so it takes longer than a plain transfer.
 
 ## Decrypting Funds (Private → Public)
 
@@ -158,7 +173,7 @@ When someone sends you a private (stealth) transfer, you claim it to move the fu
 
 ### Claim Fees
 
-- **Denominated in ou** and quoted live from the node before you confirm
+- **Denominated in ou** and quoted live from the node before you confirm, never below 3,000 ou
 - **Paid By:** Recipient (you)
 - **Reason:** Computational cost of decryption and the on-chain state update
 
@@ -171,12 +186,13 @@ If you have multiple pending transfers, use **Claim All** to process every detec
 From time to time the network upgrades its encryption scheme. When that happens:
 
 - **Key update:** the wallet asks you to re-register your encryption key before you can encrypt or decrypt. If you hold a private balance, it can be migrated to the new key in the same transaction. The review shows the live fee.
+- **Balance on an older key:** when the network offers it, **Migrate** moves a balance held under an older key with a proof about the encrypted balance itself. The wallet picks this route on its own when the network lists it as open.
 - **Held balance:** when the network holds a private balance (for example one sealed under an older scheme that waits for a network migration), Home shows a tag such as **Private on hold** and the Encrypted row reads **On hold**. The tag's sheet shows the reason. Your public balance is unaffected and nothing is lost.
 - **Refresh first:** a private balance can carry only a limited number of encrypted layers. When an operation meets that limit, the mobile app and the desktop menu bar say the balance is refreshed first and show the fee for both transactions under one review. In the desktop window the form shows Refresh key first with the layers as dots of eight; Review refresh opens its own review (layers now and after, the live fee and what runs next), and the operation is reviewed on its own after it.
 
 ## Faster Proofs with 0xio Desktop
 
-Proofs run on your device. When [0xio Desktop](/products/desktop) runs on the same computer, the extension runs its proofs in the desktop app, which is faster than in the browser. The desktop app never receives the key that signs your transactions.
+Proofs run on your device. When [0xio Desktop](/products/desktop) runs on the same computer and is paired with the extension (see [Pairing with the Extension](/products/desktop#pairing-with-the-extension)), the extension runs its proofs in the desktop app, which is faster than in the browser. The desktop app never receives the key that signs your transactions.
 
 ## Privacy Best Practices
 
@@ -236,6 +252,12 @@ View all privacy operations:
 
 - Check you have enough **Public Balance** to cover the amount plus the network fee
 - The wallet validates that amount + fee fits your public balance before submitting
+
+### "Private Actions Are Paused" or "Unavailable on This Network"
+
+- The network did not state the proof rules it takes, so the wallet sends nothing private
+- Public sends still work
+- Try again later, or switch to a network that states its rules (see [Network Proof Rules](#network-proof-rules))
 
 ### "Claim Transaction Failed"
 

@@ -128,6 +128,19 @@ const proof = ctx.makeRangeProof(newBalance, expectedNewValue);
 
 This is mathematically identical to `fhe_sub_const`. Both produce `enc(balance - amount)`.
 
+## Network Proof Rules
+
+Each network states which proof rules it accepts. 0xio wallets read them before any private action and again right before signing.
+
+- **Where:** `octra_pvacMigrationStatus` for the address. `proof_math` is `"wide"` or `"prior"` and sets the challenge arithmetic. `proof_key` (true or false) says whether proofs are bound to the registered encryption key.
+- **Fallback:** when the answer has no `proof_math`, only the devnet runtime the Octra reference client lists (read from `octra_runtimeVersion`) counts, and it means wide arithmetic without key binding.
+- **No rules:** a network that states neither gets no private operation from the wallet. The user sees that private actions are paused, and nothing is sent.
+- **Rules changed:** when the rules read right before signing differ from the ones the proofs were built under, nothing is sent and the action is prepared again.
+- **Key binding:** on a `proof_key` network every key switch carries `owner_cipher` and `owner_proof`, a proof that the sender owns the key being registered.
+- **Migration:** when the network opens its cipher proof route, a balance held under an older key migrates with a `cipher_proof` payload instead of the older migration format.
+
+A proof built under one setting fails under the other. If your dApp builds proofs itself, check the same status first: a proof that does not match the network's rules is refused.
+
 ## Platform Support
 
 | Platform | Package | Notes |

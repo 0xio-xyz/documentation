@@ -138,6 +138,15 @@ oct://<renderer_circle>/index.html?seed=<seed>&contract=<contract>&token=<id>&st
 - Files at one `oct://` path can change, so program and metadata files are not kept on disk. A program stays in memory for 5 minutes.
 - `token_uri` is read again when a moving token's page opens, after a manual refresh, and once per session, so reveals, burns and new state show up.
 
+### Chunked Circle Files
+
+A large file can be stored in a circle as chunks, the way the Octra reference client uploads it. The extension, the mobile app and 0xio Desktop put the file back together and check it before showing it: in NFT art and living NFT programs on all three, in the mobile app's browser, and in the desktop's Circles screen and browser. A chunk or a whole file that does not match its hash is not shown.
+
+- The file's own path answers with content type `application/vnd.octra.circle.chunks+json` and a manifest: `format` `octra.circle.asset.chunks.v1`, the real `content_type`, `encoding` `identity`, `size_bytes` (digits) and the `sha256` of the whole file.
+- `chunks` lists each part in order: `path` `/.octra/chunks/<sha256>/0000`, `0001` and so on, its `size_bytes` and its own `sha256`. Each chunk is served as `application/octet-stream`.
+- Limits: up to 32 chunks of at most 2 MiB each, and 32 MiB in all.
+- The wallet checks the sha256 of every chunk and of the assembled file.
+
 ### Discovery
 
 Devnet's `octra_tokensByAddress` does not list the new-layout contracts yet. For an imported contract the registry does not list, the wallet reads `balance_of(wallet)`, then `owners_page(start, 50)` when the ABI has it (one owner or `-` per id), else `owner_of` id by id. Burned ids leave gaps past the live supply, so the scan does not stop at `get_total_supply`. These contracts answer `get_name` and `get_symbol` instead of `collection_name` and `symbol`.

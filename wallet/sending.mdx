@@ -58,7 +58,7 @@ Send a transparent transaction visible on the blockchain.
 - **Network fee:** Quoted live from the node via `octra_recommendedFee` and shown before you confirm
 
 <Info>
-Fees are denominated in **operational units (ou)** and displayed converted to OCT (1 OCT = 1,000,000 ou). The wallet reads its estimates from the node; you can pick another tier or set a custom ou value. One fee drives everything for a send: the fee shown, **Max**, the balance checks and the signature. If the fee cannot be read, the extension shows **Network fee unavailable** and blocks Review instead of guessing.
+Fees are denominated in **operational units (ou)** and displayed converted to OCT (1 OCT = 1,000,000 ou). The wallet reads its estimates from the node; you can pick another tier or set a custom ou value. One fee drives everything for a send: the fee shown, **Max**, the balance checks and the signature. If the fee cannot be read, the extension shows **Network fee unavailable** and blocks Review instead of guessing. See [Network Fees](#network-fees).
 </Info>
 
 ## Private Send
@@ -102,7 +102,7 @@ Send a stealth transfer where the amount stays confidential. The wallet derives 
 
 - **Speed:** Slower than a public send because proofs are generated locally
 - **Privacy:** Amount is encrypted; the sender's address may be visible, the recipient is shielded behind a stealth output
-- **Network fee:** Quoted live from the node (proof-bearing transactions cost more ou than a plain transfer)
+- **Network fee:** Quoted live from the node, and never below 5,000 ou (proof-bearing transactions cost more ou than a plain transfer)
 
 <Warning>
 Private transfers require the recipient to **claim** the stealth output before the funds appear in their private balance. See [Receiving Funds](/wallet/receiving) and [Privacy Operations](/wallet/privacy-operations).
@@ -152,19 +152,80 @@ On the mobile app every send ends on a review: amount, recipient (with "First ti
 
 While a send runs you can close its progress screen. It keeps going on the wallet and network it was made on, and its result arrives as a notice.
 
-## Transaction Priority
+## Network Fees
 
-### Custom Network Fees
+Every Octra fee is the node's live quote for that operation (`octra_recommendedFee`). No wallet signs a fee it made up: when the quote cannot be read, the action waits with a retry.
 
-You can customize the **operational unit (ou)** fee to control transaction priority:
+### Fee Tiers
 
-1. Tap the network fee on the Send screen.
-2. Choose a tier read live from the node, or set a **Custom** ou amount. In the extension a custom fee is a whole number from 100 to 10,000,000 ou.
-3. Higher fees confirm faster.
+The node quotes a **minimum**, a **recommended** and sometimes a **fast** fee. The wallet offers them as presets, plus **Custom**:
 
-<Info>
-During network congestion, a higher ou value helps your transaction get processed sooner. The displayed presets are sourced live from the node, so exact values vary with network conditions.
-</Info>
+- **Recommended** is the default for every send.
+- **Fast** is optional. When the node gives no fast quote, only the Fast preset is hidden; the other presets and Custom stay.
+- **Custom** takes a whole number of ou, at least the operation's floor (below) and the network's live minimum, and at most 10,000,000 ou.
+
+Higher fees confirm faster. During congestion a higher ou value helps a transaction get processed sooner.
+
+### Floors for Private Operations
+
+Private operations carry proofs, so each has a floor. Every preset is raised to it, and a custom fee below it is refused.
+
+| Operation | Lowest fee |
+|-----------|-----------|
+| Key switch (turning on or updating the private balance) | 5,000 ou |
+| Encrypt | 5,000 ou |
+| Decrypt | 5,000 ou |
+| Private (stealth) send | 5,000 ou |
+| Claim | 3,000 ou |
+
+### Ceiling
+
+Sends and private operations top out at **10,000,000 ou**. A custom fee above it is refused, and a node quote above it is not used. Contract deploys pay a fee set by the size of the code instead.
+
+### The Fee You Review Is the Fee You Sign
+
+Right before signing, the wallet reads the live fee again. The reviewed fee is signed as long as the network still takes it. When the network's minimum has moved above it, nothing is signed and you are asked to review again.
+
+<Note>
+**Running your own node:** the wallet takes the first of the node's `recommended`, `base_fee` and `minimum` that is a whole number from 1 to 10,000,000 ou, and only when the minimum is not above it. A node that quotes none of them shows that its fee is unavailable. A `fast` value is used only when it is at least the recommended fee.
+</Note>
+
+EVM networks quote their own fees; see [EVM Networks](/wallet/evm#sending).
+
+## Transaction Hash
+
+The wallet computes each transaction's hash on your device before it sends it, the same way the network computes it. That is the hash shown in the result and in History, and you can look it up on the explorer even when the node's reply is lost.
+
+## What Happens After You Send
+
+The node answers every submit, and the wallet acts on that answer. A transaction is never signed a second time on its own.
+
+| Node answer | What the wallet does |
+|-------------|----------------------|
+| Accepted | Waits for the network to confirm it |
+| Not accepted for now (busy or temporary) | Sends the **same signed bytes** again, up to 3 tries in all |
+| Nonce already used | Asks you to review again; nothing is re-signed. The mobile app first checks whether the nonce went to this same transaction |
+| Rejected | Stops with **The network rejected this transaction.** Nothing is spent |
+| Too large | Stops with **This transaction is too large.** |
+| No reply | Checks the network for the transaction before calling it failed |
+
+<Note>
+For developers and node operators: the codes sent again unchanged are `107`, `110`, `117` and `-32005`. Code `112` means the nonce is already used. Codes `100` to `105`, `108`, `109`, `111`, `113` to `116`, `118`, `-32600` and `-32602` are rejections, and HTTP `413` is too large.
+</Note>
+
+### Not Confirmed
+
+Sometimes the result of a send cannot be read: the reply times out, arrives twice, or says the nonce is taken. The mobile app then looks the transaction up on chain, first by its hash, then by your address and nonce:
+
+- **Found:** it counts as sent.
+- **Another transaction took that nonce:** you are asked to review again.
+- **Neither:** the send stays pending and reads **Not confirmed**, with **Could not check whether this went through. Check History before sending again.** There is no Try again.
+
+In the extension such a send stays on **Sending** until History settles it.
+
+<Warning>
+When a send shows **Not confirmed** or stays on **Sending**, open **History** before you send the same payment again. It may already be on its way, and a second send would pay twice.
+</Warning>
 
 ## Transaction States
 
@@ -172,7 +233,7 @@ During network congestion, a higher ou value helps your transaction get processe
 
 - Transaction submitted to the network
 - Awaiting validator confirmation, usually a few seconds
-- A transaction that may have reached the node stays on **Sending**, and History settles it. Only a rejection from the node returns you to the form
+- A transaction that may have reached the node stays on **Sending** (or **Not confirmed** on mobile), and History settles it. Only a rejection from the node returns you to the form
 
 ### Confirmed
 

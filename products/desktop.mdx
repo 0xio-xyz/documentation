@@ -7,7 +7,7 @@ icon: 'desktop'
 The **0xio Desktop** is a native desktop application built with [Tauri](https://tauri.app/) (Rust backend and React frontend). It is a full wallet for the Octra Network, a menu bar panel for everyday sends and private operations, and a **native privacy engine** that builds proofs for the browser extension.
 
 <Note>
-  **Status: Live (v0.5.5).** Download it from [0xio.xyz/install](https://0xio.xyz/install) for macOS (Apple Silicon, signed and notarized by Apple) or Windows.
+  **Status: Live (v0.6.0).** Download it from [0xio.xyz/install](https://0xio.xyz/install) for macOS (Apple Silicon, signed and notarized by Apple) or Windows.
 </Note>
 
 ## Why Desktop?
@@ -52,6 +52,7 @@ The **CLI** theme turns the panel into a terminal with no buttons. Type `0xio --
 - The fee on the review is the fee signed, as long as the network still accepts it. You are asked to review again only when the network's minimum fee rises above it.
 - A fee that cannot be read blocks the action with **Network fee unavailable. Try again.** No default fee is ever signed.
 - An approved request runs only on the wallet and network its review showed.
+- A busy node gets the same signed transaction again (3 tries in all). A nonce that is already used sends the transaction back to review; nothing is re-signed on its own. A rejected or too large transaction says so. See [What Happens After You Send](/wallet/sending#what-happens-after-you-send).
 - A private send is offered only when the private balance is ready. A balance that is due for a migration, needs a key update or setup, or is waiting for the network shows its status, with **Migrate**, **Update** or **Turn on** where the app can do it.
 
 ### Sites Through the Extension
@@ -62,9 +63,11 @@ A website can sign with the desktop wallet instead of the browser. In the extens
 - **Notifications:** while the panel is closed, a later request also shows one macOS notification for its site, for example "https://app.octradex.xyz wants you to sign a transaction". A site gets one at a time. Click it to open the panel on that request, or on the Requests list when more wait. macOS asks for permission the first time one is due. Turn them off in **Settings > Security & Privacy**, **Notify me about site requests**; if macOS has them off, the row says so with **Open settings**.
 - **Requests:** two or more waiting show the Requests list, grouped by site with its browser and **Reject all** per site. Repeat connect requests from one site merge into one row (for example 2 tabs). A review has a way back to the list; answering lands on the list, or closes the panel when nothing is left. A click outside closes the panel without answering.
 - **Every review:** Reject and the verb (Connect, Send, Sign, Switch, Claim, Deploy), the full site address with its scheme, the page around it when the site is in a frame, **Via 0xio extension (Chrome)** or **(Firefox)**, the wallet, and the live network fee for anything that pays one. Touch ID or your password follows for anything that signs.
+- **Everything signed is shown:** a contract call shows its exact arguments, a deploy its constructor params, and any memo in full. A contract sequence lists each step (contract, method, exact arguments and amount) with the OCT total. A connect review lists every permission the site gets, private ones included.
+- **Refused before review:** a sign-only request for anything but a standard transfer, a message or memo over 4,000 characters (never cut short) and contract params that are not an array.
 - **Locked:** the panel asks you to unlock first, then shows the review.
 - **Networks:** each site keeps its own network. A site's network switch is its own review and moves only that site.
-- **Limits:** at most 3 requests per site wait at once and a site is rate limited; a request beyond that gets an error at once. A tab that closes or reloads takes its requests with it.
+- **Limits:** at most 3 requests per site wait at once and a site is rate limited; a request beyond that gets an error at once. After you reject a review, that site's next requests are refused for 5 seconds without a review. A tab that closes or reloads takes its requests with it.
 
 Sites connected this way are listed in **Settings > Security & Privacy**, **Connected sites**, per network (Mainnet or Devnet), each with the browser it came through and the wallet it uses. **Disconnect** asks once more in place. Removing the extension in **Paired apps** first says how many sites it forgets and lists them in the panel.
 
@@ -100,7 +103,8 @@ The home screen displays your public and private (FHE-encrypted) balances, recen
 - **Private transfers**: FHE-encrypted stealth transfers (recipient must have a registered PVAC public key). The proofs run in the shared proof queue with five steps and the elapsed time of each; a private send pays its fee from the public balance, so the total shows a private line and a public line
 - **Bulk send**: rows in the same frame (add one, paste a list or import a CSV), totals in the panel, then one review listing every send in order and the progress in the same card. Duplicate addresses and a total over the balance are flagged. Private (FHE) bulk sends are available only in the desktop app and run as one job in the proof queue
 - **QR codes**: Generate and share receive addresses
-- **OU control**: press the network fee to pick Slow, Normal, Fast or a custom fee
+- **Exact token amounts**: token amounts in Send, bulk send and their reviews are exact whole units, never rounded
+- **OU control**: press the network fee to pick Slow, Normal, Fast or a custom fee. Every preset comes from the node's live quote, and Fast shows only when the node quotes it. Private operations have floors (5,000 ou, claims 3,000 ou); see [Network Fees](/wallet/sending#network-fees)
 - **Private send readiness**: a private send is offered only when the private balance is ready; otherwise the panel shows what comes first (turn on, refresh the key, migrate, a key update on hold) with its own review
 
 ### Privacy Operations
@@ -110,6 +114,7 @@ Full encrypt, decrypt and claim support, same as the extension. The Privacy scre
 - **Proof queue**: one job at a time, in the order confirmed, so nonces and the balance's layers stay in order. The running job shows its step dots (encrypt has four steps; decrypt, claim and private send five) with the elapsed time of each step, then Up next and what finished today. A failed proof stays on top with its error, **Remove** and **Retry**, and the jobs behind it wait as Paused
 - **Claim**: waiting transfers oldest first, each with its own Claim. Any of them can be claimed, one per press, because each claim adds two layers; the review shows the sender, the live fee, the private balance and the layers after
 - **Turn on private balance**, **Refresh key** (at four or more of eight layers), **Migrate balance** and a **key update on hold** each show in the composer with the wallet, network and live fee. A changed fee, wallet or network is refused before any proof work
+- **Proof rules**: private operations follow the proof rules the network states, read again before each submit. A network that does not state them gets no private operation, and a change in between sends nothing. See [Network Proof Rules](/wallet/privacy-operations#network-proof-rules)
 
 <Steps>
   <Step title="Encrypt (Public → Private)">
@@ -173,7 +178,8 @@ Range proofs, bound proofs, commitments and PVAC key work for the extension's en
 - **Loopback only**: The WebSocket server binds to `127.0.0.1`, so no remote connections are accepted
 - **Paired clients only**: The extension and local programs pair once, and the extension proves its pairing on every connection before any key material moves. A website that connects straight from the browser can only send site requests for its own address, each reviewed in the menu bar; it never reaches proofs, keys or pairing
 - **Connection limit**: Maximum 8 concurrent connections
-- **Message size cap**: 16MB per message (range proofs can be 1 to 3MB)
+- **Message size cap**: 16 MiB per message for the extension and paired programs (range proofs can be 1 to 3MB), 1 MiB for web pages
+- **Handshake timeout**: a connection that does not finish its handshake within 5 seconds is closed, and only finished handshakes count toward the connection limit
 - **Idle timeout**: 300 seconds
 - **No signing key**: The desktop can build proofs and read the private balance, but it cannot sign, because it never receives the wallet key (extension 2.5.6 and later)
 - **Memory safety**: The master seed is zeroized after use on both sides
@@ -217,6 +223,7 @@ Write contracts in two languages:
 
 - **Address preview**: Predict your contract's address before deploying (based on sender + nonce)
 - **Constructor parameters**: JSON array input for initialization values
+- **Deploy fee**: set by the size of the code, the way the Octra reference client sets it: 200,000 OU plus 1,000 OU per started KiB. A site may set its own deploy fee up to 10,000,000 OU
 - **Source verification**: Verify deployed bytecode matches your source on-chain
 
 ### Interact
@@ -262,7 +269,7 @@ Switch networks in **Settings > Network**, which also shows the latest epoch and
 
 - **Encrypted vault**: All private keys encrypted with AES-256-GCM at rest
 - **PBKDF2 key derivation**: 600,000 iterations for password-to-key conversion
-- **Biometric unlock**: Touch ID (macOS) / Windows Hello, with a password fallback. On macOS only a fingerprint opens it, never the Mac login password: the prompt's one button is **Cancel** on the lock screen, or **Use password** where a password field is waiting. If you add or remove a fingerprint, Touch ID turns off and **Settings > Security & Privacy** says so; turn it on again there
+- **Biometric unlock**: Touch ID (macOS) / Windows Hello, with a password fallback. On macOS only a fingerprint opens it, never the Mac login password: the prompt's one button is **Cancel** on the lock screen, or **Use password** where a password field is waiting. If you add or remove a fingerprint, Touch ID turns off and **Settings > Security & Privacy** says so; turn it on again there. The password copy an older version kept for Touch ID is deleted
 - **Auto-lock**: Configurable inactivity timeout
 - **Seed phrase backup**: Requires password re-entry to view
 - **Input validation**: Address format, amount bounds, and JSON parsing checks
@@ -295,7 +302,7 @@ The desktop app checks [0xio.xyz](https://0xio.xyz/install) for updates automati
 - **Command palette**: A keyboard-driven launcher to jump between screens and actions.
 - **Sidebar wallet switcher**: Switch between your wallets directly from the sidebar.
 - **Collapsible sidebar**: Collapse the sidebar to maximize screen real estate when working with contracts or browsing dApps.
-- **Octra Circles browser**: Browse native `oct://` on-chain content via the Circle bridge.
+- **Octra Circles browser**: Browse native `oct://` on-chain content via the Circle bridge. Files stored in a circle as chunks are put back together and checked against their hashes before they show, in the Circles screen, the browser and NFT art (see [Chunked Circle Files](/wallet/nft-standards#chunked-circle-files)).
 
 ---
 
@@ -318,8 +325,11 @@ The desktop app checks [0xio.xyz](https://0xio.xyz/install) for updates automati
 Pair once, with both the desktop app and the browser extension running:
 
 1. In the extension, tap the desktop status or open **Settings**, **Connections**, **0xio Desktop** and tap **Pair**
-2. Both show the same 6 digit code. Check that they match, then approve the request in the desktop app
-3. A **0xio Desktop** chip appears in the extension's status bar and private proofs now run in the desktop app
+2. 0xio Desktop shows a 6 digit code. The extension shows three codes: pick the one that matches
+3. Approve the request in the desktop app. If you press Pair on the desktop before you pick in the extension, it shows Waiting until you do
+4. The extension shows **Paired**, a **0xio Desktop** chip appears in its status bar, and private proofs now run in the desktop app
+
+Nothing is saved or shared until you pick the right code and the desktop approves. A wrong pick stops the pairing (**Wrong code. Pairing stopped**), and you start again with **Try again**. Pairing also stops when the desktop refuses it, after two minutes or when the connection closes, and you can cancel it at any time. The desktop shows one pairing review at a time; the next one opens 3 seconds after the last closes.
 
 Paired apps are listed in the desktop under **Settings > Security & Privacy**, **Paired apps**, each with when it was last used and **Remove**. The choices below sit in the **Connections** group on the same tab, each takes effect at once, and the panel on the right shows how each one is set.
 
