@@ -1233,8 +1233,9 @@ try {
         break;
 
       case ErrorCode.NETWORK_ERROR:
-        console.log('Network connection issue');
-        showRetryOption();
+        // A review call carries its request id: the wallet may still finish it
+        if (error.requestId) await wallet.waitForRequest(error.requestId);
+        else showRetryOption();
         break;
 
       case ErrorCode.INVALID_ADDRESS:
