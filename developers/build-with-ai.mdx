@@ -1,0 +1,84 @@
+---
+title: "Build with AI"
+description: "Connect Claude Code, Cursor or VS Code to the 0xio docs, give it the SDK rules and start from a working dapp."
+icon: "robot"
+---
+
+## Docs MCP server
+
+These docs are an MCP server at `https://docs.0xio.xyz/mcp` (streamable HTTP). Your assistant can search them and read any page while it writes code.
+
+<CodeGroup>
+
+```bash Claude Code
+claude mcp add --transport http 0xio-docs https://docs.0xio.xyz/mcp
+```
+
+```json title="Cursor (.cursor/mcp.json)"
+{
+  "mcpServers": {
+    "0xio-docs": {
+      "url": "https://docs.0xio.xyz/mcp"
+    }
+  }
+}
+```
+
+```json title="VS Code (.vscode/mcp.json)"
+{
+  "servers": {
+    "0xio-docs": {
+      "type": "http",
+      "url": "https://docs.0xio.xyz/mcp"
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+- **Claude Code:** add `--scope project` to share it through the repo's `.mcp.json`, or `--scope user` for every project.
+- **Cursor:** put the same file at `~/.cursor/mcp.json` for every project.
+
+## Plain text docs
+
+For assistants without MCP:
+
+- [llms.txt](https://docs.0xio.xyz/llms.txt): an index of every page
+- [llms-full.txt](https://docs.0xio.xyz/llms-full.txt): every page in one file
+- Any page as Markdown: add `.md` to its URL, for example [request-lifecycle.md](https://docs.0xio.xyz/developers/request-lifecycle.md)
+
+## SDK rules
+
+<Note>
+`AGENTS.md` and the starter arrive with `@0xio/sdk` 2.12.1 and `@0xio/create-dapp` 1.0.0, not on npm yet. The docs MCP server and llms.txt work today.
+</Note>
+
+`@0xio/sdk` 2.12.1 and newer ships `AGENTS.md`: the rules an assistant follows when it writes code against the SDK (amounts, request ids, never resending, watch-only, network scoping, private transfers, errors). After `npm install @0xio/sdk` it is at `node_modules/@0xio/sdk/AGENTS.md`.
+
+Claude Code, Cursor and VS Code read an `AGENTS.md` at the project root. Point yours to the SDK's:
+
+```markdown AGENTS.md
+Before writing wallet code, read node_modules/@0xio/sdk/AGENTS.md.
+```
+
+In Claude Code, a line `@node_modules/@0xio/sdk/AGENTS.md` imports the whole file.
+
+## Starter
+
+```bash
+npm create @0xio/dapp my-dapp
+```
+
+A Vite, React and TypeScript dapp that detects the wallet, connects, shows the address and balance per network, sends OCT with a request id and a confirmed wait, follows a send the SDK lost track of instead of sending again, and handles watch-only wallets. It comes with an `AGENTS.md` that loads the SDK rules and the docs MCP server set up for all three editors.
+
+## First prompt
+
+Paste this into your assistant from the project folder:
+
+```text
+Read node_modules/@0xio/sdk/AGENTS.md and follow it. Use the 0xio-docs MCP server
+for anything it does not cover. Add a page that lets a connected user call the
+deposit method on contract <address> with an OCT amount, waits for confirmation,
+shows the request status and never resends.
+```

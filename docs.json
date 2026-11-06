@@ -81,6 +81,7 @@
             "group": "SDK Documentation",
             "pages": [
               "developers/sdk-guide",
+              "developers/build-with-ai",
               "developers/request-lifecycle",
               "developers/wallet-protocol",
               "developers/pvac-guide"
