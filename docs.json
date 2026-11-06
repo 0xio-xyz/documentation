@@ -81,6 +81,8 @@
             "group": "SDK Documentation",
             "pages": [
               "developers/sdk-guide",
+              "developers/request-lifecycle",
+              "developers/wallet-protocol",
               "developers/pvac-guide"
             ]
           },

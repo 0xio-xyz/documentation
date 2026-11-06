@@ -1,0 +1,45 @@
+---
+title: "Wallet protocol 2"
+description: "What a wallet implements to answer @0xio/sdk 2.12.0, and the conformance suite that checks it."
+icon: "plug"
+---
+
+For teams building a wallet that sites reach through `@0xio/sdk`. Every 0xio wallet (extension, 0xio Desktop, the 0xio app) runs the same conformance suite against these rules.
+
+## Messages
+
+| | Extension and app (postMessage) | 0xio Desktop (local WebSocket) |
+|---|---|---|
+| Request | `{ id, method, params, timestamp, v: 2, rid? }` | `site_request { id, network, rid?, request }` |
+| Hello | `wallet_hello { sdk, protocols: [1, 2] }`, answered `{ protocol: 2, kind, version, capabilities }` | `protocol` and `capabilities` in the `site_hello` reply |
+| Status | `request_status { rid }` | `site_status { rid }` |
+| Cancel | `cancel_request { rid }` | `site_cancel { id?, rid }` |
+| Event | `requestUpdate` with the request's status | `site_event` kind `request` |
+| Presence | Answer `0xio:requestWallet` with a `0xio:announceWallet` event: `{ protocol, kind, version, name }` | none |
+
+- `rid` is 32 lowercase hex and rides only on methods that open a review or sign. Key records by the page's origin as the browser reports it, never by params.
+- An answer to a request with a `rid` carries it. An error answer carries `rid` and `status` at the top level and again in `error.details` as `{ requestId, status }`.
+- The announce and `wallet_hello` carry no user state: no address, network, lock state or connection.
+- "Same request" is sha256 of the canonical JSON of `{ method, network, params }`. `network` is the frame's network on 0xio Desktop and `null` on postMessage channels.
+
+## Rules
+
+- **Idempotency.** The same request under a known `rid` joins it or gets the stored outcome; another request under it is `REQUEST_ID_REUSED`. A final failure never runs again.
+- **Statuses.** Only the allowed moves; a final status never changes; records live 24 hours.
+- **Scope.** Events go only to the tab and frame that sent the request. A site that is not connected sees `review_open` for `locked`, and no address or network.
+- **Timeouts.** A page that stops waiting never cancels the review. The review window is 5 minutes, then `expired` with `USER_REJECTED`.
+- **Page close.** An unanswered review closes with its page; an approved request finishes and keeps its outcome.
+- **Limits.** Over 20 requests a second, answer `RATE_LIMITED` for each extra one, never drop it. Over the open request cap (8, or a lower cap you declare), answer `RATE_LIMIT_EXCEEDED`.
+- **Pre-signed.** `broadcast_only` from the connected wallet is not reviewed again; from another wallet, `INVALID_PARAMS`.
+- **Registration.** `register_private_view_key` follows the [contract on the request lifecycle page](/developers/request-lifecycle#registering-a-private-receive-key).
+
+## Conformance suite
+
+The suite lives in the SDK repository under [`conformance/`](https://github.com/0xio-xyz/0xio-sdk/tree/main/conformance). It speaks only the wire, so a wallet passes only by following the rules itself.
+
+- `harness.ts`: the adapter your test harness implements (open a page, send, receive events, close the page, approve or reject the review, and optional clock, chain, lock and account hooks).
+- `suite.ts`: the cases. Register them with `defineConformanceSuite({ name, features, create })` under Jest or Vitest.
+- `vectors.json`: request id format, digest bytes, transitions, masking and limits for `cargo test`, XCTest and JUnit.
+- `reference/`: a reference wallet that passes every case, to read as the executable spec.
+
+The suite's README has the exact steps to run it from a wallet repository.

@@ -1,0 +1,198 @@
+---
+title: "Request lifecycle"
+description: "Request ids, statuses, confirmed waits and wallet detection in @0xio/sdk 2.12.0."
+icon: "route"
+---
+
+Since SDK 2.12.0 every call that opens a review carries a request id. Your site can store it, follow the request, find it again after a reload, and wait for the chain without running its own RPC client. Nothing in the lifecycle ever signs or sends a second time.
+
+Wallets that speak wallet protocol 2 keep each request's status for 24 hours. With an older wallet the SDK keeps its own record for the life of the page, and every call still works.
+
+## Detect before Connect
+
+`detectWallet()` (or `wallet.detect()`) tells you what the page can offer before any click. It needs no `initialize()`, answers in about 300 ms and never shows a browser prompt.
+
+```typescript
+import { ZeroXIOWallet } from '@0xio/sdk';
+
+const wallet = new ZeroXIOWallet({ appName: 'My DApp' });
+const found = await wallet.detect();
+
+if (found.next === 'open-in-app') showOpenInAppButton(found.openInAppUrl);
+else if (found.next === 'install') showInstallLinks();
+else showConnectButton();
+```
+
+| Field | Values |
+|-------|--------|
+| `injected` | `{ kind, version, protocol }` of the wallet in the page, or `null` |
+| `desktop` | `available`, `unknown-until-connect`, `not-running`, `blocked` or `not-allowed` |
+| `mobile` | `true` in a phone or tablet browser |
+| `openInAppUrl` | A link that opens this page in the 0xio app, set on a phone with nothing injected |
+| `next` | `connect`, `install` or `open-in-app` |
+
+- **`unknown-until-connect`** means Chrome would ask for local network access before any page can reach 0xio Desktop. Asking would show that prompt to every visitor, so the SDK waits for a click. Show a Connect button.
+- **`blocked`** means the visitor denied local network access for your site. **`not-allowed`** covers `desktop: false`, a page that is not a secure context, another wallet's adapter and phones.
+- `isMobileBrowser()` is the check `detect()` uses; iPads that report a Mac count as mobile.
+
+### Which wallet answered
+
+After `initialize()`, `wallet.walletInfo` describes the wallet behind the transport:
+
+```typescript
+wallet.walletInfo;
+// { kind: 'extension', version: '3.0.6', protocol: 2, capabilities: ['request_status', ...] }
+```
+
+`kind` is `extension`, `desktop`, `app-expo`, `app-ios` or `app-android`. The 0xio app's browser speaks the extension channel, so `wallet.transport` still reads `extension` there; `walletInfo.kind` tells them apart. The SDK switches features on `capabilities`, never on `version`.
+
+### Opening your site in the 0xio app
+
+On a phone without a wallet, offer a link into the 0xio app:
+
+```typescript
+wallet.openInAppUrl();                      // https://0xio.xyz/open?url=<this page>
+wallet.openInAppUrl(url, { scheme: true }); // oxio://open?url=<url>, for QR codes inside the app
+```
+
+Only https pages without credentials in the URL get a link; anything else returns `null`. The SDK never navigates by itself: put the link on a button. The app shows your site's origin and asks before it opens it, and your site still has to call `connect()`.
+
+## Request ids
+
+The SDK makes a request id for every call that opens a review or signs. Make your own with `newRequestId()` when you want to store it before the call:
+
+```typescript
+const requestId = wallet.newRequestId();
+localStorage.setItem('deposit', requestId);
+
+const result = await wallet.callContract(
+  { contract: POOL, method: 'deposit', params: [], amountOct: '10' },
+  { requestId, wait: 'confirmed', onStatus: (s) => setLabel(s.status) }
+);
+```
+
+- A request id is 32 lowercase hex characters. Anything else is refused with `INVALID_PARAMS`.
+- Calling again with the same id never opens a second review. It joins the call in flight or returns the stored outcome.
+- The same id with another method, other params or another network is refused with `REQUEST_ID_REUSED`.
+- A failed, rejected or expired request never runs again under its id. A new id is a new review the user sees.
+
+Every review call takes `{ requestId, timeoutMs, onStatus }`. Writes also take `wait`.
+
+## Following a request
+
+| Method | What it does |
+|--------|--------------|
+| `requestStatus(id)` | The request's current status. Works after a reload with a protocol 2 wallet |
+| `waitForRequest(id, { until })` | Resolves when the request is final (or on chain with `until: 'submitted'`), whatever the outcome |
+| `cancelRequest(id)` | Closes your own review that was not approved yet; an approved request is unchanged |
+| `pendingRequest()` | The review of this page that blocks a new one, or `null` |
+| `wallet.on('requestUpdate', fn)` | Every status change of a request this page sent |
+
+```typescript
+const stored = localStorage.getItem('deposit');
+if (stored) {
+  const status = await wallet.requestStatus(stored);
+  if (status.status === 'submitted') await wallet.waitForRequest(stored);
+}
+```
+
+## Statuses
+
+| Status | Meaning | Next |
+|--------|---------|------|
+| `pending` | The wallet has the request; it waits behind another review or prepares one | `locked`, `review_open`, `submitted`, `completed`, `failed`, `rejected` |
+| `locked` | Waiting for the user to unlock | `review_open`, `rejected`, `expired`, `failed` |
+| `review_open` | The review is on screen | `signing`, `completed`, `rejected`, `expired`, `failed` |
+| `signing` | Approved; signing, proofs and submit | `submitted`, `failed` |
+| `submitted` | The node accepted it; `hash` is the node's | `confirmed`, `failed` |
+| `confirmed` | The chain executed it | final |
+| `completed` | Finished without a transaction (connect, network switch, message signature) | final |
+| `failed` | `error.stage` says where: `review`, `submit` or `execution` | final |
+| `rejected` | The user declined, closed the review, or the page closed first | final |
+| `expired` | The wallet's 5 minute review window ran out | final |
+| `unknown` | Nobody knows this id (never seen, another site's id, or older than 24 hours) | |
+
+- A final status never changes.
+- A site that is not connected never learns the wallet is locked: its reads answer the same, its review requests get `NOT_CONNECTED` with no prompt, and its connect reads `review_open` with no update at unlock. It sees no address or network.
+- Connect from a connected site and a switch to the current network go `pending` to `completed` with no review.
+- A page that closes before the user answers closes its review. A request the user already approved finishes, and the reloaded page can read the outcome.
+
+## Waiting for the chain
+
+`wait: 'submitted'` (the default) resolves when the node accepted the transaction, as before. `wait: 'confirmed'` resolves when the chain executed it:
+
+```typescript
+const result = await wallet.callContract(call, { wait: 'confirmed' });
+result.requestStatus; // 'confirmed'
+result.epoch;
+result.receipt?.events; // [{ event, values }]
+```
+
+- Writes resolve with `requestId` and `requestStatus` on top of their usual result. The wallet's own `status` field is left as it sent it.
+- Contract calls and deploys carry `receipt`: `success`, `events` and `error`. Octra's receipt has no return value, so a contract that needs to report a result should emit it as an event.
+- `receipt` is `null` with `receiptUnavailable: 'refused'` when the wallet's node refuses receipts (the public scanner does), or `'error'` when the read failed.
+- A chain rejection or drop rejects with `EXECUTION_FAILED`, with `details.hash` and `details.reason`.
+- Protocol 2 wallets watch the chain for you. With an older wallet the SDK reads `octra_transaction` through the wallet's read relay, every 4 seconds for a minute and then every 10 seconds, for at most 10 minutes. If the wallet refuses those reads, the call rejects with `UNSUPPORTED_METHOD` and the hash.
+
+## Timeouts
+
+A timeout ends only the SDK's wait. It never cancels the review and never sends anything again.
+
+- A review call whose wait runs out rejects with `STATUS_UNKNOWN`, with `details.requestId` and `details.lastStatus`. The user may still approve it. Ask `requestStatus()` or `waitForRequest()`; never treat it as a failure to retry.
+- With a protocol 2 wallet the wait restarts on every status change, so a user who reads the review for several minutes does not time your site out.
+- `NETWORK_ERROR` means the link to the wallet failed. On a review call it carries the request id and `details.status: 'unknown'`, because the wallet may still finish the request.
+- `timeoutMs` on a call sets its wait. The default is 3 minutes, 10 minutes for private transfers and on 0xio Desktop.
+
+<Warning>
+`STATUS_UNKNOWN` never means "send again". A second call with a new request id is a second transaction the user has to approve.
+</Warning>
+
+## Errors
+
+| Code | When |
+|------|------|
+| `STATUS_UNKNOWN` | The SDK stopped waiting; the wallet may still finish the request |
+| `REQUEST_ID_REUSED` | The request id belongs to another request of your site |
+| `EXECUTION_FAILED` | `wait: 'confirmed'` and the chain rejected or dropped the transaction |
+| `PVAC_KEY_MISMATCH` | `registerPrivateViewKey`: another private key is registered for the account |
+| `REGISTRATION_PENDING` | `registerPrivateViewKey`: this wallet's registration is not confirmed yet |
+| `RATE_LIMIT_EXCEEDED` | See `details.reason` below |
+
+Every error of a review call carries `error.requestId`. `RATE_LIMIT_EXCEEDED` names its cause in `details.reason`:
+
+| `details.reason` | Cause |
+|------------------|-------|
+| `review_pending` | Another review of this page is open; `details.requestId` and `details.status` name it. `switchNetwork` is refused the same way |
+| `requests_per_second` | More than 20 requests a second from the page |
+| `open_requests` | Your site already has the most requests the wallet holds open (8, or 3 on 0xio Desktop) |
+
+## Pre-signed transactions
+
+`submitTransaction(signedTx)` broadcasts a transaction from `signTransaction()` without a second review: the `signTransaction` review already showed exactly what was signed. It goes `pending` to `submitted`. A transaction not signed by the connected wallet is refused with `INVALID_PARAMS`.
+
+## Registering a private receive key
+
+`registerPrivateViewKey({ address })` makes the connected wallet able to receive private transfers (its view key on chain) and claim them (a confirmed private key).
+
+| Account | What happens | Result |
+|---------|--------------|--------|
+| Already registered | Nothing is signed, no review; `pending` then `completed` | `{ status: 'registered', view_pubkey, pvac: true }` |
+| Not registered | One review with the live fee, then a key switch: `submitted` with a hash, then `confirmed` | `{ hash, requestStatus }` |
+| Another address | Refused before any review | `INVALID_PARAMS` |
+| Another private key registered for the account | Refused before any review, because a key switch could strand its encrypted balance | `PVAC_KEY_MISMATCH` |
+| A registration from this wallet not yet confirmed | Refused before any review | `REGISTRATION_PENDING` |
+| Balance below the fee | Refused before any review | `INSUFFICIENT_BALANCE` |
+
+There is no free registration. The node derives the view key from the public key a transaction carries, so a fresh account that never sent anything needs that one transaction.
+
+## Which wallets speak protocol 2
+
+| Wallet | Protocol 2 from |
+|--------|-----------------|
+| 0xio extension | 3.0.6 |
+| 0xio Desktop | 0.6.2 |
+| 0xio app | 1.3.5 |
+
+Older wallets keep working through the SDK's fallbacks: `walletInfo.protocol` reads `1`, `requestStatus()` answers from the SDK's own record until a reload, and `wait: 'confirmed'` reads the chain through the wallet.
+
+Building a wallet? See [Wallet protocol 2](/developers/wallet-protocol).

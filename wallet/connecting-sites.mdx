@@ -84,6 +84,8 @@ Every request from a site opens its own review, names the site, and shows the wa
 - **Contract deployment:** a review with the code size, the new contract's address and the live fee.
 - **Add a network** and **Add token** show what will be added. Add networks only from sites you trust: the RPC sees your address and your activity on that network.
 
+Three requests need no new review, because nothing new is signed: connecting a site that is already connected, a transaction you already signed in a review and the site now sends, and setting up private receiving on a wallet that is already set up. Setting it up for the first time is a transaction with a fee and has its own review.
+
 What you review is what is signed: the review and the signature are built from the same fields. A request that names two different recipients, two different methods or two different argument lists is refused before any review opens.
 
 After you approve, the wallet checks again that the signing wallet is still in 0xio, still connected to the site, and still has the same address. If anything changed, nothing is signed.
