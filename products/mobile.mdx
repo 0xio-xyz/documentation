@@ -17,6 +17,7 @@ The **0xio Mobile App** is the 0xio Octra wallet for iOS and Android. Built with
 ### PIN & Biometric Security
 The mobile app keeps your keys in the device's secure storage and unlocks with a PIN or biometrics.
 * **PIN Code:** Set a 6-digit PIN with rate-limited retry protection.
+* **Stays locked:** once the wallet locks (auto-lock, **Lock now** or too many wrong PINs), closing and reopening the app keeps it locked until you unlock it.
 * **FaceID / TouchID:** Log in and sign transactions using your unique biometric signature.
 * **Every transaction is confirmed:** each send, approval, signature and connection ends on a review you confirm with a slide, whether or not a PIN or biometrics are set. Tap outside the review to back out. With **Ask before sending** on (Settings, Security), the PIN or biometric check follows the slide, and turning it off asks for it first. No address skips this check.
 * **Secure Storage:** Your encrypted keys are protected by the device's hardware-backed Keychain/Keystore.
@@ -185,7 +186,7 @@ Private actions follow the proof rules the network states, read before you prepa
 ### Creating a Wallet
 1. Install the app from [0xio.xyz/install](https://0xio.xyz/install).
 2. Tap **Create a wallet**.
-3. **Set a PIN and biometrics** to protect the wallet on this phone.
+3. **Set a PIN and biometrics** to protect the wallet on this phone. If the app closes before the PIN is set, it reopens on this step, never on Home.
 4. Name your wallet and copy its address on **Your wallet is ready**.
 5. **Back up your recovery phrase:** tap the **Back up** pill on Home. After your PIN, hold to show your 12 words, write them down in order offline, then tap **I wrote them down**. Until you do, Receive reminds you first.
 
