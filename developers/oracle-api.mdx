@@ -4,7 +4,7 @@ description: "REST API reference for the 0xio Oracle: OCT and token prices, swap
 icon: "chart-line"
 ---
 
-The **0xio Oracle** serves OCT and token prices, swap quotes, price history, EVM address data for the 0xio wallets, and bridge analytics. The OCT price follows the wOCT/ETH Uniswap v4 pool on Ethereum live, priced in USD from the ETH/USD trades of Coinbase, Kraken and Bitstamp, and is cross-checked against CoinGecko and DexScreener. Price history is stored in PostgreSQL for charts.
+The **0xio Oracle** serves OCT and token prices, swap quotes, price history, EVM address data for the 0xio wallets, and bridge analytics. The OCT price follows the wOCT/ETH Uniswap v4 pool on Ethereum live, priced in USD from the ETH/USD trades of Coinbase, Kraken, Bitstamp, Binance and Bybit (stablecoin quotes converted at live rates), updated within 250 ms of a trade, and is cross-checked against CoinGecko and DexScreener. Price history is stored in PostgreSQL for charts.
 
 ## Base URL
 
