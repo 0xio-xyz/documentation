@@ -268,6 +268,8 @@ Switch networks in **Settings > Network**, which also shows the latest epoch and
 ## Security
 
 - **Encrypted vault**: All private keys encrypted with AES-256-GCM at rest
+- **Keys always need a password**: a wallet with keys is never stored without one. A vault that holds only watch addresses can stay without a password; adding a wallet with keys asks you to create one first, and an older vault with keys and no password asks for one at unlock
+- **Crash-safe saves**: the vault is written to a new file and swapped in only once it is complete, and the previous copy is kept as a backup the app opens if the vault cannot be read. A file the app cannot read is never overwritten
 - **PBKDF2 key derivation**: 600,000 iterations for password-to-key conversion
 - **Biometric unlock**: Touch ID (macOS) / Windows Hello, with a password fallback. On macOS only a fingerprint opens it, never the Mac login password: the prompt's one button is **Cancel** on the lock screen, or **Use password** where a password field is waiting. If you add or remove a fingerprint, Touch ID turns off and **Settings > Security & Privacy** says so; turn it on again there. The password copy an older version kept for Touch ID is deleted
 - **Auto-lock**: Configurable inactivity timeout
@@ -316,7 +318,7 @@ The desktop app checks [0xio.xyz](https://0xio.xyz/install) for updates automati
 
 ### Creating a Wallet
 
-1. Set a **master password** to encrypt your vault
+1. Set a **master password** to encrypt your vault. It cannot be skipped for a wallet with keys; watching an address needs none
 2. Choose **Create New Wallet** or **Import** with an existing seed phrase
 3. Your wallet address and balances will appear on the dashboard
 
