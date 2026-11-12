@@ -7,7 +7,7 @@ icon: 'desktop'
 The **0xio Desktop** is a native desktop application built with [Tauri](https://tauri.app/) (Rust backend and React frontend). It is a full wallet for the Octra Network, a menu bar panel for everyday sends and private operations, and a **native privacy engine** that builds proofs for the browser extension.
 
 <Note>
-  **Status: Live (v0.6.0).** Download it from [0xio.xyz/install](https://0xio.xyz/install) for macOS (Apple Silicon, signed and notarized by Apple) or Windows.
+  **Status: Live (v0.6.0).** Download it from [0xio.xyz/install](https://0xio.xyz/install) for macOS (Apple silicon and Intel, macOS 13 or later, signed and notarized by Apple) or Windows.
 </Note>
 
 ## Why Desktop?
@@ -273,10 +273,14 @@ Switch networks in **Settings > Network**, which also shows the latest epoch and
 - **PBKDF2 key derivation**: 600,000 iterations for password-to-key conversion
 - **Biometric unlock**: Touch ID (macOS) / Windows Hello, with a password fallback. On macOS only a fingerprint opens it, never the Mac login password: the prompt's one button is **Cancel** on the lock screen, or **Use password** where a password field is waiting. If you add or remove a fingerprint, Touch ID turns off and **Settings > Security & Privacy** says so; turn it on again there. The password copy an older version kept for Touch ID is deleted
 - **Auto-lock**: Configurable inactivity timeout
-- **Seed phrase backup**: Requires password re-entry to view
+- **Recovery phrase and private key**: One screen shows either, opened as **Recovery phrase** or **Private key** from **Settings > Security & Privacy**, from **Wallets**, or from **Back up** on Home. It asks for the password or Touch ID first in a small sheet (Touch ID first when it is on; **Cancel** goes back). **Show** keeps the words or the key on screen until **Hide**; they are also hidden when you leave the screen, switch to another window, hide or minimise the app or it locks, and showing them again asks for the password or Touch ID. A first backup ends with **I wrote them down** and Home stops asking; a wallet you imported, by phrase or by private key, starts as backed up and closes with **Done**
+- **Password guess limit**: Wrong passwords count against one limit everywhere a password is asked: unlock, showing a phrase or key, deleting a wallet, creating or deriving a wallet, and changing or removing the password. After five misses the app waits 30 seconds, doubling up to an hour
+- **Address and public key**: Shown in the wallet's details in **Wallets**, each with **Copy**
+- **Copy without leaks**: **Copy** on a recovery phrase or private key stays on this computer (no Universal Clipboard, no Windows clipboard history or cloud sync), is hidden from clipboard managers, and is cleared after 60 seconds unless you copied something else. A phrase or key you paste into import is cleared from the clipboard too
+- **Deleting a wallet**: Asks for the password first
 - **Input validation**: Address format, amount bounds, and JSON parsing checks
 - **Sandboxed browser**: Restricted iframe permissions, blocks `javascript:`, `data:`, and `file:` schemes
-- **Isolated frames**: Living NFTs, `oct://` pages and the Circles preview load from the app's own isolated scheme, each with a security policy of its own and an opaque origin, so untrusted content cannot reach the wallet or other sites. A seed-only living NFT program gets no network access at all, and one that reads the chain may reach only its own network's RPC
+- **Isolated frames**: Living NFTs and `oct://` pages load from a listener inside the app, bound to this computer only (`127.0.0.1`, a random port, a random 256-bit path per document), each with a security policy of its own and an opaque origin. The app treats them as remote content and its permission system refuses every command from them, so untrusted content cannot reach the wallet or other sites. Locking the wallet drops every staged document. A seed-only living NFT program gets no network access at all, and one that reads the chain may reach only its own network's RPC
 - **dApp windows**: A dApp opened in its own window can only send wallet requests, which go through the same approvals as the in-app browser. It cannot reach any other part of the app
 - **Menu bar approvals**: Every send, encrypt, decrypt, migration and key update from the menu bar signs only on the wallet and network its review showed, at the live network fee the review showed. A fee that cannot be read blocks the action with a retry; no default fee is ever signed
 - **Sentry crash reporting**: Automated error reporting for stability improvements
@@ -304,7 +308,7 @@ The desktop app checks [0xio.xyz](https://0xio.xyz/install) for updates automati
 - **Command palette**: A keyboard-driven launcher to jump between screens and actions.
 - **Sidebar wallet switcher**: Switch between your wallets directly from the sidebar.
 - **Collapsible sidebar**: Collapse the sidebar to maximize screen real estate when working with contracts or browsing dApps.
-- **Octra Circles browser**: Browse native `oct://` on-chain content via the Circle bridge. Files stored in a circle as chunks are put back together and checked against their hashes before they show, in the Circles screen, the browser and NFT art (see [Chunked Circle Files](/wallet/nft-standards#chunked-circle-files)).
+- **Octra Circles browser**: Browse native `oct://` on-chain content via the Circle bridge. Files stored in a circle as chunks are put back together and checked against their hashes before they show, in the browser and NFT art (see [Chunked Circle Files](/wallet/nft-standards#chunked-circle-files)). The Circles page lists the circles the wallet deployed on the current network with the files it published to each (the wallet's own record: the network has no listing call). Several files can be added at once, each with an editable path, then one review lists every file with its transaction and fee and the files go out one transaction at a time: public files up to 2 MiB, encrypted files up to 32 MiB, and an encrypted file is listed with a keyed digest, not a plain hash of its content. A deploy or upload is shown as done only once the chain confirms it; one that is not confirmed can only be checked again, never sent twice. The read passphrase of an encrypted circle is never stored, so the page asks for it again before adding files, and only the owner wallet can open an encrypted circle's content.
 
 ---
 
