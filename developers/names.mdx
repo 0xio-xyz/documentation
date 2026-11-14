@@ -1,0 +1,128 @@
+---
+title: "Names"
+description: "Show a .oct name for an address and resolve a name to an address with @0xio/sdk 2.12.2."
+icon: "at"
+---
+
+Since SDK 2.12.2 a dapp can read the Octra Name System with two calls. `lookupAddress` gives the name to show for an address, such as `0xio.oct`. `resolveName` gives what a name points to. Both are reads: no review, no signature, no fee.
+
+The Octra Name System is live on devnet. On a network without it, both calls resolve with `null`, so a dapp written today keeps working when a network gains names.
+
+## Before you start
+
+Ask for `contract_views` when you connect. The wallet refuses the reads without it.
+
+```typescript
+import { ZeroXIOWallet } from '@0xio/sdk';
+
+const wallet = new ZeroXIOWallet({ appName: 'My DApp' });
+await wallet.initialize();
+const { address } = await wallet.connect({
+  permissions: ['accounts', 'contract_views'],
+});
+```
+
+If your page sets a Content Security Policy, add `https://raw.githubusercontent.com` to `connect-src`. The SDK reads the name contract's address from there (see [Where the contract comes from](#where-the-contract-comes-from)).
+
+## Show a name on the connected button
+
+`lookupAddress()` resolves with the primary name of the connected address, or `null` when it has none.
+
+```typescript
+const short = (a: string) => `${a.slice(0, 6)}...${a.slice(-4)}`;
+
+async function label(): Promise<string> {
+  const { address } = wallet.getConnectionInfo();
+  if (!address) return 'Connect';
+  const name = await wallet.lookupAddress().catch(() => null);
+  return name ?? short(address);
+}
+
+button.textContent = await label();
+wallet.on('accountChanged', async () => (button.textContent = await label()));
+wallet.on('networkChanged', async () => (button.textContent = await label()));
+```
+
+A dapp can show the name or the address, whichever it prefers. If it shows the name, keep the address reachable in a tooltip or a second line.
+
+| Call | Resolves with |
+|------|---------------|
+| `lookupAddress()` | the connected address's primary name, or `null` |
+| `lookupAddress(address)` | that address's primary name, or `null` |
+| `lookupAddress(address, networkId)` | the same on a named network, without a connection |
+
+A primary name is set by its owner. The name service only reports one that is active, is held by that address and points back to it, so no second check is needed. An address whose owner pointed a name at it but did not make it primary has no name to show.
+
+## Resolve a name to an address
+
+`resolveName(name)` takes the name with or without `.oct`.
+
+```typescript
+const hit = await wallet.resolveName('0xio.oct');
+
+if (hit === null) {
+  // this network has no name service
+} else if (hit.kind === 'wallet') {
+  await wallet.sendTransaction({ to: hit.wallet, amountOct: '1' });
+} else if (hit.kind === 'circle') {
+  // the name points to a Circle: hit.circle is its id
+} else {
+  // the name points to nothing: not registered, expired, or no target set
+}
+```
+
+| `kind` | Meaning | Set field |
+|--------|---------|-----------|
+| `wallet` | the name points to a wallet | `wallet` (the address) |
+| `circle` | the name points to a Circle whose link is confirmed | `circle` (the Circle id) |
+| `none` | nothing to send to or open | |
+
+Text that is not a valid name rejects with `INVALID_PARAMS`. A reply the SDK cannot read rejects with `NETWORK_ERROR`; it is never guessed.
+
+## Rules for sending to a name
+
+A name decides where money goes, so treat it as a label for an address and nothing more.
+
+- Send to the address. Pass `hit.wallet` to `sendTransaction`, never the name.
+- Show the address to the user before they confirm. The wallet's review shows it again.
+- Resolve again right before sending. If the address differs from the one the user saw, stop and show the new one.
+- Do not keep a resolution longer than a minute, or a looked up name longer than ten minutes. A name can be transferred or pointed elsewhere at any time.
+- A name is not proof of who is connected. Use `signMessage` for that.
+
+## Name rules
+
+`normalizeOnsName(text)` returns the bare name or `null`. `isOnsName(text)` is true only for text that ends in `.oct` and passes the rules, which is the test to use on a recipient field.
+
+- lower case letters `a` to `z`, digits and hyphens
+- 1 to 32 characters
+- no hyphen at the start or the end
+
+```typescript
+import { isOnsName, normalizeOnsName } from '@0xio/sdk';
+
+isOnsName('0xio.oct');        // true
+isOnsName('0xio');            // false: no ending
+normalizeOnsName('0XIO.oct'); // '0xio'
+normalizeOnsName('a_b.oct');  // null
+```
+
+## Where the contract comes from
+
+The name contract's address is not built into the SDK. It is read per network from the name list in the [token lists repository](https://github.com/0xio-xyz/Token-lists) (`ONS_LIST_URL`), kept for ten minutes, and the last list read is used when the list cannot be reached.
+
+Before the first read, the SDK asks the contract what it is. It must answer as the Octra Name System with an interface version this SDK supports. A contract that does not is treated as no name service, so `lookupAddress` and `resolveName` resolve with `null`.
+
+`onsContract(networkId)` resolves with the listed address or `null`. Never pass a name contract in from a page, a link or a QR code.
+
+## Reference
+
+| Export | What it is |
+|--------|-----------|
+| `wallet.lookupAddress(address?, networkId?)` | primary name of an address, or `null` |
+| `wallet.resolveName(name, networkId?)` | `{ name, kind, wallet, circle }`, or `null` |
+| `onsContract(networkId)` | the listed name contract (async), or `null` |
+| `normalizeOnsName(text)` | bare name, or `null` |
+| `isOnsName(text)` | `true` for valid text ending in `.oct` |
+| `ONS_SUFFIX` | `'.oct'` |
+| `ONS_LIST_URL` | address of the name list |
+| `ResolvedName` | type of a `resolveName` result |

@@ -27,7 +27,8 @@ pnpm add @0xio/sdk
 </CodeGroup>
 
 **Package Details:**
-- **Version:** 2.12.0
+- **Version:** 2.12.2
+- **Names (`lookupAddress`, `resolveName`):** see [Names](/developers/names); needs the `contract_views` permission
 - **Request lifecycle (request ids, status, confirmed waits):** see [Request lifecycle](/developers/request-lifecycle); full support from extension 3.0.6, 0xio Desktop 0.6.2 and 0xio app 1.3.5
 - **Watch-only signal (`canSign`, `WATCH_ONLY`):** Extension v3.0.3+
 - **Contract deployment (`deployContract`):** Extension v3.0.0+
@@ -416,6 +417,17 @@ console.log(result.requestStatus, result.hash);
 ```
 
 Detection, statuses, receipts, reloads and error reasons: [Request lifecycle](/developers/request-lifecycle).
+
+## Names (2.12.2)
+
+`lookupAddress()` gives the primary name of the connected address in the Octra Name System, or `null`, so a connected button can show `0xio.oct` or the address. `resolveName(name)` gives what a name points to. Both are reads.
+
+```typescript
+const name = await wallet.lookupAddress();
+button.textContent = name ?? `${address.slice(0, 6)}...${address.slice(-4)}`;
+```
+
+Sending to a name, the name rules and where the name contract comes from: [Names](/developers/names).
 
 ## Core API
 
