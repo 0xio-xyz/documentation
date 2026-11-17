@@ -217,20 +217,33 @@ Write contracts in two languages:
 | **AppliedML** | `.aml` | High-level language with automatic ABI generation. Recommended for most developers. |
 | **Assembly** | `.oasm` | Low-level bytecodes for advanced users. |
 
-- **File import**: Load `.aml` or `.oasm` source files
+- **Actions**: one card beside the editor with the stages (Write, Build, Deploy), **Build**, **Audit** (an AI review; it needs an AI provider in Settings) with its result, the last build and **Continue to deploy**. Nothing moves while a build runs
+- **Outline**: the program's state, events, write and view functions, each with its line and searchable; click one to jump there
+- **File menu**: Templates, Import a `.aml` or `.oasm` file, Clear file
 - **Compile**: Sends source to the network compiler, returns bytecode + ABI
 - **Error reporting**: Line numbers and error messages from the compiler
 
 ### Deploy
 
 - **Address preview**: Predict your contract's address before deploying (based on sender + nonce)
-- **Constructor parameters**: JSON array input for initialization values
+- **Deploy form**: takes the editor's place with the constructor in two columns, or one JSON array with a value per line; **Back to code** returns to the file as it was
 - **Deploy fee**: set by the size of the code, the way the Octra reference client sets it: 200,000 OU plus 1,000 OU per started KiB. A site may set its own deploy fee up to 10,000,000 OU
 - **Source verification**: Verify deployed bytecode matches your source on-chain
 
+### Contracts
+
+- **Yours, Saved and All**: Yours lists every contract the active address deployed, read from its own deploy transactions; Saved is the list you keep on this computer; All is every contract on the network. Each shows its version, code hash and balance
+- **Add by address**: open and save any contract
+- **Contract page**: the name, address, version, balance, verified state and creator, with **Save**, **Source**, **Verify** and **Open in Build**
+- **Source**: the code this computer deployed or verified. The chain never returns a contract's source, so for any other contract the page shows its methods from the chain and **Verify with source**
+- **Verify**: pick a Build file or paste source; the node says whether it matches the contract's code, and the result is kept for that network and contract
+- **Open in Build**: adds the source as a new file in Build; it never overwrites a file
+
 ### Interact
 
-- **ABI-driven forms**: Load a contract's ABI to get typed input fields for each method
+- **ABI-driven forms**: methods split into Read and Write with search; one method at a time with a typed field per parameter, or one JSON array with **Parameters as JSON**. An empty field stops the call and names it
+- **Methods without published inputs**: the chain lists some contracts' methods by name only, without inputs or whether they change state. They sit under **Methods** with a JSON array box, **Run** and **Review call**; **Add source** verifies the contract's source, after which every method has typed fields and sits under Read or Write
+- **Amount and fee**: every write takes an amount in OCT; the network fee beside **Review call** and in the review can be changed (Slow, Normal, Fast or a custom OU)
 - **View vs Call**: Read-only queries (free) or state-changing transactions (costs OU)
 - **FHE parameter encryption**: Use `enc(42)` syntax to encrypt integer parameters with FHE before sending
 - **Auto-decrypt results**: Long return values are automatically tested for FHE decryption
