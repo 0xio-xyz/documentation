@@ -85,7 +85,7 @@ await requireProofPolicy(policy, rpcUrl, address);
 | `pedersenCommit(value, blinding)` | Create Pedersen commitment | ~1ms |
 | `makeRangeProof(cipher, value)` | Per-bit range proof, off-chain only (the chain does not accept it) | slow |
 
-Times are threaded on an Apple M3; single-threaded builds are slower.
+Times are threaded on an Apple M3. The single build takes about 35 s to encrypt and about 110 s to decrypt.
 
 ## Private DEX Example
 
@@ -157,7 +157,26 @@ A proof built under one setting fails under the other. If your dApp builds proof
 | Browser Extension | `@0xio/pvac` | Same WASM, runs in page context |
 | React Native | `pvac-rs` FFI | Native ARM binary |
 | Desktop (Tauri) | `pvac-rs` crate | Native Rust |
-| Node.js | Not supported | No WASM threading |
+| Node.js | Not supported | Browser only |
+
+### Threaded and single builds
+
+The package ships two WASM builds and `initPvac()` picks one at runtime: threaded on a cross-origin isolated page, single everywhere else. `pvacMode()` tells you which loaded, so you can tell users proofs will take longer.
+
+To get threads, serve your page with both headers:
+
+```
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Embedder-Policy: require-corp
+```
+
+```typescript
+const wasm = await initPvac();                  // mode: 'auto'
+pvacMode();                                     // 'threaded' or 'single'
+await initPvac({ wasmBase: '/pvac/' });         // self-hosted copy of the package's wasm/ folder
+```
+
+If your bundler moves the package code, copy `node_modules/@0xio/pvac/wasm` to your public folder and pass `wasmBase`. On the single build, `threads` is ignored.
 
 ## Approval Popup
 
