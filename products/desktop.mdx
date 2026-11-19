@@ -111,11 +111,11 @@ The home screen displays your public and private (FHE-encrypted) balances, recen
 
 ### Privacy Operations
 
-Full encrypt, decrypt and claim support, same as the extension. The Privacy screen has a composer on the left with **Encrypt**, **Decrypt** and **Claim** tabs and a live **Proofs** panel on the right. Each operation is reviewed in the composer's place with **Reject** and the verb, then Touch ID or your password; the job then joins the proof queue and the composer is free for the next one.
+Full encrypt, decrypt and claim support, same as the extension. The Privacy screen is laid out like Send: **Encrypt** or **Decrypt** in the header, the amount with **Max**, the transfers **Waiting for you** (or **Recent**) under it, a live summary with the fee to choose and both balances after, and an action bar with **Review**. Each operation is reviewed in a pop-up with **Reject** and the verb, then Touch ID or your password; the job then joins the proof queue and the form is free for the next one.
 
-- **Proof queue**: one job at a time, in the order confirmed, so nonces and the balance's layers stay in order. The running job shows its step dots (encrypt has four steps; decrypt, claim and private send five) with the elapsed time of each step, then Up next and what finished today. A failed proof stays on top with its error, **Remove** and **Retry**, and the jobs behind it wait as Paused
-- **Claim**: waiting transfers oldest first, each with its own Claim. Any of them can be claimed, one per press, because each claim adds two layers; the review shows the sender, the live fee, the private balance and the layers after
-- **Turn on private balance**, **Refresh key** (at four or more of eight layers), **Migrate balance** and a **key update on hold** each show in the composer with the wallet, network and live fee. A changed fee, wallet or network is refused before any proof work
+- **Proof queue**: one job at a time, in the order confirmed, so nonces and the balance's layers stay in order. The running job shows its step dots (encrypt has four steps; decrypt, claim and private send five) with the elapsed time of each step, then Up next, and a strip lists them when two or more wait. A failed proof stays in the action bar with its error, **Remove** and **Try again**, and the jobs behind it wait as Paused
+- **Claim**: waiting transfers oldest first, each with its own Claim, or **Claim all** up to what the balance's layers allow (each claim adds two layers); the review shows the sender, the live fee, the private balance and the layers after
+- **Turn on private balance**, **Refresh key** (at four or more of eight layers), **Migrate balance** and a **key update on hold** each show in the summary and the action bar, and their reviews show the wallet, network and live fee. A changed fee, wallet or network is refused before any proof work
 - **Proof rules**: private operations follow the proof rules the network states, read again before each submit. A network that does not state them gets no private operation, and a change in between sends nothing. See [Network Proof Rules](/wallet/privacy-operations#network-proof-rules)
 
 <Steps>
