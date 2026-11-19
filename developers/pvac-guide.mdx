@@ -6,7 +6,7 @@ icon: 'lock'
 
 ## Overview
 
-`@0xio/pvac` (v1.0.2) provides standalone FHE (Fully Homomorphic Encryption) primitives for DApps that need to work with encrypted balances on Octra Network. It runs entirely client-side via WASM: no wallet extension dependency for cryptographic operations.
+`@0xio/pvac` (v2.0.0, pvac-rs 0.3) provides standalone FHE (Fully Homomorphic Encryption) primitives for DApps that need to work with encrypted balances on Octra Network. It runs entirely client-side via WASM: no wallet extension dependency for cryptographic operations.
 
 The primitives are built on the **Ristretto255** group (curve25519-dalek): exponential-ElGamal ciphers, Bulletproofs-style range proofs, and Pedersen commitments.
 
@@ -30,26 +30,30 @@ npm install @0xio/pvac
 ## Quick Start
 
 ```typescript
-import { PvacContext, initPvac } from '@0xio/pvac';
+import { PvacContext, initPvac, readProofPolicy, requireProofPolicy } from '@0xio/pvac';
 
 // 1. Initialize WASM module
 const wasm = await initPvac();
 
 // 2. Create context from wallet seed (seed must be exactly 32 bytes)
 const seed = new Uint8Array(32); // derive from wallet key
-const ctx = await PvacContext.create(seed, wasm);
+const ctx = await PvacContext.create(seed, wasm, { preWarm: true, threads: navigator.hardwareConcurrency });
 
-// For parallel range proofs, opt into the rayon thread pool:
-// const ctx = await PvacContext.create(seed, wasm, { preWarm: true, threads: 8 });
+// 3. Read the network proof rules for the address
+const policy = await readProofPolicy(rpcUrl, address);
 
-// 3. Encrypt an amount
+// 4. Encrypt an amount and prove it
 const cipher = ctx.encrypt(100_000_000n); // 100 OCT in microOCT
-
-// 4. Create proofs
 const blinding = crypto.getRandomValues(new Uint8Array(32));
-const boundProof = ctx.makeBoundProof(cipher, 100_000_000n, blinding);
-const commitment = ctx.pedersenCommit(100_000_000n, blinding);
+const { proof, commitment } = ctx.makeBoundProof(cipher, 100_000_000n, blinding, policy);
+
+// 5. Right before signing, make sure the rules did not change
+await requireProofPolicy(policy, rpcUrl, address);
 ```
+
+<Note>
+2.0.0 is a breaking release: every on-chain proof takes the network `policy`, and `serializeSeckey` is removed. See the package CHANGELOG for the full list.
+</Note>
 
 ## API Reference
 
@@ -73,17 +77,20 @@ const commitment = ctx.pedersenCommit(100_000_000n, blinding);
 
 | Method | Description | Time |
 |---|---|---|
-| `makeBoundProof(cipher, value, blinding)` | Prove cipher encrypts specific value | ~100ms |
-| `makeRangeProof(cipher, value)` | Prove decrypted value ≥ 0 | 30-60s |
-| `makeRangeProofParallel(cipher, value)` | Parallel range proof (rayon): requires `threads` in `create()` | 15-30s |
+| `makeBoundProof(cipher, value, blinding, policy)` | Prove the cipher encrypts `value` (encrypt payloads) | ~3s |
+| `makeBoundRangeProof(cipher, value, policy)` | Prove the cipher encrypts `value` and it is not negative (decrypt `range_proof_balance`) | ~10s |
+| `proveAmount(cipher, value, blinding, kind, policy)` | Any bound proof kind (`ProofKind.amount`, `refresh`, `range`, `history`) | varies |
+| `verifyBoundProof(cipher, proof, commitment, policy)` | Verify a bound proof | fast |
+| `verifyAmount(cipher, proof, commitment, kind, policy)` | Verify a `proveAmount` proof | fast |
 | `pedersenCommit(value, blinding)` | Create Pedersen commitment | ~1ms |
-| `verifyRangeProof(cipher, proof)` | Verify a range proof | ~100ms |
-| `verifyBoundProof(cipher, proof, commitment)` | Verify a bound proof | ~50ms |
+| `makeRangeProof(cipher, value)` | Per-bit range proof, off-chain only (the chain does not accept it) | slow |
+
+Times are threaded on an Apple M3; single-threaded builds are slower.
 
 ## Private DEX Example
 
 ```typescript
-import { PvacContext, initPvac } from '@0xio/pvac';
+import { PvacContext, initPvac, readProofPolicy } from '@0xio/pvac';
 import { ZeroXIOWallet } from '@0xio/sdk';
 
 // Setup
@@ -95,10 +102,11 @@ await wallet.connect();
 
 // Open private account on pool contract
 const pubkey = ctx.serializePubkey();
+const policy = await readProofPolicy(rpcUrl, address);
 const zeroCipher = ctx.encryptZero();
 const blinding = crypto.getRandomValues(new Uint8Array(32));
-const zeroProof = ctx.makeBoundProof(zeroCipher, 0n, blinding);
-const rangeProof = ctx.makeRangeProof(zeroCipher, 0n);
+const zeroProof = ctx.makeBoundProof(zeroCipher, 0n, blinding, policy).proof;
+const rangeProof = ctx.makeBoundRangeProof(zeroCipher, 0n, policy).proof;
 
 await wallet.callContract({
   contract: 'octYourPoolAddress...',
@@ -123,7 +131,7 @@ const amountCipher = ctx.encrypt(50_000_000n);
 const newBalance = ctx.ctSub(currentCipher, amountCipher);
 
 // Prove remaining balance ≥ 0
-const proof = ctx.makeRangeProof(newBalance, expectedNewValue);
+const { proof } = ctx.makeBoundRangeProof(newBalance, expectedNewValue, policy);
 ```
 
 This is mathematically identical to `fhe_sub_const`. Both produce `enc(balance - amount)`.
