@@ -17,6 +17,8 @@ The **0xio Mobile App** is the 0xio Octra wallet for iOS and Android. Built with
 ### PIN & Biometric Security
 The mobile app keeps your keys in the device's secure storage and unlocks with a PIN or biometrics.
 * **PIN Code:** Set a 6-digit PIN with rate-limited retry protection.
+* **Change PIN:** Settings asks for your current PIN (or Face ID), then the new PIN twice.
+* **PIN before signing:** when the PIN is asked before a send or a private action, it shows the amount and who it goes to.
 * **Stays locked:** once the wallet locks (auto-lock, **Lock now** or too many wrong PINs), closing and reopening the app keeps it locked until you unlock it.
 * **FaceID / TouchID:** Log in and sign transactions using your unique biometric signature.
 * **Every transaction is confirmed:** each send, approval, signature and connection ends on a review you confirm with a slide, whether or not a PIN or biometrics are set. Tap outside the review to back out. With **Ask before sending** on (Settings, Security), the PIN or biometric check follows the slide, and turning it off asks for it first. No address skips this check.
@@ -94,7 +96,7 @@ Save and label frequently used addresses. Search by name or address, tap a conta
 ### Multi-Wallet Support
 Create or import multiple wallets and switch between them from the wallet list (tap the wallet name on Home, or swipe from the left edge). All wallets use the same master root key derivation as the extension and desktop.
 
-**Add a wallet** is one sheet: **Create new wallet**, **Derive account** from a recovery phrase already on the phone, and under **Already have one**: **Recovery phrase**, **Private key** or **Watch an address**.
+**Add a wallet** opens a second sheet with **Create new wallet**, **Import wallet** and **Watch address**. Import takes a recovery phrase or a private key and tells you which one you pasted. Each step is a full page, and when you finish the new wallet slides into the list, selected, and Home switches to it. A new wallet can be backed up straight away with **Back up now**, or **Later**; until then its row shows **Back up**.
 
 **Rename** a wallet from the wallet list or Settings: a sheet with the wallet's picture, quick names (Savings, Daily, Trading, Cold) and its full address.
 
