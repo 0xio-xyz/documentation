@@ -228,7 +228,7 @@ Write contracts in two languages:
 - **Address preview**: Predict your contract's address before deploying (based on sender + nonce)
 - **Deploy form**: takes the editor's place with the constructor in two columns, or one JSON array with a value per line; **Back to code** returns to the file as it was
 - **v1 or v2**: picked from the build. When the compiler returns a program package (AML), the deploy goes out as a v2 `program_deploy` carrying that package; otherwise (OASM) as a v1 `deploy` of the bytecode. The review shows which
-- **Deploy fee**: set by the size of what is signed (the package for v2, the bytecode for v1), the way the Octra reference client sets it: 200,000 OU plus 1,000 OU per started KiB. A v2 program pays exactly that fee. A site may set its own deploy fee up to 10,000,000 OU
+- **Deploy fee**: set by the size of what is signed (the package for v2, the bytecode for v1), the way the Octra reference client sets it: 200,000 OU plus 1,000 OU per started KiB. The fee is **Default** (that fee) or **Custom**, never under it, for v1 and v2 alike. A site may set its own deploy fee up to 10,000,000 OU
 - **Source verification**: Verify deployed bytecode matches your source on-chain
 
 ### Contracts
