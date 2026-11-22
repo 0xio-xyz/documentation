@@ -7,8 +7,17 @@ icon: 'chrome'
 The **0xio Browser Extension** is a non-custodial wallet for the Octra Network with an EVM wallet built in. It keeps public and private (FHE-encrypted) OCT balances, holds a 0x address on Ethereum, Robinhood Chain and any EVM network you add, bridges between Octra and Ethereum, and connects to Octra and EVM websites.
 
 <Note>
-  **Status: Live (v3.0.4) on the Chrome Web Store.** Install from the [Chrome Web Store](https://chromewebstore.google.com/detail/0xio-wallet/anknhjilldkeelailocijnfibefmepcc) or from [0xio.xyz/install](https://0xio.xyz/install). The Firefox version is in review on Mozilla Add-ons.
+  **Status: Live (v3.0.6) on the Chrome Web Store.** Install from the [Chrome Web Store](https://chromewebstore.google.com/detail/0xio-wallet/anknhjilldkeelailocijnfibefmepcc) or from [0xio.xyz/install](https://0xio.xyz/install). The Firefox version is in review on Mozilla Add-ons.
 </Note>
+
+## Open source
+
+The extension is open source under the GNU General Public License v3.0 only (GPL-3.0-only). The code is at [github.com/0xio-xyz/0xio-wallet](https://github.com/0xio-xyz/0xio-wallet).
+
+- **Building it yourself:** the repository README lists the Node version and the commands for the Chrome and Firefox builds. The privacy engine (pvac-rs) ships prebuilt as WebAssembly in the repository.
+- **Dependencies:** the runtime code uses ten well-known packages (`@noble/curves`, `@noble/hashes`, `@scure/bip32` and `@scure/base`, `tweetnacl`, React). Everything else, including the QR code, translations, router, icons and text sanitiser, is written in the repository. THIRD_PARTY_NOTICES.md lists each package and its license.
+- **Security reports:** follow SECURITY.md in the repository. Please report privately; do not open a public issue for a vulnerability.
+- **Contributing:** see CONTRIBUTING.md.
 
 ## Requirements
 
