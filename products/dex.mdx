@@ -1,241 +1,56 @@
 ---
 title: "0xio DEX"
-description: "Cross-chain swap protocol for Octra Network: swap OCT and ETH with on-chain settlement and solver-based fills."
+description: "A single-chain DLMM exchange on Octra with Swap and Pools, used with the 0xio wallet. In preview, not live."
 icon: "arrow-right-arrow-left"
 ---
 
 <Note>
-  **Status: Live on Devnet**
-  The 0xio DEX is live at [dex.0xio.xyz](https://dex.0xio.xyz). Cross-chain swaps between OCT and ETH are available on devnet.
+  **Status: In preview, not live.** The pool contract is not deployed on any network yet, so the DEX runs only as a preview with sample data. Nothing in it reaches the chain or your wallet.
 </Note>
 
 ## Overview
 
-**0xio DEX** is a **cross-chain swap protocol** that enables users to swap native tokens across chains, starting with **OCT ↔ ETH** between Octra and Ethereum Sepolia. The protocol uses a **solver-based architecture** with on-chain escrow and oracle verification.
+**0xio DEX** is an exchange on Octra. Swaps go through on-chain pools that hold liquidity in price bins (the Liquidity Book design, also known as DLMM), and anyone can add liquidity to a pool over a price range. It has two main tabs, **Swap** and **Pools**, plus **Activity** and **Stats**, and works only with the 0xio wallet.
 
-## How It Works
+The earlier cross-chain swap (OCT to ETH through a solver) is retired: the DEX removed it on 2026-11-22 and the extension in v3.0.7.
 
-### OCT → ETH
+## How a Pool Works
 
-<Steps>
-  <Step title="Connect Wallets">
-    Connect your 0xio wallet (Octra) and MetaMask (Sepolia)
-  </Step>
-  <Step title="Get Quote">
-    Enter the OCT amount and the solver provides a real-time quote with TWAP pricing
-  </Step>
-  <Step title="Lock OCT">
-    OCT is locked in the SwapVault contract on Octra with a minimum receive commitment
-  </Step>
-  <Step title="Solver Fills">
-    The solver detects the lock, sends ETH to your Sepolia address (~30s)
-  </Step>
-  <Step title="Oracle Attests">
-    The oracle independently verifies the ETH was sent and attests on-chain
-  </Step>
-  <Step title="Settlement">
-    After a challenge window, the solver claims the locked OCT
-  </Step>
-</Steps>
+- **Bins:** each pool pairs two tokens and splits the price into small fixed steps called bins. Only one bin, the active bin, holds both tokens. Bins above it hold only the first token, bins below it only the second.
+- **Price:** a swap trades at the active bin's fixed price until that bin runs out, then moves to the next bin, up to 50 bins in one swap.
+- **OCT:** pools hold Wrapped OCT (WOCT), one to one with OCT. The DEX wraps and unwraps for you as steps of the same swap.
 
-### ETH → OCT
+## Swap
 
-<Steps>
-  <Step title="Connect Wallets">
-    Connect MetaMask (Sepolia) and 0xio wallet (Octra)
-  </Step>
-  <Step title="Lock ETH">
-    ETH is locked in the EthEscrow contract on Sepolia
-  </Step>
-  <Step title="Solver Sends OCT">
-    The solver detects the lock and sends OCT to your Octra address
-  </Step>
-  <Step title="Solver Records the Fill">
-    The solver calls `fill()` on the escrow with the Octra transaction hash
-  </Step>
-  <Step title="Oracle Attests + Settlement">
-    The oracle verifies the OCT payout and `attest()` is recorded; after the challenge window the solver settles and receives the locked ETH
-  </Step>
-</Steps>
+Pick what you pay and what you receive. The swap card shows the pool price, the price impact, the live fee and the minimum you receive after slippage (0.5, 1 or 2%).
 
-<Info>
-You are paid first: the solver sends OCT before it claims anything on Ethereum. If the solver never pays, the ETH stays in the escrow and you refund it after the lock expiry. The timing risk sits with the solver: a lock that expires before `fill()` is recorded can no longer be claimed.
-</Info>
+Every swap is a short plan of steps, all listed in the review before anything is signed:
 
-## Features
+| Swap | Steps |
+|------|-------|
+| OCT to a token | Wrap OCT, approve WOCT, swap |
+| A token to OCT | Approve, swap, unwrap exactly the WOCT the swap returned |
+| Between two pool tokens | Approve, swap |
 
-- **Cross-Chain Swaps**: OCT ↔ ETH between Octra and Ethereum Sepolia
-- **TWAP Pricing**: 5-minute time-weighted average of the 0xio Oracle's OCT price (the live Uniswap pool price, cross-checked against CoinGecko and DexScreener)
-- **On-Chain Rate Protection**: `min_receive` committed at lock time, so the solver can't underpay
-- **Slippage Control**: Configurable slippage tolerance (0.1%, 0.5%, 1%, or a custom value up to 5%)
-- **Liquidity Display**: Real-time solver balance shown before swap
-- **Network Detection**: Auto-prompts MetaMask to switch to Sepolia
-- **Live swap tracking**: Every swap shows three steps (sent from your wallet, on the way, arrived) with a timer, survives a page reload, and offers a one-click refund when a swap can't be filled
-- **Activity**: Live-updating transaction list with on-chain state at [dex.0xio.xyz/history](https://dex.0xio.xyz/history)
-- **DEX Stats**: Volume, fees, solver status at [dex.0xio.xyz/stats](https://dex.0xio.xyz/stats)
-- **Price Chart**: Live OCT/USD chart next to the swap card (a compact price strip on phones)
+An approval is skipped when the allowance already covers the amount. The wallet asks for each step, and the next step waits until the previous one is confirmed on chain. A step that is not confirmed in time is shown as not confirmed and is never sent again. If a swap fails after the wrap, the DEX offers to unwrap the WOCT left in your wallet.
 
-## Security
+## Pools
 
-The protocol is built around a layered defense model: at no point can the solver underpay or the user lose locked funds.
+A pool opens on its bin chart, which you can pan and zoom.
 
-### 5-Layer Defense
+- **Add:** type an amount and the deposit is spread over a range centred on the current price. **Adjust range** offers **Narrow**, **Balanced** (the default) or **Wide**, and a shape: **Spot** (even), **Curve** (more near the price) or **Bid-ask** (more at the edges). Bins below the price receive one token and bins above it the other; the active bin takes the mix it already holds.
+- **Remove:** take out a share of your bins.
+- **Move range:** a position the price has left can be moved back around the price; this removes the old bins and adds the same width around the price.
+- **Positions:** each shows whether it is in range or out of range.
 
-| Layer | Protection |
-|-------|-----------|
-| **Solver Bond** | 20K OCT staked as collateral, slashed on fraud |
-| **On-Chain Rate Commitment** | `min_receive` prevents solver from underpaying |
-| **Oracle Verification** | Independent fill verification before attestation |
-| **Challenge Window** | Dispute period after attestation, before the solver can settle |
-| **Stale Fill Refund** | User reclaims funds if oracle doesn't attest within timeout |
+One add or remove covers up to 20 bins per transaction. If the active bin moves between your review and confirming, nothing is sent and the form follows the new price for the next review.
 
-### Key Security Properties
+## Fees
 
-- **Pay first, claim later**: The solver delivers the destination tokens before it records `fill()`, and claims the locked funds only after the oracle attests and the challenge window passes
-- **Idempotent payouts**: Every solver transaction is stored before broadcast and retried with the same bytes, so a crash or timeout never pays twice; an unclear payout stops for manual review instead of being resent
-- **Fee snapshot**: Fee rate locked at swap time, can't be changed retroactively
-- **Reentrancy guard**: All ETH transfer functions protected
-- **Emergency refund**: Owner can refund unfilled swaps (blocked after fill)
-- **Reconciliation**: The solver periodically reconciles its database with on-chain state and only ever moves a swap forward
+- **Dynamic fee:** every swap pays a base fee plus a part that rises with recent price movement and fades again when the market is calm. The fee is capped at 10%. The fee shown before you swap is the live rate the pool reports.
+- **Where it goes:** most of the fee stays in the bins for the liquidity providers there; the protocol keeps a share (10% by default).
+- **Composition fee:** adding to the active bin with a mix that differs from what the bin holds swaps part of your deposit inside the bin. That part pays the same rate as a swap. The review shows this fee before you sign.
 
-## Contract Addresses (Devnet)
+## Tokens and Pools
 
-| Contract | Network | Address |
-|----------|---------|---------|
-| SwapVault v7 | Octra Devnet | `octHqBuw3TGsgeGpu6GiumRTjQwc8VCRAo1ANhy5zL4ZVPc` |
-| EthEscrowV2 | Sepolia | `0x835454daE518108105BC2ac22cb11738A5D69554` |
-| Solver Wallet | Octra | `oct4Ay2HKoKbVSndUVdDaf1gxtYhdXeRVpkHvv43rhRoxio` |
-| Solver Wallet | Sepolia | `0x3ec4bd68e2E3190FB3050005D8B9C132aFd9D684` |
-| Treasury | Octra | `octCWWvj4EKPk1QA9TZrNTXZ6dJEbcQaS3fWAcmobPnyuqt` |
-| Treasury | Sepolia | `0x80961b1e16D483c7EB5CA32e1fFd8157E5188598` |
-
-## Architecture
-
-```
-User (0xio Wallet + MetaMask)
-    │
-    ▼
-Frontend (dex.0xio.xyz)
-    │
-    ├── Quote: Solver API (solver.0xio.xyz)
-    │     └── TWAP pricing from Oracle (oracle.0xio.xyz)
-    │
-    ├── OCT→ETH: SwapVault v7 (Octra) → Solver sends ETH (Sepolia)
-    │
-    └── ETH→OCT: EthEscrowV2 (Sepolia) → Solver sends OCT (Octra)
-```
-
-### Swap Lifecycle (OCT → ETH)
-
-```
-lock() → fill() → attest() → [challenge window] → settle()
-  │        │         │                                │
-  │        │         │                                └── Solver gets OCT
-  │        │         └── Oracle verifies ETH was sent
-  │        └── Solver sends ETH + posts dest tx hash
-  └── User locks OCT with min_receive commitment
-```
-
-### Swap Lifecycle (ETH → OCT)
-
-```
-lock() → send OCT → fill() → attest() → [challenge window] → settle()
-  │         │          │         │                                │
-  │         │          │         │                                └── Solver gets ETH
-  │         │          │         └── Oracle verifies the OCT payout
-  │         │          └── Solver records the Octra tx hash on the escrow
-  │         └── Solver pays OCT to the user first
-  └── User locks ETH in EthEscrowV2
-```
-
-## Fee Structure
-
-| Parameter | Value |
-|-----------|-------|
-| Swap fee | 0.5% (50 bps) |
-| Fee destination | Protocol treasury (per-chain) |
-| Minimum swap (OCT→ETH) | 10 OCT (the vault's minimum fee makes smaller locks fail) |
-| Minimum swap (ETH→OCT) | 0.001 ETH |
-| Maximum swap | 10,000 OCT / 10 ETH |
-
-## Services
-
-| Service | URL | Role |
-|---------|-----|------|
-| DEX Frontend | [dex.0xio.xyz](https://dex.0xio.xyz) | Swap interface |
-| Activity | [dex.0xio.xyz/history](https://dex.0xio.xyz/history) | Transaction list + on-chain state |
-| DEX Stats | [dex.0xio.xyz/stats](https://dex.0xio.xyz/stats) | Volume, fees, solver status |
-| Solver API | solver.0xio.xyz | Quote, swap tracking, health |
-| Oracle | oracle.0xio.xyz | TWAP prices, fill verification |
-
-## Solver API
-
-### GET /api/quote
-
-Get a swap quote with current TWAP pricing.
-
-```
-GET https://solver.0xio.xyz/api/quote?from=OCT&to=ETH&amount=100
-```
-
-Response includes: rate, receive amount, fee, liquidity availability, intent hash.
-
-### GET /api/swap/:id
-
-One swap by id: the quote `intent_hash` for OCT→ETH, or `escrow_` plus the lowercase keccak256 of the intent hash for ETH→OCT. Returns 404 when the solver has not seen it yet.
-
-### GET /api/swaps
-
-List recent swaps with status tracking. `?address=` filters by source or destination address (case-insensitive).
-
-### GET /api/chains
-
-Supported chains/tokens, the live contract addresses (SwapVault, EthEscrow), solver wallets and the lock limits (`min_lock_oct`, `min_lock_eth`). The DEX frontend locks only into its pinned contracts and pauses swaps if this endpoint reports different ones.
-
-### GET /api/health
-
-Solver status: RPC connectivity, bond amount, liquidity on both chains.
-
-### GET /api/price
-
-Proxied oracle price feed (no API key needed from frontend).
-
-## Refund Mechanisms
-
-| Scenario | Mechanism |
-|----------|-----------|
-| Solver never fills | User taps Refund on the swap card or the Activity page once the lock expiry passes (`refund()`) |
-| Solver fills but oracle never attests | Same Refund button after the stale-fill window (`refundStaleFill()` / `refund_stale_fill`) |
-| Emergency | Owner calls `emergencyRefund()` (immediate, unfilled swaps only) |
-
-## Related Repos
-
-| Repo | Role |
-|------|------|
-| **0xio-solver** | Rust solver backend (Axum + Tokio) |
-| **0xio-oracle** | Price feeds (TWAP) + fill verification |
-| **@0xio/sdk** | Octra wallet SDK for DApp integration |
-
-## Roadmap
-
-### Near Term
-- Solana support (SOL ↔ OCT)
-- Multi-token support (wOCT, USDC)
-- Multi-solver competition
-- Mainnet deployment
-
-### Medium Term
-- Liquidity pools (CLMM)
-- Limit orders
-- Advanced routing (multi-hop, split orders)
-
-### Long Term: Cross-Chain Privacy Layer
-- **Accept wETH/wSOL on their native chains, encrypt via Octra's FHE, transfer privately, withdraw anywhere**
-- Octra becomes a privacy middleware: users put in wETH, get out wETH, with full amount privacy in between
-- FHE-powered private swaps (AMM operating on encrypted data)
-- Relayer network for gasless, unlinkable withdrawals
-- Compliance via selective disclosure (viewing keys)
-
-<Card title="Cross-Chain Privacy Layer: Full Design" icon="shield-halved" href="/concepts/privacy-layer">
-  Deep dive into how 0xio uses Octra's FHE as a privacy backend for any blockchain. Architecture, phases, and comparison with Umbra, Railgun, and Aztec.
-</Card>
+Tokens and pools come from the 0xio token list on GitHub. Each entry is checked on chain before use, and the last good copy is kept for when the list or the node cannot be reached. Nothing is built into the app.

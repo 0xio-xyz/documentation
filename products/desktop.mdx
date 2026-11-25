@@ -7,12 +7,14 @@ icon: 'desktop'
 The **0xio Desktop** is a native desktop application built with [Tauri](https://tauri.app/) (Rust backend and React frontend). It is a full wallet for the Octra Network, a menu bar panel for everyday sends and private operations, and a **native privacy engine** that builds proofs for the browser extension.
 
 <Note>
-  **Status: Live (v0.6.0).** Download it from [0xio.xyz/install](https://0xio.xyz/install) for macOS (Apple silicon and Intel, macOS 13 or later, signed and notarized by Apple) or Windows.
+  **Status: Live (v0.7.3).** Download it from [0xio.xyz/install](https://0xio.xyz/install) for macOS (Apple silicon and Intel, macOS 13 or later, signed and notarized by Apple) or Windows.
 </Note>
 
 ## Why Desktop?
 
 Browser extensions run in a sandbox with limited access to the CPU and memory, and private proofs are heavy work. The desktop app runs **pvac-rs** natively with every CPU core, so private operations finish faster than in the browser, both in the app and for the extension when the two run together.
+
+pvac-rs is the 0xio Labs Rust port of the PVAC engine in Octra Labs' reference client [webcli](https://github.com/octra-labs/webcli), which Octra Labs releases under the BSD 3-Clause License.
 
 ---
 
@@ -202,10 +204,14 @@ The desktop app includes an AI-powered assistant for smart contract development.
 - **AML brainstorming**: describe what you want your contract to do and get AML code suggestions
 - **Code generation**: generate complete contract templates from natural language descriptions
 - **Error fixing**: paste compiler errors and get suggested fixes
-- **Models found for you**: the app asks each provider you have a key for (OpenAI, Anthropic, Groq, OpenRouter) which models it offers, and finds models on this computer by itself (Ollama and LM Studio). Pick the model in the chat header; the list is grouped by provider, has search when it is long, and remembers your choice
+- **Models found for you**: the app asks each provider you have a key for (OpenAI, Anthropic, Groq, OpenRouter) which models it offers, and finds local models by itself (Ollama and LM Studio). Pick the model in the chat header; the list is grouped by provider, has search when it is long, and remembers your choice
 - **Settings**: **Settings > AI** holds only your keys (masked; a pasted key names its provider), how many models each one offers, the local servers found, and an optional custom endpoint
 - **Modes**: Auto, Manual and Plan, under the chat box
-- **Apply**: a suggestion goes into the file as an unsaved change, with **Undo**
+- **Apply**: a suggestion goes into the file as an unsaved change, with **Undo**. An answer is the whole file or one whole function, so Apply never swaps a file for a shortened one
+- **Your code stays code**: text in the open file or the selection is read as code, never as instructions
+- **While it works**: **Thinking** with the seconds counting while the model reasons. A provider that sends nothing for 90 seconds at the start, or for 60 seconds once it has begun, ends with **No answer from** the provider. An error the provider sends inside its answer is shown, and an empty answer says so
+- **Saved chats**: each contracts project keeps its chat locally (the last 100 messages), restored when the project opens and sent along as context; **+** starts a new chat and clears the saved one. Keys are never saved with it
+- **Prompt caching**: with Anthropic the assistant prompt, the open file and the earlier conversation are cached between messages, so follow-ups cost less and start sooner; OpenAI and the other providers cache the same stable prefix on their side
 
 ---
 
@@ -272,6 +278,8 @@ Browse Octra ecosystem dApps without leaving the desktop wallet:
 - **URL navigation**: Visit any URL directly
 - **Open in window**: Launch dApps in a native window for sites that don't support iframe embedding
 - **Connected DApp management**: View and manage permissions for connected dApps
+- **Circles ask first**: an `oct://` circle reads nothing through the wallet until you approve it once. Its first wallet read, signed circle read, relay call or proof check opens the connect review for that circle. The approval holds for that network, wallet and circle; the circle is then listed in **Connected sites**, where **Disconnect** removes it. A watch-only wallet is refused
+- **Circle proof checks**: a circle can ask the wallet to check a zero proof or a bound proof on a cipher under the wallet's registered key (`fhe.verify_zero` and `fhe.verify_bound`), with the size and cipher shape limits of webcli and one check at a time
 
 ---
 
@@ -307,6 +315,8 @@ Switch networks in **Settings > Network**, which also shows the latest epoch and
 - **Sandboxed browser**: Restricted iframe permissions, blocks `javascript:`, `data:`, and `file:` schemes
 - **Isolated frames**: Living NFTs and `oct://` pages load from a listener inside the app, bound to this computer only (`127.0.0.1`, a random port, a random 256-bit path per document), each with a security policy of its own and an opaque origin. The app treats them as remote content and its permission system refuses every command from them, so untrusted content cannot reach the wallet or other sites. Locking the wallet drops every staged document. A seed-only living NFT program gets no network access at all, and one that reads the chain may reach only its own network's RPC
 - **dApp windows**: A dApp opened in its own window can only send wallet requests, which go through the same approvals as the in-app browser. It cannot reach any other part of the app
+- **Network access**: the app window reaches other servers over https only; plain http goes only to this computer (a local node or AI model). Node calls, including a node you add over plain http, run in the app's native core and are checked the same way
+- **No error reports**: the app sends no crash or error reports, and its fonts (Inter and JetBrains Mono) ship with it, so nothing is fetched from a font service
 - **Menu bar approvals**: Every send, encrypt, decrypt, migration and key update from the menu bar signs only on the wallet and network its review showed, at the live network fee the review showed. A fee that cannot be read blocks the action with a retry; no default fee is ever signed
 
 ---
@@ -331,7 +341,8 @@ The desktop app checks [0xio.xyz](https://0xio.xyz/install) for updates automati
 
 - **Command palette**: A keyboard-driven launcher to jump between screens and actions.
 - **Sidebar wallet switcher**: Switch between your wallets directly from the sidebar.
-- **Collapsible sidebar**: Collapse the sidebar to maximize screen real estate when working with contracts or browsing dApps.
+- **Collapsible sidebar**: Collapse the sidebar to maximize screen real estate when working with contracts or browsing dApps. It folds to a rail of icons. Each icon carries the 0xio slash, which opens when its item becomes active. On a narrow window an expanded sidebar opens over the contract editor instead of squeezing it.
+- **Fast start**: the lock screen shows first; other languages and the wallet's screens load when they are needed.
 - **Octra Circles browser**: Browse native `oct://` on-chain content via the Circle bridge. Files stored in a circle as chunks are put back together and checked against their hashes before they show, in the browser and NFT art (see [Chunked Circle Files](/wallet/nft-standards#chunked-circle-files)). The Circles page lists the circles the wallet deployed on the current network with the files it published to each (the wallet's own record: the network has no listing call). Several files can be added at once, each with an editable path, then one review lists every file with its transaction and fee and the files go out one transaction at a time: public files up to 2 MiB, encrypted files up to 32 MiB, and an encrypted file is listed with a keyed digest, not a plain hash of its content. A deploy or upload is shown as done only once the chain confirms it; one that is not confirmed can only be checked again, never sent twice. The read passphrase of an encrypted circle is never stored, so the page asks for it again before adding files, and only the owner wallet can open an encrypted circle's content.
 
 ---

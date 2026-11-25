@@ -66,14 +66,14 @@ The 0xio ecosystem spans multiple client platforms unified by a shared SDK layer
   <Card title="Extension v3.0.6" icon="puzzle-piece">
     React, Vite and WASM PVAC, with an EVM wallet
   </Card>
-  <Card title="Mobile v1.3.3" icon="mobile">
-    React Native, Expo 57 and native PVAC
+  <Card title="Mobile v2.0.0" icon="mobile">
+    SwiftUI on iOS, Kotlin on Android and native PVAC
   </Card>
-  <Card title="Desktop v0.6.0" icon="desktop">
+  <Card title="Desktop v0.7.3" icon="desktop">
     Tauri 2, Rust and native PVAC
   </Card>
   <Card title="DEX" icon="arrow-right-arrow-left">
-    React + Vite + CLMM + Cross-chain
+    React, Vite and DLMM pools (in preview)
   </Card>
 </CardGroup>
 
@@ -108,7 +108,7 @@ The 0xio ecosystem spans multiple client platforms unified by a shared SDK layer
 
 | Layer | Components |
 |-------|-----------|
-| **Client Applications** | Browser Extension (React, Vite, WASM PVAC, EVM wallet), Mobile App (React Native, Expo 57, native PVAC), Desktop App (Tauri 2, Rust, native PVAC), DEX (React, Vite, CLMM and cross-chain swap), Bridge (bridge.0xio.xyz) |
+| **Client Applications** | Browser Extension (React, Vite, WASM PVAC, EVM wallet), Mobile App (SwiftUI on iOS, Kotlin and Jetpack Compose on Android, native PVAC), Desktop App (Tauri 2, Rust, native PVAC), DEX (React, Vite and DLMM pools, in preview), Bridge (bridge.0xio.xyz) |
 | **Developer SDK** | @0xio/sdk v2.12.1 (TypeScript, npm, MessageChannel transport, postMessage security, request lifecycle); @0xio/pvac v1.0.2 WASM privacy primitives |
 | **Infrastructure** | RPC Proxy (optional, caching, history compression), Oracle (prices, EVM data, bridge analytics), Push Server (signature-authenticated notifications), install page and desktop updates at 0xio.xyz |
 | **Blockchain** | Octra Network: FHE encrypted balances, AML smart contracts, BridgeVault, wOCT (ERC-20), on-chain proof verification |
@@ -129,7 +129,7 @@ The 0xio ecosystem spans multiple client platforms unified by a shared SDK layer
     TypeScript SDK for integrating dApps with 0xio and Octra's FHE capabilities.
   </Card>
   <Card title="0xio DEX" icon="arrow-right-arrow-left" href="/products/dex">
-    Cross-chain swap protocol and same-chain CLMM pools for the Octra Network.
+    Swap and liquidity pools on Octra, with the 0xio wallet. In preview, not live.
   </Card>
   <Card title="0xio Bridge" icon="bridge" href="/products/bridge">
     Bridge to Ethereum, Bridge to Octra and Any chain to OCT, secured by a light client.

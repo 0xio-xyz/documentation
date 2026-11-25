@@ -40,7 +40,7 @@ Because Octra relies on FHE, data must be encrypted *before* it leaves your devi
 | **Privacy Engine** | **PVAC** (curve25519-dalek / Ristretto255) for FHE encrypt/decrypt, Bulletproofs range proofs, Pedersen commitments, and stealth transfers via X25519 ECDH. |
 | **EVM Keys** | The extension derives the EVM key from the same phrase at `m/44'/60'/0'/0/i` (secp256k1) for one signature at a time. |
 | **Price Feeds** | **0xio Oracle**: the live wOCT/ETH Uniswap v4 pool price in USD, cross-checked against CoinGecko and DexScreener, with anomaly detection and PostgreSQL history. EVM token prices in the extension come from DefiLlama. |
-| **Telemetry** | No analytics, advertising or tracking scripts. The extension has no crash reporting; the desktop and mobile apps send crash reports without keys, phrases or PINs. See the [Privacy Policy](https://0xio.xyz/privacy). |
+| **Telemetry** | No analytics, advertising or tracking scripts. The extension and the desktop app send no crash reports; the mobile apps send crash reports without keys, phrases or PINs. See the [Privacy Policy](https://0xio.xyz/privacy). |
 
 <Note>
   0xio is an independent project built by community developers. It is not owned by, nor formally affiliated with, Octra Labs, ensuring a separation between the network and the toolset.

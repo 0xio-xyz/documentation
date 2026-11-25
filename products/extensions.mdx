@@ -14,10 +14,12 @@ The **0xio Browser Extension** is a non-custodial wallet for the Octra Network w
 
 The extension is open source under the MIT License. The code is at [github.com/0xio-xyz/0xio-wallet](https://github.com/0xio-xyz/0xio-wallet).
 
-- **Building it yourself:** the repository README lists the Node version and the commands for the Chrome and Firefox builds. The privacy engine (pvac-rs) ships prebuilt as WebAssembly in the repository.
+- **Building it yourself:** the repository README lists the Node version and the commands for the Chrome and Firefox builds. The privacy engine ships prebuilt as WebAssembly in the repository.
+- **How it works:** the README covers the architecture and integrating a site with the wallet. The `docs/` folder holds the protocol overview and notes on the background worker, the screens, transactions, privacy, translations and the relay to 0xio Desktop.
+- **Privacy engine:** pvac-rs by 0xio Labs, a Rust port of the PVAC engine in Octra Labs' reference client [webcli](https://github.com/octra-labs/webcli), which Octra Labs releases under the BSD 3-Clause License. THIRD_PARTY_NOTICES.md carries that notice.
 - **Dependencies:** the runtime code uses ten well-known packages (`@noble/curves`, `@noble/hashes`, `@scure/bip32` and `@scure/base`, `tweetnacl`, React). Everything else, including the QR code, translations, router, icons and text sanitiser, is written in the repository. THIRD_PARTY_NOTICES.md lists each package and its license.
 - **Security reports:** follow SECURITY.md in the repository. Please report privately; do not open a public issue for a vulnerability.
-- **Contributing:** see CONTRIBUTING.md.
+- **Contributing:** see CONTRIBUTING.md and the code of conduct (CODE_OF_CONDUCT.md).
 
 ## Requirements
 
@@ -119,7 +121,7 @@ History lists Octra and EVM activity together, newest first, on two pages: **Mai
 - The three newest pieces come first, then one row per collection, then **Hidden**.
 - Hide a piece or a whole collection with Undo. Hidden items are kept per network and wallet.
 - A piece's page shows its art, traits, status, holder and contract, with **List for sale** and **Send**, or **Change price** and **Cancel listing** for a listed piece. Every step opens a review with the fee.
-- Octra collections (SNS-1, Bionts and living NFTs) and EVM collections (ERC-721 and ERC-1155) share the list. See [NFT Standards](/wallet/nft-standards).
+- Octra collections (XSN-1, Bionts and living NFTs) and EVM collections (ERC-721 and ERC-1155) share the list. See [NFT Standards](/wallet/nft-standards).
 - Art stored in a circle as chunks is put back together and checked against its hashes before it shows. See [Chunked Circle Files](/wallet/nft-standards#chunked-circle-files).
 
 ---

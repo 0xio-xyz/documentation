@@ -6,7 +6,7 @@ icon: "Shield-halved"
 
 <Note>
   **Status: Research & Design Phase**
-  This feature is planned for future development. The architecture builds on Octra's existing FHE (PVAC) primitives and 0xio's cross-chain swap infrastructure.
+  This feature is planned for future development. The architecture builds on Octra's existing FHE (PVAC) primitives. The 0xio cross-chain swap and its solver, which this design first built on, were retired (0xio-dex removed it on 2026-11-22, the extension in v3.0.7).
 </Note>
 
 ## The Vision
@@ -175,12 +175,12 @@ Octra's FHE is uniquely powerful because:
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| ETH ↔ OCT swap | **Live** (devnet) | EthEscrowV2 + SwapVault v7 |
+| ETH and OCT swap | **Retired** | The cross-chain swap was removed on 2026-11-22 |
 | Encrypted OCT balances | **Live** (mainnet) | PVAC encrypt/decrypt |
 | Private OCT transfers | **Live** (mainnet) | ct_sub/ct_add on chain |
-| Cross-chain solver | **Live** (devnet) | Detects swaps, fills automatically |
+| Cross-chain solver | **Retired** | Retired with the cross-chain swap |
 | TWAP oracle pricing | **Live** | 5-min time-weighted average |
-| SOL ↔ OCT swap | **Planned** | Needs Solana escrow + solver |
+| SOL and OCT swap | **Planned** | Needs Solana escrow + solver |
 | "Private Send" UI | **Needed** | One-click deposit → encrypt → transfer |
 | Relayer network | **Needed** | Gasless withdrawals for address unlinkability |
 | Batched withdrawals | **Needed** | Solver aggregates multiple withdrawals |

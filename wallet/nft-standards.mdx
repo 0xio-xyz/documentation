@@ -1,6 +1,6 @@
 ---
 title: NFT Standards
-description: Reference for NFT standards supported by 0xio Wallet on Octra, including SNS-1 collections and the single-token standard with view function details.
+description: Reference for NFT standards supported by 0xio Wallet on Octra, including XSN-1 collections and the single-token standard with view function details.
 icon: image
 ---
 
@@ -8,9 +8,9 @@ icon: image
 
 0xio Wallet supports two NFT standards on the Octra Network. The wallet automatically detects which standard a contract uses via on-chain ABI inspection and adapts its behavior accordingly.
 
-## SNS-1 (Spectrum NFT Standard)
+## XSN-1
 
-SNS-1 is the collection-based NFT standard on Octra, designed by [Spectrum](https://x.com/The_SpectrumX). It supports multiple tokens per contract with sequential token IDs, IPFS metadata, royalties, and operator approvals.
+XSN-1 is the collection-based NFT standard on Octra, designed by [Spectrum](https://x.com/The_SpectrumX). It supports multiple tokens per contract with sequential token IDs, IPFS metadata, royalties, and operator approvals.
 
 ### View Functions
 
@@ -88,7 +88,7 @@ Bionts are autonomous, single-contract NFTs created by [Euint Labs](https://bion
 
 ### On-Chain SVG
 
-Unlike SNS-1 which uses IPFS for metadata, Bionts return full SVG markup from `token_uri()`. The SVG is generated from live contract state: name, wander count, defense stats, and alive/dead status all render dynamically.
+Unlike XSN-1 which uses IPFS for metadata, Bionts return full SVG markup from `token_uri()`. The SVG is generated from live contract state: name, wander count, defense stats, and alive/dead status all render dynamically.
 
 0xio Wallet detects raw SVG responses (strings starting with `<svg`) and renders them inline via base64 data URIs.
 
@@ -175,21 +175,21 @@ The browser extension also shows ERC-721 and ERC-1155 tokens held by the wallet'
 ## How 0xio Wallet Detects the Standard
 
 1. **Fetch ABI** via `octra_contractAbi` to determine which methods the contract exposes
-2. **Name detection**: tries `collection_name()` (SNS-1), `name()`, `biont_name()`, `get_name()` in priority order
-3. **Transfer method**: detects `transfer(to, token_id)` (SNS-1) or `transfer_to(address)` (Bionts) from ABI
+2. **Name detection**: tries `collection_name()` (XSN-1), `name()`, `biont_name()`, `get_name()` in priority order
+3. **Transfer method**: detects `transfer(to, token_id)` (XSN-1) or `transfer_to(address)` (Bionts) from ABI
 4. **Image rendering**: if `token_uri()` returns `<svg...`, renders inline; inline `data:application/json` is parsed in place; `oct://` and `ipfs://` metadata JSON is fetched and its image resolved; an `oct://...html` `animation_url` renders as a living program
 
-When the ABI is unavailable (returns 0 methods), the wallet defaults to SNS-1 behavior (`transfer(to, token_id)` and IPFS metadata).
+When the ABI is unavailable (returns 0 methods), the wallet defaults to XSN-1 behavior (`transfer(to, token_id)` and IPFS metadata).
 
 ## Supported Across All Platforms
 
 | Feature | Extension | Mobile | Desktop |
 |---------|-----------|--------|---------|
-| SNS-1 display | Yes | Yes | Yes |
+| XSN-1 display | Yes | Yes | Yes |
 | Biont SVG rendering | Yes | Yes | Yes |
 | Living NFTs, seed-only | Yes | Yes | Yes |
 | Living NFTs, chain-state | Yes | Yes | Yes |
-| SNS-1 transfer | Yes | Yes | Yes |
+| XSN-1 transfer | Yes | Yes | Yes |
 | Biont transfer_to | Yes | Yes | Yes |
 | IPFS image loading | Yes (blob proxy) | Yes | Yes |
 | On-chain SVG | Yes (base64 data URI) | Yes | Yes |
