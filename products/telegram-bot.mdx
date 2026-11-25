@@ -6,7 +6,7 @@ icon: 'bell'
 
 # 0xio bot User Guide
 
-Welcome to the official documentation for **0xio bot**, a Telegram bot designed to monitor your **Octra Network** addresses in real-time. Receive instant notifications for incoming and outgoing transactions, track balances across mainnet and devnet, query live 0xio DEX pool data, and manage multiple wallets directly from Telegram.
+Welcome to the official documentation for **0xio bot**, a Telegram bot designed to monitor your **Octra Network** addresses in real-time. Receive instant notifications for incoming and outgoing transactions, track balances across mainnet and devnet, check the OCT price, and manage multiple wallets directly from Telegram.
 
 ## Getting Started
 
@@ -25,7 +25,7 @@ You will be greeted by the main menu, which gives you quick access to your walle
 * **Real-Time Monitoring**: Get notified instantly when you send or receive OCT, including stealth payments, contract calls, and self-transfers (encrypt/decrypt/claim).
 * **Multi-Network**: Track addresses on **mainnet and devnet** at the same time, with per-network toggles.
 * **Multiple Wallets**: Track up to **5 different Octra addresses** simultaneously.
-* **DEX Integration**: Query live price, pool state, and swap quotes from the 0xio DEX WOCT/0XIO CLMM pool with `/price`, `/pool`, and `/quote`.
+* **Price and test pool**: `/price` shows the OCT price from the 0xio Oracle. `/price`, `/pool` and `/quote` also read an older WOCT/0XIO test pool on devnet.
 * **Privacy Control**: Toggle balance visibility in notifications to keep your holdings private.
 * **Detailed Insights**: View transaction hashes, counterparty addresses, and direct links to the Octra Explorer.
 * **Address Validation**: Built-in checks ensure you only track valid Octra addresses, with auto-detection of addresses pasted in chat.
@@ -43,9 +43,9 @@ Manage the bot efficiently using these commands:
 | `/add`               | Quickly add a new Octra address to your watchlist.                |
 | `/settings`          | Configure notifications, networks, and balance visibility.        |
 | `/help`              | Display the help message and available commands.                  |
-| `/price`             | Current price of the 0xio DEX WOCT/0XIO pool (devnet).            |
-| `/pool`              | Pool state: active bin, reserves, and fees (devnet).              |
-| `/quote {amt} {tok}` | Get a swap quote, e.g. `/quote 100 WOCT` (devnet).                |
+| `/price`             | OCT price in USD from the 0xio Oracle, and the devnet test pool price. |
+| `/pool`              | Devnet test pool: price, active bin, bin step and its reserves.   |
+| `/quote {amt} {tok}` | Quote from the devnet test pool, e.g. `/quote 100 WOCT`.          |
 
 ---
 
@@ -101,13 +101,13 @@ An optional AI transaction-analysis feature can be unlocked with an activation c
 
 ---
 
-## DEX Queries
+## Price and Test Pool
 
-The bot doubles as a companion for the [0xio DEX](https://dex.0xio.xyz). It reads the on-chain WOCT/0XIO concentrated-liquidity (CLMM) pool on devnet:
+* `/price`: 1 OCT in USD from the [0xio Oracle](/developers/oracle-api), then the price of the WOCT/0XIO test pool on devnet both ways.
+* `/pool`: that pool's price, active bin, bin step, and the WOCT and 0XIO reserves of the active bin.
+* `/quote {amount} {token}`: what selling an amount of WOCT (or OCT) or 0XIO in that pool returns, with the rate and a USD value for the WOCT side, e.g. `/quote 100 WOCT`.
 
-* `/price`: current pool price.
-* `/pool`: active bin, reserves, and fee tier.
-* `/quote {amount} {token}`: a swap quote, e.g. `/quote 100 WOCT`.
+The test pool is an older devnet pool with test tokens. It is not the [0xio DEX](/products/dex), which is in preview and not live.
 
 ---
 
