@@ -25,6 +25,7 @@ Click the 0xio icon in the menu bar for your wallet at a glance. The panel opens
 - **Private:** encrypt or decrypt, claim private transfers, turn on a private balance, migrate it or update the encryption key, each with the live network fee.
 - **Locked:** unlock in the panel with Touch ID or your password.
 - The menu bar icon shows an outline while locked, a turning slash while a private proof runs, and the number of site requests waiting (else the transfers waiting to be claimed).
+- Opening 0xio Desktop again while it runs brings its window back; it never starts a second copy.
 
 ### Command Line
 
@@ -196,11 +197,15 @@ Range proofs, bound proofs, commitments and PVAC key work for the extension's en
 
 ## AI Contract Assistant
 
-The desktop app includes an AI-powered assistant for smart contract development:
+The desktop app includes an AI-powered assistant for smart contract development. It is the **Assistant** tab of the side panel on **Build**, with room for long answers and code.
 
 - **AML brainstorming**: describe what you want your contract to do and get AML code suggestions
 - **Code generation**: generate complete contract templates from natural language descriptions
 - **Error fixing**: paste compiler errors and get suggested fixes
+- **Models found for you**: the app asks each provider you have a key for (OpenAI, Anthropic, Groq, OpenRouter) which models it offers, and finds models on this computer by itself (Ollama and LM Studio). Pick the model in the chat header; the list is grouped by provider, has search when it is long, and remembers your choice
+- **Settings**: **Settings > AI** holds only your keys (masked; a pasted key names its provider), how many models each one offers, the local servers found, and an optional custom endpoint
+- **Modes**: Auto, Manual and Plan, under the chat box
+- **Apply**: a suggestion goes into the file as an unsaved change, with **Undo**
 
 ---
 
@@ -217,16 +222,20 @@ Write contracts in two languages:
 | **AppliedML** | `.aml` | High-level language with automatic ABI generation. Recommended for most developers. |
 | **Assembly** | `.oasm` | Low-level bytecodes for advanced users. |
 
-- **Actions**: one card beside the editor with the stages (Write, Build, Deploy), **Build**, **Audit** (an AI review; it needs an AI provider in Settings) with its result, the last build and **Continue to deploy**. Nothing moves while a build runs
-- **Outline**: the program's state, events, write and view functions, each with its line and searchable; click one to jump there
-- **File menu**: Templates, Import a `.aml` or `.oasm` file, Clear file
+- **Side panel**: **Assistant**, **Build** and **Deploy** as tabs in one full-height panel beside the editor, which you can drag wider. In a window under about 1,020 px it becomes a rail on the right edge and opens over the code, so the code never shrinks
+- **Build tab**: **Build**, **Audit** (an AI review; it needs an AI provider in Settings) with its results, the verifier, the build output and **Continue to deploy**. Build and Audit use the text in the editor and say whether that was the saved file or unsaved changes; an edit after a build holds Deploy until the next build. Nothing moves while a build runs
+- **Outline**: the program's state, events, write and view functions under the file list, each with its line; click one to jump there
+- **File menu**: Templates, Import a `.aml` or `.oasm` file, **Save**, **Save all**, **Revert file**, Clear file
+- **No autosave**: a file is written only when you save (**Cmd+S**, or **Opt+Cmd+S** for all). A changed file has a dot on its tab and in the file list, the status bar says **Unsaved**, and the gutter marks added, changed and removed lines. **Compare** (or a click on **Unsaved**) shows the changes against the saved file, side by side or inline
+- **Leaving with unsaved files**: changing page, switching project or closing the window asks **Save all**, **Don't save** or **Cancel**
+- **Changed on disk**: a file that changed outside the app reloads by itself when you have not edited it; when you have, a card offers **Compare**, **Reload** or **Keep mine**
 - **Compile**: Sends source to the network compiler, returns bytecode + ABI
 - **Error reporting**: Line numbers and error messages from the compiler
 
 ### Deploy
 
 - **Address preview**: Predict your contract's address before deploying (based on sender + nonce)
-- **Deploy form**: takes the editor's place with the constructor in two columns, or one JSON array with a value per line; **Back to code** returns to the file as it was
+- **Deploy form**: in the **Deploy** tab of the side panel, beside the code, with the constructor in two columns, or one JSON array with a value per line. The review lists From, Network, the source (the saved file or unsaved changes) and the source hash
 - **v1 or v2**: picked from the build. When the compiler returns a program package (AML), the deploy goes out as a v2 `program_deploy` carrying that package; otherwise (OASM) as a v1 `deploy` of the bytecode. The review shows which
 - **Deploy fee**: set by the size of what is signed (the package for v2, the bytecode for v1), the way the Octra reference client sets it: 200,000 OU plus 1,000 OU per started KiB. The fee is **Default** (that fee) or **Custom**, never under it, for v1 and v2 alike. A site may set its own deploy fee up to 10,000,000 OU
 - **Source verification**: Verify deployed bytecode matches your source on-chain
@@ -299,7 +308,6 @@ Switch networks in **Settings > Network**, which also shows the latest epoch and
 - **Isolated frames**: Living NFTs and `oct://` pages load from a listener inside the app, bound to this computer only (`127.0.0.1`, a random port, a random 256-bit path per document), each with a security policy of its own and an opaque origin. The app treats them as remote content and its permission system refuses every command from them, so untrusted content cannot reach the wallet or other sites. Locking the wallet drops every staged document. A seed-only living NFT program gets no network access at all, and one that reads the chain may reach only its own network's RPC
 - **dApp windows**: A dApp opened in its own window can only send wallet requests, which go through the same approvals as the in-app browser. It cannot reach any other part of the app
 - **Menu bar approvals**: Every send, encrypt, decrypt, migration and key update from the menu bar signs only on the wallet and network its review showed, at the live network fee the review showed. A fee that cannot be read blocks the action with a retry; no default fee is ever signed
-- **Sentry crash reporting**: Automated error reporting for stability improvements
 
 ---
 
